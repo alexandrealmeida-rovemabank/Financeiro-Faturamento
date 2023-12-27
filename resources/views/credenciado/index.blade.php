@@ -15,14 +15,7 @@
         <div class="card-header">
             <a href="{{route('credenciado.create')}}" class="btn btn-primary">Adicionar</a>
 
-            <div class="card-tools ml-auto">
-                <div class="input-group input-group-sm" style="width: 250px;">
-                    <input type="text" class="form-control" placeholder="Pesquisar">
-                    <div class="input-group-append">
-                        <span class="input-group-text" style="padding: 6px;"><i class="fas fa-search" style="font-size: 14px;"></i></span>
-                    </div>
-                </div>
-            </div>
+            
         </div>
 
         <div class="card-body">
@@ -56,16 +49,24 @@
 @stop
 
 @section('css')
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    {{-- <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css"> --}}
 @endsection
 
 @section('js')
-    <script>src="https://code.jquery.com/jquery-3.7.0.js"</script>
+    {{-- <script>src="https://code.jquery.com/jquery-3.7.0.js"</script>
     <script>src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"</script>
-    <script>src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"</script>
+    <script>src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"</script> --}}
 
     <script>
         new DataTable('#credenciados');
     </script>
+        <script>
+            $(document).ready(function () {
+                $('#credenciados').DataTable({
+                        "language": {
+                        "search": "Pesquisar:",
+                    },});
+            });
+        </script>
 @endsection
 

@@ -16,14 +16,6 @@
         <div class="card-header">
             <a href="{{route('abastecimento.impressao.importar')}}" class="btn btn-primary">Importar</a>
 
-            <div class="card-tools ml-auto">
-                <div class="input-group input-group-sm" style="width: 250px;">
-                    <input type="text" class="form-control" placeholder="Pesquisar">
-                    <div class="input-group-append">
-                        <span class="input-group-text" style="padding: 6px;"><i class="fas fa-search" style="font-size: 14px;"></i></span>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <div class="card-body">
@@ -72,25 +64,38 @@
 @section('css')
     {{-- <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css"> --}}
     {{-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> --}}
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+    {{-- <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css"> --}}
+
 @endsection
 
 
  @section('js')
     @parent
-    <script>src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"</script>
+    {{-- <script>src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"</script>
     <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> --}}
     <script>
         new DataTable('#tabela_lote');
     </script>
 
     <script>
         $(document).ready(function () {
-            $('#tabela_lote').DataTable();
+            $('#tabela_lote').DataTable({
+                    "language": {
+                    "search": "Pesquisar:",
+                },
+                dom: 'Bfrtip',
+        buttons: [
+        'copy', 'excel', 'pdf'
+    ],
+
         });
+
+        });
+
+
+
     </script>
 
 

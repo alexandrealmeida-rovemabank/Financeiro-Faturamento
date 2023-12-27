@@ -117,11 +117,6 @@
 </div>
 
 @stop
- @section('css')
-    {{-- <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css"> --}}
-    {{-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> --}}
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
-@endsection
 
 
  @section('js')
@@ -136,7 +131,10 @@
 
     <script>
         $(document).ready(function () {
-            $('#tabela-editavel').DataTable();
+            $('#tabela-editavel').DataTable({
+                    "language": {
+                    "search": "Pesquisar:",
+                },});
         });
     </script>
 

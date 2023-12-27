@@ -314,13 +314,13 @@ return [
         [
             'text'        => 'Dashboard',
             'url'         => 'home',
-            'icon'        => 'far fa-fw fa-file',
+            'icon'        => 'bi bi-speedometer2',
         ],
         ['header' => 'Credenciados'],
         [
             'text'        => 'Credenciados',
             'url'         => 'credenciado/index',
-            'icon'        => 'far fa-fw fa-file',
+            'icon'        => 'bi bi-shop',
         ],
         ['header' => 'Clientes'],
         [
@@ -342,7 +342,7 @@ return [
         [
             'text'        => 'Impressão de Cartões',
             'url'         => 'abastecimento/impressao/index',
-            'icon'        => 'far fa-fw fa-file',
+            'icon'        => 'bi bi-credit-card',
         ],
         ['header' => 'Controle de Ativos'],
         [
@@ -411,24 +411,52 @@ return [
 
     'plugins' => [
         'Datatables' => [
-            'active' => false,
+            'active' => true,
             'files' => [
                 [
                     'type' => 'js',
                     'asset' => false,
-                    'location' => '//cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js',
+                    'location' => '//cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js',
                 ],
                 [
                     'type' => 'js',
                     'asset' => false,
-                    'location' => '//cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js',
+                    'location' => 'cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js',
                 ],
                 [
                     'type' => 'css',
                     'asset' => false,
                     'location' => '//cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css',
                 ],
+                [
+                    'type' => 'js',
+                    'asset' => false,
+                    'location' => '//cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js',
+                ],
+                // [
+                //     'type' => 'css',
+                //     'asset' => false,
+                //     'location' => '//cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css',
+                // ],
             ],
+            ],
+            // https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css
+            // <script>src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"</script>
+            // <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+
+            // <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+        'bootstrap-icons' => [
+
+            'active' => TRUE,
+            'files'    =>[
+            [
+               'type' => 'css',
+               'asset' => false,
+               'location' => '//cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css',
+           ],
+
+           ],
         ],
         'Select2' => [
             'active' => false,
