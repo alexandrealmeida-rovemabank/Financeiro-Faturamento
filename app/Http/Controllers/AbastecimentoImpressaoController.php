@@ -49,7 +49,7 @@ class AbastecimentoImpressaoController extends Controller
         $import = new YourImport($lote_impressao->id);
         Excel::import($import, request()->file('arquivo'));
 
-        return redirect()->route('abastecimento.impressao.index')->with('success', 'Credenciado cadastrado com sucesso.');
+        return redirect()->route('abastecimento.impressao.index')->with('success', 'Lote Criado e cartões importados com sucesso!.');
     }
 
     public function Editar_lote($id)
@@ -74,7 +74,7 @@ class AbastecimentoImpressaoController extends Controller
 
 
        //return dd($data);
-         return redirect()->route('.abastecimento.impressao.edit', $data['idlote'])->withSuccess('Dados alterado com sucesso!');
+         return redirect()->route('.abastecimento.impressao.edit', $data['idlote'])->with('success','Dados alterado com sucesso!');
 
 
     }
@@ -89,7 +89,7 @@ class AbastecimentoImpressaoController extends Controller
 
            $lote_impressao->save();
 
-           return redirect()->route('abastecimento.impressao.index')->withSuccess('Status alterado com sucesso!');
+           return redirect()->route('abastecimento.impressao.index')->with('success','Status alterado com sucesso!');
 
     }
 
@@ -115,13 +115,12 @@ class AbastecimentoImpressaoController extends Controller
 
         // Commit da transação
         \DB::commit();
-
-        return response()->json(['message' => 'Lote excluídos com sucesso']);
+        return redirect()->route('abastecimento.impressao.index')->with('success','Lote Excluído com sucesso!');
     } catch (\Exception $e) {
         // Rollback da transação em caso de erro
         \DB::rollback();
 
-        return redirect()->route('abastecimento.impressao.index')->withSuccess('Lote Excluído com sucesso!');
+
     }
 }
 

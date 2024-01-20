@@ -110,9 +110,11 @@
                 </div>
             </div>
         </div>
-        <button type="submit" class="btn btn-primary">Adicionar</button>
-      </form>
 
+
+
+      </form>
+      <button type="submit" class="btn btn-primary">Adicionar</button>
   </div>
 </div>
 

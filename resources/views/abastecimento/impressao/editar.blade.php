@@ -7,7 +7,7 @@
 @stop
 
 @section('content')
-
+@include('layouts.notificacoes')
 <div class="card">
     <div class="card-body">
         <table class="table table-striped" id="tabela-editavel"  class="display">
@@ -35,14 +35,17 @@
                     <td>{{ $impressao->numero_cartao }}</td>
                     <td>{{ $impressao->cliente }}</td>
                     <td>{{ $impressao->gruposubgrupo }}</td>
+
                     <td>
-                        <button type="button" class="btn btn-primary btn-editar"
-                            data-bs-toggle="modal" data-bs-target="#modalEditar"
-                            data-id="{{ $impressao->id }}" data-placa="{{ $impressao->placa }}"
-                            data-modelo="{{ $impressao->modelo }}" data-combustivel="{{ $impressao->combustivel }}"
-                            data-cliente="{{ $impressao->cliente }}" data-gruposubgrupo="{{ $impressao->gruposubgrupo }}" data-idlote="{{ $impressao->id_lote_impressao }}">
-                            Editar
-                        </button>
+                        @if($lote->status_impressao == 'Importado')
+                            <button type="button" class="btn btn-primary btn-editar"
+                                data-bs-toggle="modal" data-bs-target="#modalEditar"
+                                data-id="{{ $impressao->id }}" data-placa="{{ $impressao->placa }}"
+                                data-modelo="{{ $impressao->modelo }}" data-combustivel="{{ $impressao->combustivel }}"
+                                data-cliente="{{ $impressao->cliente }}" data-gruposubgrupo="{{ $impressao->gruposubgrupo }}" data-idlote="{{ $impressao->id_lote_impressao }}">
+                                Editar
+                            </button>
+                        @endif
                     </td>
                 </tr>
                 @endforeach

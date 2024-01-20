@@ -10,12 +10,12 @@
 
 @stop
 @section('content')
-
+@include('layouts.notificacoes')
     <div class="card">
         <div class="card-header">
             <a href="{{route('credenciado.create')}}" class="btn btn-primary">Adicionar</a>
 
-            
+
         </div>
 
         <div class="card-body">
@@ -38,7 +38,23 @@
                         <td>{{ $creden->cnpj_formatted }}</td>
                         <td>{{ implode(' - ', json_decode($creden->produto)) }}</td>
                         <td>{{ $creden->status }}</td>
-                        <td><a href="{{ route('credenciado.edit', $creden->id) }}" class="btn btn-primary">Editar</a></td>
+                        <td style="vertical-align: middle">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-primary dropdown-toggle " data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a href="{{ route('credenciado.edit', $creden->id) }}" class="dropdown-item">Visualizar</a></li>
+                                    <li><a href="{{ route('credenciado.edit', $creden->id) }}" class="dropdown-item">Editar</a></li>
+                                    @if($creden->status == 'Ativo')
+                                        <li><a class="dropdown-item" href="{{ route('credenciado.edit', $creden->id) }}" type="submit">Inativar</a></li>
+                                    @endif
+                                    @if($creden->status == 'Importado')
+                                        <li><a class="dropdown-item" href="{{ route('credenciado.edit', $creden->id) }}" type="submit">Ativar</a></li>
+                                    @endif
+                                </ul>
+                              </div>
+                        </td>
                     </tr>
                     @endforeach
                 </tbody>

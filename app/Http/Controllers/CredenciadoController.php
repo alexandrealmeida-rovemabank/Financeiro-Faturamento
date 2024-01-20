@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 use App\Models\Credenciado;
+use App\Models\Estoque;
+use App\Models\terminal_vinculado;
 use Illuminate\Http\Request;
 
 class CredenciadoController extends Controller
@@ -9,7 +11,8 @@ class CredenciadoController extends Controller
     public function index()
     {
         $credenciado = Credenciado::all();
-        return view('credenciado.index', compact('credenciado'));
+        $estoques = Estoque::all();
+        return view('credenciado.index', compact('credenciado','estoques'));
     }
 
     public function store(Request $request)
@@ -49,8 +52,10 @@ class CredenciadoController extends Controller
     public function edit($id)
     {
         $credenciado = Credenciado::findOrFail($id);
+        $estoques = Estoque::all();
+        $terminal = Terminal_Vinculado::all();
 
-        return view('credenciado.edit', compact('credenciado'));
+        return view('credenciado.edit', compact('credenciado', 'estoques','terminal'));
     }
 
     // SeuControlador.php
@@ -72,24 +77,25 @@ class CredenciadoController extends Controller
               'cidade' => 'required',
               'estado' => 'required',
               'status' => 'required',
-             'produto' => 'nullable|array',// Certifique-se de que é um array
+             'produto' => 'nullable|array',
           ]);
 
+          $data = $request->all();
 
+          if ($data['status'] == 'Inativo') {
+            $terminaisVinculados = Terminal_Vinculado::where('id_credenciado', $id)
+                ->where('status', 'Vinculado')
+                ->get();
 
-         $data = $request->all();
+            if ($terminaisVinculados->isNotEmpty()) {
+                return redirect()->route('credenciado.edit', $id)->with('error', 'Não é possível inativar o estabelecimento com terminais vinculados!');
+            }
+        }
 
-         $data['produto'] = json_encode($request->input('produto', []));
+        $data['produto'] = json_encode($request->input('produto', []));
+        $credenciado->update($data);
 
-
-
-         $credenciado->update($data);
-         
-
-
-         return redirect()->route('credenciado.index')->withSuccess('Credenciado cadastrado com sucesso.');
-         return 'atualizado';
-
+        return redirect()->route('credenciado.index')->with('success', 'Cadastro do estabelecimento atualizado om sucesso!!.');
     }
 
 }

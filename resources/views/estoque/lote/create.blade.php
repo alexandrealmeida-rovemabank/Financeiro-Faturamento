@@ -4,7 +4,7 @@
 
 @section('content_header')
 
-    <h1 class="m-0 text-dark">Adicionar Credendiado</h1>
+    <h1 class="m-0 text-dark">Adicionar Lote</h1>
 
 @stop
 
@@ -22,7 +22,7 @@
           <div class="col-sm-6">
             <!-- text input -->
             <div class="form-group">
-              <label>CNPJ</label>
+              <label>numero</label>
               <input type="text" name="cnpj" class="form-control" pattern="\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}" placeholder="01.123.456/0001-00">
 
 
@@ -110,9 +110,11 @@
                 </div>
             </div>
         </div>
-        <button type="submit" class="btn btn-primary">Adicionar</button>
-      </form>
 
+
+
+      </form>
+      <button type="submit" class="btn btn-primary">Adicionar</button>
   </div>
 </div>
 

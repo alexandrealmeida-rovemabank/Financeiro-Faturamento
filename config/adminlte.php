@@ -347,13 +347,13 @@ return [
         ['header' => 'Controle de Ativos'],
         [
             'text'        => 'Estoque',
-            'url'         => 'admin/pages',
-            'icon'        => 'far fa-fw fa-file',
+            'url'         => 'estoque/index',
+            'icon'        => 'bi bi-ui-checks-grid',
         ],
         [
             'text'        => 'Lote',
-            'url'         => 'admin/pages',
-            'icon'        => 'far fa-fw fa-file',
+            'url'         => 'estoque/lote/index',
+            'icon'        => 'bi bi-boxes',
         ],
         ['header' => 'Logistica'],
         [

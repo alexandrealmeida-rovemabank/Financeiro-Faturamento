@@ -23,6 +23,8 @@ return new class extends Migration
             $table->string('cidade');
             $table->string('estado');
             $table->string('status');
+            $table->string('telefone')->NULL();
+            $table->string('celular')->null();
             $table->json('produto')->nullable();
             $table->timestamps();
         });

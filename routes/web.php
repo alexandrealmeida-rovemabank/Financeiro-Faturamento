@@ -3,6 +3,9 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CredenciadoController;
 use App\Http\Controllers\AbastecimentoImpressaoController;
+use App\Http\Controllers\LoteController;
+use App\Http\Controllers\EstoqueController;
+use App\Http\Controllers\TerminalController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -47,4 +50,31 @@ Route::get('/abastecimento/impressao/edit/{id}', [AbastecimentoImpressaoControll
 Route::get('/abastecimento/impressao/edit/cartao/{id}', [AbastecimentoImpressaoController::class, 'edit_cartao'])->middleware(['auth', 'verified'])->name('abastecimento.impressao.edit.cartao');
 Route::get('/abastecimento/impressao/edit/status/{id}', [AbastecimentoImpressaoController::class, 'edit_status'])->middleware(['auth', 'verified'])->name('abastecimento.impressao.edit.status');
 Route::get('/abastecimento/impressao/lote/exluir/{id}', [AbastecimentoImpressaoController::class, 'excluir_lote'])->middleware(['auth', 'verified'])->name('abastecimento.impressao.lote.excluir');
+
+// Rotas Lote
+Route::get('/estoque/lote/index', [LoteController::class, 'index'])->middleware(['auth', 'verified'])->name('estoque.lote.index');
+//Route::get('/estoque/lote/create', function () {return view('estoque.lote.create');})->middleware(['auth', 'verified'])->name('estoque.lote.create');
+Route::post('/estoque/lote/create', [LoteController::class, 'create'])->middleware(['auth', 'verified'])->name('estoque.lote.create');
+Route::get('/estoque/lote/edit/{id}', [LoteController::class, 'edit'])->middleware(['auth', 'verified'])->name('estoque.lote.edit');
+Route::put('/estoque/lote/excluir/{id}', [LoteController::class, 'excluir'])->middleware(['auth', 'verified'])->name('estoque.lote.excluir');
+
+// Rotas estoque
+Route::get('/estoque/index', [EstoqueController::class, 'index'])->middleware(['auth', 'verified'])->name('estoque.index');
+Route::post('/estoque/create', [EstoqueController::class, 'create'])->middleware(['auth', 'verified'])->name('estoque.create');
+Route::get('/estoque/import', [EstoqueController::class, 'import'])->middleware(['auth', 'verified'])->name('estoque.import');
+Route::post('/estoque/processamento', [EstoqueController::class, 'processamento'])->middleware(['auth', 'verified'])->name('estoque.processamento');
+Route::get('/estoque/edit/{id}', [EstoqueController::class, 'edit'])->middleware(['auth', 'verified'])->name('estoque.edit');
+Route::get('/estoque/excluir/{id}', [EstoqueController::class, 'excluir'])->middleware(['auth', 'verified'])->name('estoque.excluir');
+Route::get('/estoque/historico/{id}', [EstoqueController::class, 'historico'])->middleware(['auth', 'verified'])->name('estoque.historico');
+
+
+//Terminal
+Route::get('/terminal/vincular/{crendeciado_id}', [TerminalController::class, 'vincular'])->middleware(['auth', 'verified'])->name('terminal.vincular');
+Route::get('/terminal/desvincular{id}', [TerminalController::class, 'desvincular'])->middleware(['auth', 'verified'])->name('terminal.desvincular');
+// Route::get('/estoque/import', [EstoqueController::class, 'import'])->middleware(['auth', 'verified'])->name('estoque.import');
+// Route::post('/estoque/processamento', [EstoqueController::class, 'processamento'])->middleware(['auth', 'verified'])->name('estoque.processamento');
+// Route::get('/estoque/edit/{id}', [EstoqueController::class, 'edit'])->middleware(['auth', 'verified'])->name('estoque.edit');
+// Route::get('/estoque/excluir/{id}', [EstoqueController::class, 'excluir'])->middleware(['auth', 'verified'])->name('estoque.excluir');
+// Route::get('/estoque/historico/{id}', [EstoqueController::class, 'historico'])->middleware(['auth', 'verified'])->name('estoque.historico');
+
 require __DIR__.'/auth.php';

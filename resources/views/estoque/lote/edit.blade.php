@@ -9,12 +9,12 @@
 @stop
 
 @section('content')
-@include('layouts.notificacoes')
 
-<div class="card">
-    <div class="card-header">
-      <h1 class="m-0 card-title text-dark">Dados Crendeciado</h1>
-    </div>
+<div class="card card-primary">
+    {{-- <div class="card-header">
+      <h1 class="m-0 card-title">Adicionar Credenciado</h1>
+    </div> --}}
+    <!-- /.card-header -->
     <div class="card-body">
       <form action="{{route('credenciado.atualizar',[$credenciado->id]) }}" method="POST">
         @csrf
@@ -106,21 +106,6 @@
               </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-sm-6">
-              <!-- text input -->
-              <div class="form-group">
-                <label>Telefone</label>
-                <input type="text" name="telefone" class="form-control"  value="{{ $credenciado->telefone }}">
-              </div>
-            </div>
-            <div class="col-sm-6">
-              <div class="form-group">
-                <label>Celular</label>
-                <input type="text" name="celular" class="form-control"  value="{{ $credenciado->celular }}" >
-              </div>
-            </div>
-        </div>
         {{-- selecionar produto --}}
         <div class="row">
             <div class="col-sm-6">
@@ -150,112 +135,7 @@
     </form>
 
 
-    </div>
-</div>
-
-<div class="card">
-    <div class="card-header">
-      <h1 class="m-0 card-title text-dark">Terminais Vinculados</h1>
-    </div>
-
-    <div class="card-body">
-        {{-- Ativar Terminal --}}
-
-    <form action="{{route('terminal.vincular',[$credenciado->id]) }}" method="GET">
-        @csrf
-        <div class="row">
-            <div class="col-sm-4">
-                <div class="form-group">
-                    <label>Terminal</label>
-                    <select class="form-control" name="id_estoque" id="id_estoque" >
-                        @foreach ($estoques as $estoque)
-                            @if($estoque->categoria == 'TERMINAL' & $estoque->status =="Disponível" )
-                                <option><a class="dropdown-item">{{ $estoque->numero_serie }}</a></option>
-                            @endif
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-            <div class="col-sm-4">
-                <div class="form-group">
-                    <label>Chip</label>
-                    <select class="form-control" name="id_chip" id="id_chip" >
-                        {{-- <option><a class="dropdown-item">Sem Chip</a></option> --}}
-                        @foreach ($estoques as $estoque)
-                            @if($estoque->categoria == 'CHIP' & $estoque->status =="Disponível")
-                                <option><a class="dropdown-item">{{ $estoque->numero_serie }}</a></option>
-                            @endif
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-            <div class="col-sm-4">
-                <div class="form-group">
-                    <label>Produto</label>
-                    <select class="form-control" name="produto" id="produto" >
-                        @if (str_contains($credenciado->produto, 'BIONIO'))
-                            <option><a class="dropdown-item">BIONIO</a></option>
-                        @endif
-                        @if (str_contains($credenciado->produto, 'ELIQ'))
-                            <option><a class="dropdown-item">ELIQ</a></option>
-                        @endif
-                        @if (str_contains($credenciado->produto, 'MAQUININHA'))
-                            <option><a class="dropdown-item">MAQUININHA</a></option>
-                        @endif
-                    </select>
-                </div>
-            </div>
-            <div class="col-sm-4" >
-                <div class="form-group" style="display: block">
-                    <button type="submit" class="btn btn-primary">Adicionar</button>
-                </div>
-            </div>
-
-        </div>
-    </form>
-    </div>
-
-    <div class="card-body">
-        <table id="credenciados" class="table table-striped">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Terminal</th>
-                    <th>Marca</th>
-                    <th>Modedlo</th>
-                    <th>Chip</th>
-                    <th>Produto</th>
-                    <th>Data de Vinculação</th>
-                    <th>Ação</th>
-                </tr>
-            </thead>
-             <tbody>
-                 @foreach($terminal as $terminais)
-                 @if ( $terminais->id_credenciado == $credenciado->id && $terminais->status =='Vinculado')
-                <tr>
-                    <td>{{ $terminais->id}}</td>
-                    <td>{{ $terminais->estoque->numero_serie}}</td>
-                    <td>{{ $terminais->estoque->fabricante }}</td>
-                    <td>{{ $terminais->estoque->modelo }}</td>
-                    <td>{{ $terminais->chip->numero_serie }}</td>
-                    <td>{{ $terminais->produto }}</td>
-                    <td>{{ $terminais->created_at}}</td>
-                    <td> <a class="btn btn-primary" href="{{ route('terminal.desvincular', $terminais->id) }}" type="submit">Desvincular</a> </td>
-                </tr>
-                @endif
-               @endforeach
-            </tbody>
-
-        </table>
-    </div>
-
-
 </div>
 </div>
-
-<br>
-<br>
-<br>
-
 
 @stop
