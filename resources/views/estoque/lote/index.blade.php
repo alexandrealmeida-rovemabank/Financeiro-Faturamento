@@ -181,7 +181,11 @@
         $('#lote').DataTable({
                 "language": {
                 "search": "Pesquisar:",
-            },});
+            },
+            drawCallback: function() {
+            $('.dropdown-toggle').dropdown();
+        }
+        });
     });
 </script>
 
@@ -204,7 +208,7 @@ $(document).ready(function () {
 
 <script>
 $(document).ready(function () {
-    $('.btn-editar').on('click', function () {
+    $(document).on('click', '.btn-editar', function () {
         var id = $(this).data('id');
         var lote = $(this).data('lote');
         var nf = $(this).data('nf');
@@ -234,8 +238,10 @@ $(document).ready(function () {
         $('#modalEditar').modal('show');
     });
 
-
-    });
+    $('.dropdown-toggle').dropdown({
+    autoClose: true
+});
+});
 </script>
 @endsection
 

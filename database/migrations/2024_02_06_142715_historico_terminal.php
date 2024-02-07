@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('terminal_vinculado', function (Blueprint $table) {
+        Schema::create('historico_terminal', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('id_estoque');
             $table->unsignedBigInteger('id_credenciado');
-            $table->string('chip');
             $table->string('produto');
-            $table->string('status');
-            $table->timestamps();
+            $table->string('acao')->nullable();
+            $table->string('data')->nullable();
+            $table->string('usuario');
             $table->foreign('id_estoque')->references('id')->on('estoque')->onDelete('cascade');
             $table->foreign('id_credenciado')->references('id')->on('credenciado')->onDelete('cascade');
         });
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+
     }
 };

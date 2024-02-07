@@ -37,7 +37,8 @@
                         <th>Ação</th>
                     </tr>
                 </thead>
-                <tbody>
+
+                 {{-- <tbody>
                     @foreach($estoque as $estoques)
 
                     <tr>
@@ -49,7 +50,7 @@
                         <td>{{ $estoques->numero_serie }}</td>
                         <td>{{ $estoques->status }}</td>
                         <td style="vertical-align: middle">
-                            <div class="btn-group" role="group">
+                             <div class="btn-group" role="group">
                                 <button type="button" class="btn btn-primary dropdown-toggle " data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="bi bi-three-dots-vertical"></i>
                                 </button>
@@ -60,11 +61,12 @@
                                         data-numero_serie="{{ $estoques->numero_serie }}" data-status="{{ $estoques->status }}" data-observacao="{{ $estoques->observacao }}" >Editar</a></li>
                                     <li><a href="{{route('estoque.excluir', $estoques->id)}}" class="dropdown-item">Excluir</a></li>
                                 </ul>
-                              </div>
+                            </div>
+
                         </td>
                     </tr>
                     @endforeach
-                </tbody>
+                </tbody> --}}
 
             </table>
         </div>
@@ -160,6 +162,8 @@
                                             <label>Status</label>
                                             <select class="form-control" name="status" id="edit-status" >
                                                     <option><a class="dropdown-item">Disponível</a></option>
+                                                    <option><a class="dropdown-item">Indisponível</a></option>
+                                                    <option><a class="dropdown-item">Perdida</a></option>
                                                     <option><a class="dropdown-item">Operação</a></option>
                                                     <option><a class="dropdown-item">Manutenção</a></option>
                                                     <option><a class="dropdown-item">Defeito</a></option>
@@ -171,7 +175,7 @@
                                     <div class="col-sm-4">
                                         <div class="form-group">
                                             <label>Lote</label>
-                                            <select class="form-control" name="id_lote" id="edit-id_lote" >
+                                             <select class="form-control" name="id_lote" id="edit-id_lote" >
                                                 @foreach ($lote as $estoques)
                                                     <option><a class="dropdown-item">{{ $estoques->lote }}</a></option>
                                                 @endforeach
@@ -227,20 +231,97 @@
             </div>
         </div>
     </div>
+
+
+    {{-- Modal historico --}}
+   <div class="modal fade" id="modalhistorico" tabindex="-1" aria-labelledby="modalhistoricoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable" style="display: contents">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="historicoModalLabel">Histórico do Terminal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="container">
+
+                    <div class="row align-items-start">
+                        <div class="col">
+                            <b>Numero de Serie:</b> <a id="hist-numero_serie"></a>
+                        </div>
+                        <div class="col">
+                            <b>Status Atual:</b> <a id="hist-status"></a>
+                        </div>
+                        <div class="col">
+                            <b>Data de Cadastro:</b> <a id="hist-data_cadastro"></a>
+                        </div>
+                        <div class="col">
+                            <b>Metodo de cadastro:</b> <a id="hist-metodo_cadastro"></a>
+                        </div>
+                    </div>
+                </div>
+                <h6>Registros</h6>
+                <table class="table table-striped" id="historico">
+                    <thead>
+                        <tr>
+                            <th>Credenciado</th>
+                            <th>Produto</th>
+                            <th>Ação</th>
+                            <th>Data</th>
+                            <th>Usuário</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{-- @foreach($historico as $historicos)
+
+                        @if ($historicos->estoque->id == old('hist-id'))
+                        <!-- Aqui você pode adicionar as linhas da tabela dinamicamente com seus dados -->
+                        <tr>
+                            <td>{{$historicos->credenciado->nome_fantasia}}</td>
+                            <td>{{$historicos->produto}}</td>
+                            <td>{{$historicos->acao}}</td>
+                            <td>{{ strftime('%d/%m/%Y %H:%M:%S', strtotime($historicos->data)) }}</td>
+                            <td>{{$historicos->usuario}}</td>
+                        </tr>
+                        @endif
+                        @endforeach --}}
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+   </div>
 @stop
 
 @section('js')
-
-
 <script>
-    $(document).ready(function () {
+    $(document).ready(function() {
         $('#estoque').DataTable({
-                "language": {
-                "search": "Pesquisar:",
-            },});
+            "language": {
+                url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Portuguese-Brasil.json',
+            },
+            processing: true,
+            serverSide: true,
+            ajax: '{{ route('estoque.index') }}',
+            columns: [
+                { data: 'id', name: 'id' },
+                { data: 'lote.lote', name: 'lote.lote' },
+                { data: 'categoria', name: 'categoria'},
+                { data: 'fabricante', name: 'fabricante'},
+                { data: 'modelo', name: 'modelo' },
+                { data: 'numero_serie', name: 'numero_serie'},
+                { data: 'status', name: 'status' },
+                { data: 'action', name: 'action', orderable: false, searchable: false},
+            ],
+            "pageLength": 10,
+            "lengthMenu": [10, 25, 50, 100, 200],
+
+        });
+
     });
 </script>
-
 
 
 <script>
@@ -250,7 +331,6 @@ $(document).ready(function () {
         // Mostrar o modal
         $('#modalCreate').modal('show');
     });
-
 });
 </script>
 
@@ -260,15 +340,16 @@ $(document).ready(function () {
 
 <script>
 $(document).ready(function () {
-    $('.btn-editar').on('click', function () {
-        var id = $(this).data('id');
-        var id_lote = $(this).data('id_lote');
-        var categoria = $(this).data('categoria');
-        var fabricante = $(this).data('fabricante');
-        var modelo = $(this).data('modelo');
-        var numero_serie = $(this).data('numero_serie');
-        var status = $(this).data('status');
-        var observacao = $(this).data('observacao');
+    $(document).on('click', '.btn-editar', function () {
+        var id = $(this).attr('data-id');
+        var id_lote = $(this).attr('data-id_lote');
+        var categoria = $(this).attr('data-categoria');
+        var fabricante = $(this).attr('data-fabricante');
+        var modelo = $(this).attr('data-modelo');
+        var numero_serie = $(this).attr('data-numero_serie');
+        var status = $(this).attr('data-status');
+        var observacao = $(this).attr('data-observacao');
+
 
         console.log('ID:', id);
         console.log('ID do Lote:', id_lote);
@@ -300,10 +381,89 @@ $(document).ready(function () {
         $('#modalEditar').modal('show');
     });
 
+});
 
+    $(document).ready(function () {
+    $(document).on('click', '.btn-historico', function () {
+        var id = $(this).attr('data-id');
+        var numero_serie_his = $(this).attr('data-numero_serie');
+        var status_hist = $(this).attr('data-status');
+        var data_cadastro_hist = $(this).attr('data-data_cadastro');
+        var metodo_cadastro_hist = $(this).attr('data-metodo_cadastro');
+        console.log('ID:', data_cadastro_hist);
+
+        // Divida a string da data em partes (data e hora)
+        var partesDataHora = data_cadastro_hist.split(' ');
+
+        // Divida a string da data em partes (ano, mês e dia)
+        var partesData = partesDataHora[0].split('-');
+
+        // Formate a data no formato 'dd/mm/aaaa hh:mm:ss'
+        var dataFormatada = partesData[2] + '/' + partesData[1] + '/' + partesData[0] + ' ' + partesDataHora[1];
+
+
+        // Preencher os campos do modal
+        $('#hist-id').text(id);
+        $('#hist-numero_serie').text(numero_serie_his);
+        $('#hist-status').text(status_hist);
+        $('#hist-data_cadastro').text(dataFormatada);
+        $('#hist-metodo_cadastro').text(metodo_cadastro_hist);
+
+
+        $.ajax({
+    url: '/estoque/index/historico',
+    type: 'GET',
+    data: {
+        id: id
+    },
+    success: function(data) {
+        var tbody = $('#historico tbody');
+        tbody.empty();
+        
+        data.sort(function(a, b) {
+            return new Date(b.data) - new Date(a.data);
+        });
+
+        data.forEach(function(registro) {
+            // Divida a string da data em partes (data e hora)
+        // Divida a string da data em partes (data e hora)
+        var partesDataHora = registro.data.split(' ');
+
+        // Divida a string da data em partes (ano, mês e dia)
+        var partesData = partesDataHora[0].split('-');
+
+        // Formate a data no formato 'dd/mm/aaaa hh:mm:ss'
+        var dataFormatada = partesData[2] + '/' + partesData[1] + '/' + partesData[0] + ' ' + partesDataHora[1];
+
+            // Supondo que 'registro.credenciado' seja o ID do credenciado
+            $.ajax({
+                url: '/estoque/index/historico/credenciado', // Substitua pelo caminho para o endpoint que retorna o nome fantasia
+                type: 'GET',
+                data: {
+                    id: registro.id_credenciado
+                },
+                success: function(credenciadoData) {
+                    // Aqui 'credenciadoData' é a resposta do servidor contendo o nome fantasia do credenciado
+                    var row = '<tr>' +
+                        '<td>' + credenciadoData.nome_fantasia + '</td>' +
+                        '<td>' + registro.produto + '</td>' +
+                        '<td>' + registro.acao + '</td>' +
+                        '<td>' + dataFormatada + '</td>' +
+                        '<td>' + registro.usuario + '</td>' +
+                        '</tr>';
+                    tbody.append(row);
+                }
+            });
+        });
+    }
+});
+
+        // Mostrar o modal
+        $('#modalhistorico').modal('show');
     });
-</script>
+    });
+
+
+    </script>
 
 @endsection
-
-

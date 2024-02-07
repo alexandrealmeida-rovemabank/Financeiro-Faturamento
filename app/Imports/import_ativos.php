@@ -20,14 +20,17 @@ class import_ativos implements ToCollection, WithHeadingRow
     public function collection(Collection $rows)
     {
         foreach ($rows->slice(1) as $row) {
+            if($row[5] == null){
+                $observacao = "";
+                } else $observacao = $row[5];
             estoque::create([
                 'categoria' => $row[0],
                 'fabricante' => $row[1],
                 'modelo' => $row[2],
                 'numero_serie' => $row[3],
                 'status' => $row[4],
-                'observacao' => "",
-                'historico' => "",
+                'observacao' => $observacao,
+                'metodo_cadastro' => "Importado",
                 'id_lote' => $this->lote_id,
             ]);
         }

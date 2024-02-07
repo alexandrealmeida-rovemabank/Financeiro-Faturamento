@@ -179,8 +179,8 @@
             <div class="col-sm-4">
                 <div class="form-group">
                     <label>Chip</label>
-                    <select class="form-control" name="id_chip" id="id_chip" >
-                        {{-- <option><a class="dropdown-item">Sem Chip</a></option> --}}
+                    <select class="form-control" name="chip" id="chip" >
+                        <option><a class="dropdown-item">Sem Chip</a></option>
                         @foreach ($estoques as $estoque)
                             @if($estoque->categoria == 'CHIP' & $estoque->status =="Disponível")
                                 <option><a class="dropdown-item">{{ $estoque->numero_serie }}</a></option>
@@ -237,7 +237,7 @@
                     <td>{{ $terminais->estoque->numero_serie}}</td>
                     <td>{{ $terminais->estoque->fabricante }}</td>
                     <td>{{ $terminais->estoque->modelo }}</td>
-                    <td>{{ $terminais->chip->numero_serie }}</td>
+                    <td>{{ $terminais->chip }}</td>
                     <td>{{ $terminais->produto }}</td>
                     <td>{{ $terminais->created_at}}</td>
                     <td> <a class="btn btn-primary" href="{{ route('terminal.desvincular', $terminais->id) }}" type="submit">Desvincular</a> </td>

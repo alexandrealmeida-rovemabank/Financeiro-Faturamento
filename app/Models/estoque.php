@@ -17,7 +17,9 @@ class estoque extends Model
         'numero_serie',
         'status',
         'observacao',
-        'historico',
+        'metodo_cadastro',
+        'created_at',
+        'updated_at',
     ];
 
      public function lote()
@@ -29,4 +31,10 @@ class estoque extends Model
     {
         return $this->hasMany(TerminaisVinculados::class);
     }
+
+    public function historicos()
+    {
+        return $this->hasMany(HistoricoTerminal::class, 'id_estoque');
+    }
+
 }

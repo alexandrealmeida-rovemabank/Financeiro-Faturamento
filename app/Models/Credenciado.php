@@ -40,4 +40,8 @@ class Credenciado extends Model
     {
         return $this->hasMany(TerminaisVinculados::class);
     }
+    public function historicos()
+    {
+        return $this->hasMany(HistoricoTerminal::class, 'id_credenciado');
+    }
 }

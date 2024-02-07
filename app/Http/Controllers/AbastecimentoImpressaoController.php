@@ -10,14 +10,26 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\YourImport;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Readers\LaravelExcelReader;
+use DataTables;
+require_once 'actions.php';
 
 class AbastecimentoImpressaoController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
-        $lote_impressao = lote_impressao::all();
-        return view('abastecimento.impressao.index', compact('lote_impressao'));
+        if ($request->ajax()) {
+            $data = lote_impressao::latest()->get();
+            return Datatables::of($data)
+                    ->addIndexColumn()
+                    ->addColumn('action', function($row){
+                        return button_lote_cartoes($row);
+                    })
+                    ->rawColumns(['action'])
+                    ->make(true);
+        }
+
+        return view('abastecimento.impressao.index');
     }
 
     public function importar()
@@ -52,18 +64,29 @@ class AbastecimentoImpressaoController extends Controller
         return redirect()->route('abastecimento.impressao.index')->with('success', 'Lote Criado e cartões importados com sucesso!.');
     }
 
-    public function Editar_lote($id)
+    public function Editar_lote(Request $request, $id)
     {
         $lote = lote_impressao::findOrFail($id);
         $impressoes = $lote->impressoes;
+        $status = $lote->status_impressao;
+        if ($request->ajax()) {
+            return Datatables::of($impressoes)
+                    ->addIndexColumn()
+                    ->addColumn('action', function($row) use ($status) {
+                        return button_lote_cartoes_impressao_editar($row, $status);
+                    })
+                    ->rawColumns(['action'])
+                    ->make(true);
+        }
 
-        return view('abastecimento.impressao.editar', compact('lote', 'impressoes'));
+        return view('abastecimento.impressao.editar', compact('lote'));
     }
+
+
 
     public function edit_cartao($id, Request $request){
 
         $impressao = impressao::findOrFail($id);
-
 
          $data = $request->all();
          $impressao->update($data);
@@ -74,7 +97,7 @@ class AbastecimentoImpressaoController extends Controller
 
 
        //return dd($data);
-         return redirect()->route('.abastecimento.impressao.edit', $data['idlote'])->with('success','Dados alterado com sucesso!');
+         return redirect()->route('abastecimento.impressao.edit', $data['idlote'])->with('success','Dados alterado com sucesso!');
 
 
     }

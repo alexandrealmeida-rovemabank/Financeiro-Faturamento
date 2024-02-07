@@ -19,7 +19,7 @@
         </div>
 
         <div class="card-body">
-            <table id="tabela_lote" class="table table-striped" class="display">
+            <table id="loteCartoes" class="table table-striped" class="display">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -31,7 +31,7 @@
                         <th>Ação</th>
                     </tr>
                 </thead>
-                <tbody>
+                {{-- <tbody>
                     @foreach($lote_impressao as $lotes)
                     <tr>
                         <td style="vertical-align: middle">{{ $lotes->id }}</td>
@@ -59,7 +59,7 @@
                         </td>
                     </tr>
                     @endforeach
-                </tbody>
+                </tbody> --}}
 
             </table>
         </div>
@@ -67,31 +67,43 @@
 @stop
 
 
+@section('js')
 
- @section('js')
-    @parent
-
-    <script>
-        $(document).ready(function () {
-            $('#tabela_lote').DataTable({
-                    "language": {
-                    "search": "Pesquisar:",
-                },
-                dom: 'Bfrtip',
-        buttons: [
-        'copy', 'excel', 'pdf'
-    ],
+<script>
+    $(document).ready(function() {
+        $('#loteCartoes').DataTable({
+            "language": {
+                url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Portuguese-Brasil.json',
+            },
+            processing: true,
+            serverSide: true,
+            ajax: '{{ route('abastecimento.impressao.index') }}',
+            columns: [
+                    { data: 'id', name: 'id' },
+                    { data: 'lote', name: 'lote' },
+                    { data: 'cliente', name: 'cliente'},
+                    { data: 'created_at', name: 'created_at',
+                    render: function(data, type, row) {
+                        var dataObjeto = new Date(data);
+                        return dataObjeto.toLocaleDateString('pt-BR') + ' ' + dataObjeto.toLocaleTimeString('pt-BR');
+                        }
+                    },
+                    { data: 'updated_at', name: 'updated_at',
+                    render: function(data, type, row) {
+                       var dataObjeto = new Date(data);
+                       return dataObjeto.toLocaleDateString('pt-BR') + ' ' + dataObjeto.toLocaleTimeString('pt-BR');
+                       }
+                   },
+                    { data: 'status_impressao', name: 'status_impressao'},
+                    { data: 'action', name: 'action', orderable: false, searchable: false},
+            ],
+            "pageLength": 10,
+            "lengthMenu": [10, 25, 50, 100, 200],
 
         });
 
-        });
-
-
-
-    </script>
-
-
-
+    });
+</script>
 @endsection
 
 

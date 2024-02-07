@@ -5,14 +5,33 @@ use App\Models\Credenciado;
 use App\Models\Estoque;
 use App\Models\terminal_vinculado;
 use Illuminate\Http\Request;
+use DataTables;
+require_once 'actions.php';
 
 class CredenciadoController extends Controller
 {
-    public function index()
+    // public function index()
+    // {
+    //     $credenciado = Credenciado::all();
+    //     $estoques = Estoque::all();
+    //     return view('credenciado.index', compact('credenciado','estoques'));
+    // }
+
+    public function index(Request $request)
     {
-        $credenciado = Credenciado::all();
         $estoques = Estoque::all();
-        return view('credenciado.index', compact('credenciado','estoques'));
+        if ($request->ajax()) {
+            $data = Credenciado::latest()->get();
+            return Datatables::of($data)
+                    ->addIndexColumn()
+                    ->addColumn('action', function($row){
+                        return button_credenciado($row);
+                    })
+                    ->rawColumns(['action'])
+                    ->make(true);
+        }
+
+        return view('credenciado.index', compact('estoques'));
     }
 
     public function store(Request $request)

@@ -27,6 +27,11 @@ Route::get('/home', function () {
     return view('home');
 })->middleware(['auth', 'verified'])->name('home');
 
+Route::get('/dashboard', function () {
+    return view('home');
+})->middleware(['auth', 'verified'])->name('home');
+
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -46,7 +51,7 @@ Route::put('/credenciado/atualizar/{id}', [CredenciadoController::class, 'update
 Route::get('/abastecimento/impressao/index', [AbastecimentoImpressaoController::class, 'index'])->middleware(['auth', 'verified'])->name('abastecimento.impressao.index');
 Route::get('/abastecimento/impressao/create', [AbastecimentoImpressaoController::class, 'importar'])->middleware(['auth', 'verified'])->name('abastecimento.impressao.importar');
 Route::post('/abastecimento/impressao/processamento', [AbastecimentoImpressaoController::class, 'processamento'])->middleware(['auth', 'verified'])->name('abastecimento.impressao.processamento');
-Route::get('/abastecimento/impressao/edit/{id}', [AbastecimentoImpressaoController::class, 'Editar_lote'])->middleware(['auth', 'verified'])->name('.abastecimento.impressao.edit');
+Route::get('/abastecimento/impressao/edit/{id}', [AbastecimentoImpressaoController::class, 'Editar_lote'])->middleware(['auth', 'verified'])->name('abastecimento.impressao.edit');
 Route::get('/abastecimento/impressao/edit/cartao/{id}', [AbastecimentoImpressaoController::class, 'edit_cartao'])->middleware(['auth', 'verified'])->name('abastecimento.impressao.edit.cartao');
 Route::get('/abastecimento/impressao/edit/status/{id}', [AbastecimentoImpressaoController::class, 'edit_status'])->middleware(['auth', 'verified'])->name('abastecimento.impressao.edit.status');
 Route::get('/abastecimento/impressao/lote/exluir/{id}', [AbastecimentoImpressaoController::class, 'excluir_lote'])->middleware(['auth', 'verified'])->name('abastecimento.impressao.lote.excluir');
@@ -60,6 +65,8 @@ Route::put('/estoque/lote/excluir/{id}', [LoteController::class, 'excluir'])->mi
 
 // Rotas estoque
 Route::get('/estoque/index', [EstoqueController::class, 'index'])->middleware(['auth', 'verified'])->name('estoque.index');
+Route::get('/estoque/index/historico', [EstoqueController::class, 'getHistorico'])->middleware(['auth', 'verified'])->name('estoque.historico');
+Route::get('/estoque/index/historico/credenciado', [EstoqueController::class, 'getHistoricocredenciado'])->middleware(['auth', 'verified'])->name('estoque.historico.credenciado');
 Route::post('/estoque/create', [EstoqueController::class, 'create'])->middleware(['auth', 'verified'])->name('estoque.create');
 Route::get('/estoque/import', [EstoqueController::class, 'import'])->middleware(['auth', 'verified'])->name('estoque.import');
 Route::post('/estoque/processamento', [EstoqueController::class, 'processamento'])->middleware(['auth', 'verified'])->name('estoque.processamento');
@@ -70,7 +77,7 @@ Route::get('/estoque/historico/{id}', [EstoqueController::class, 'historico'])->
 
 //Terminal
 Route::get('/terminal/vincular/{crendeciado_id}', [TerminalController::class, 'vincular'])->middleware(['auth', 'verified'])->name('terminal.vincular');
-Route::get('/terminal/desvincular{id}', [TerminalController::class, 'desvincular'])->middleware(['auth', 'verified'])->name('terminal.desvincular');
+Route::get('/terminal/desvincular/{id}', [TerminalController::class, 'desvincular'])->middleware(['auth', 'verified'])->name('terminal.desvincular');
 // Route::get('/estoque/import', [EstoqueController::class, 'import'])->middleware(['auth', 'verified'])->name('estoque.import');
 // Route::post('/estoque/processamento', [EstoqueController::class, 'processamento'])->middleware(['auth', 'verified'])->name('estoque.processamento');
 // Route::get('/estoque/edit/{id}', [EstoqueController::class, 'edit'])->middleware(['auth', 'verified'])->name('estoque.edit');

@@ -10,7 +10,7 @@
 @include('layouts.notificacoes')
 <div class="card">
     <div class="card-body">
-        <table class="table table-striped" id="tabela-editavel"  class="display">
+        <table class="table table-striped" id="impressoes"  class="display">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -24,32 +24,6 @@
                     <th>Ação</th>
                 </tr>
             </thead>
-            <tbody>
-                @foreach($impressoes as $impressao)
-                <tr>
-                    <td>{{ $impressao->id }}</td>
-                    <td>{{ $impressao->placa }}</td>
-                    <td>{{ $impressao->modelo }}</td>
-                    <td>{{ $impressao->combustivel }}</td>
-                    <td>{{ $impressao->trilha }}</td>
-                    <td>{{ $impressao->numero_cartao }}</td>
-                    <td>{{ $impressao->cliente }}</td>
-                    <td>{{ $impressao->gruposubgrupo }}</td>
-
-                    <td>
-                        @if($lote->status_impressao == 'Importado')
-                            <button type="button" class="btn btn-primary btn-editar"
-                                data-bs-toggle="modal" data-bs-target="#modalEditar"
-                                data-id="{{ $impressao->id }}" data-placa="{{ $impressao->placa }}"
-                                data-modelo="{{ $impressao->modelo }}" data-combustivel="{{ $impressao->combustivel }}"
-                                data-cliente="{{ $impressao->cliente }}" data-gruposubgrupo="{{ $impressao->gruposubgrupo }}" data-idlote="{{ $impressao->id_lote_impressao }}">
-                                Editar
-                            </button>
-                        @endif
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
         </table>
     </div>
 </div>
@@ -123,31 +97,49 @@
 
 
  @section('js')
-    @parent
-    <script>src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"</script>
-    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        new DataTable('#importação');
-    </script>
+         var idLote = "{{ $lote->id }}";
+         var url = '/abastecimento/impressao/edit/' + idLote;
+         console.log(url);
 
-    <script>
-        $(document).ready(function () {
-            $('#tabela-editavel').DataTable({
-                    "language": {
-                    "search": "Pesquisar:",
-                },});
+
+        $(document).ready(function() {
+            $('#impressoes').DataTable({
+                "language": {
+                    url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Portuguese-Brasil.json',
+                },
+                processing: true,
+                serverSide: true,
+                ajax: url,
+                columns: [
+                        { data: 'id', name: 'id' },
+                        { data: 'placa', name: 'placa' },
+                        { data: 'modelo', name: 'modelo'},
+                        { data: 'combustivel', name: 'combustivel'},
+                        { data: 'trilha', name: 'trilha'},
+                        { data: 'numero_cartao', name: 'numero_cartao'},
+                        { data: 'cliente', name: 'cliente'},
+                        { data: 'gruposubgrupo', name: 'gruposubgrupo'},
+                        { data: 'action', name: 'action', orderable: false, searchable: false},
+                ],
+                "pageLength": 10,
+                "lengthMenu": [10, 25, 50, 100, 200],
+
+            });
+
         });
     </script>
+
 
     <script>
     var myModal = new bootstrap.Modal(document.getElementById('modalEditar'));
     </script>
 
+
+
 <script>
     $(document).ready(function () {
-        $('.btn-editar').on('click', function () {
+        $(document).on('click', '.btn-editar', function () {
             var id = $(this).data('id');
             var placa = $(this).data('placa');
             var modelo = $(this).data('modelo');
@@ -155,6 +147,8 @@
             var cliente = $(this).data('cliente');
             var gruposubgrupo = $(this).data('gruposubgrupo');
             var idlote = $(this).data('idlote');
+
+            console.log(placa);
 
             // Preencher os campos do modal
             $('#modal-id').val(id);
@@ -175,10 +169,7 @@
             $('#modalEditar').modal('show');
         });
 
-        $('#btnSalvar').on('click', function () {
-            // Aqui você pode acessar o valor do ID usando $('#modal-id').val()
-            // Restante do seu código de salvamento...
-        });
+
     });
 </script>
 

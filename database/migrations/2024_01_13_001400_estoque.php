@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('numero_serie')->unique();
             $table->string('status');
             $table->text('observacao');
-            $table->text('historico');
+            $table->text('metodo_cadastro');
             $table->unsignedBigInteger('id_lote');
             $table->timestamps();
 

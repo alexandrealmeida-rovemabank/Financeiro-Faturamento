@@ -17,6 +17,8 @@ class lote_impressao extends Model
         'data_importacao',
         'data_alteracao',
         'status_impressao',
+        'created_at',
+        'updated_at',
     ];
 
     public function impressoes()

@@ -3,19 +3,36 @@
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\estoque;
+use App\Models\credenciado;
 use App\Models\lote;
+use App\Models\historico_terminal;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\import_ativos;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Readers\LaravelExcelReader;
+use DataTables;
+require_once 'actions.php';
 
 class EstoqueController extends Controller
 {
-    public function index()
+
+    public function index(Request $request)
     {
-        $estoque = estoque::all();
         $lote = lote::all();
-        return view('estoque.index', compact('estoque','lote'));
+        $historico = historico_terminal::all();
+        if ($request->ajax()) {
+            $data = Estoque::with('lote')->get();
+            return Datatables::of($data)
+                    ->addIndexColumn()
+                    ->addColumn('action', function($row){
+                        return button_estoque($row);
+                    })
+                    ->rawColumns(['action'])
+                    ->make(true);
+        }
+
+
+        return view('estoque.index', compact('lote','historico'));
     }
 
      public function import()
@@ -41,7 +58,7 @@ class EstoqueController extends Controller
         $data = $request->all();
         $data['status'] = $data['status'] ?? 'Disponível';
         $data['observacao'] = $data['observacao'] ?? '';
-        $data['historico'] = $data['historico'] ?? '';
+        $data['metodo_cadastro'] = $data['metodo_cadstro'] ?? 'Manual';
 
         // Renomeie 'lote' para 'id_lote'
         $lote = Lote::where('lote', $request['id_lote'])->first();
@@ -113,4 +130,42 @@ class EstoqueController extends Controller
         }
 
     }
+
+    public function getHistorico(Request $request)
+    {
+        $id = $request->get('id'); // Supondo que você definiu um ID aqui para teste
+        $historico = historico_terminal::where('id_estoque', $id)->get();
+
+        // Array para armazenar os objetos de credenciado correspondentes a cada registro histórico
+        $credenciados = [];
+
+        // Iterar sobre cada registro histórico
+        foreach ($historico as $registro) {
+            // Obter o ID do credenciado para este registro histórico
+            $id_credenciado = $registro->id_credenciado;
+
+            // Buscar o objeto de credenciado correspondente ao ID
+            $credenciado = credenciado::findOrFail($id_credenciado);
+
+            // Adicionar o objeto de credenciado ao array
+            $credenciados[] = $credenciado;
+        }
+
+        // Você pode fazer o que quiser com os objetos de credenciado aqui
+
+        // Retornar os registros históricos como uma resposta JSON
+        return response()->json($historico);
+    }
+
+    public function getHistoricocredenciado(Request $request)
+    {
+        $id = $request->get('id'); // Supondo que você definiu um ID aqui para teste
+        $credenciado = Credenciado::findOrFail($id);
+
+        // Array para armazenar os objetos de credenciado correspondentes a cada registro histórico
+        return response()->json(['nome_fantasia' => $credenciado->nome_fantasia]);
+
+    }
+
+
 }

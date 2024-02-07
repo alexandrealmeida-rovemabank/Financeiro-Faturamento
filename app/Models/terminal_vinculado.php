@@ -15,7 +15,7 @@ class terminal_vinculado extends Model
         'id_estoque',
         'id_credenciado',
         'status',
-        'id_chip',
+        'chip',
         'produto',
     ];
 
@@ -30,9 +30,6 @@ class terminal_vinculado extends Model
     {
         return $this->belongsTo(Estoque::class,'id_estoque');
     }
-    public function chip()
-    {
-        return $this->belongsTo(Estoque::class,'id_chip');
-    }
+
 
 }

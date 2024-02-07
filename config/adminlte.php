@@ -421,32 +421,34 @@ return [
                 [
                     'type' => 'js',
                     'asset' => false,
-                    'location' => 'cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js',
+                    'location' => '//cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js',
                 ],
                 [
                     'type' => 'css',
                     'asset' => false,
-                    'location' => '//cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css',
+                    'location' => '//cdn.datatables.net/1.10.25/css/dataTables.bootstrap5.min.css',
                 ],
-                [
-                    'type' => 'js',
-                    'asset' => false,
-                    'location' => '//cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js',
-                ],
-                // [
-                //     'type' => 'css',
-                //     'asset' => false,
-                //     'location' => '//cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css',
-                // ],
             ],
-            ],
-            // https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css
-            // <script>src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"</script>
-            // <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+        ],
 
-            // <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    'bootstrap-icons' => [
 
-        'bootstrap-icons' => [
+            'active' => TRUE,
+            'files'    =>[
+            [
+               'type' => 'css',
+               'asset' => false,
+               'location' => 'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css',
+           ],
+           [
+            'type' => 'js',
+            'asset' => false,
+            'location' => 'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js',
+        ],
+
+           ],
+        ],
+        'bootstrap' => [
 
             'active' => TRUE,
             'files'    =>[

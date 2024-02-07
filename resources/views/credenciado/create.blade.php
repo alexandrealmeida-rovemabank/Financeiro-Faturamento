@@ -90,6 +90,21 @@
               </div>
             </div>
         </div>
+        <div class="row">
+            <div class="col-sm-6">
+              <!-- text input -->
+              <div class="form-group">
+                <label>Telefone</label>
+                <input type="text" name="telefone" class="form-control" >
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label>Celular</label>
+                <input type="text" name="celular" class="form-control"  >
+              </div>
+            </div>
+        </div>
         {{-- selecionar produto --}}
         <div class="row">
             <div class="col-sm-6">
