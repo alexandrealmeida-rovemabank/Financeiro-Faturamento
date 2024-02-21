@@ -9,19 +9,65 @@
 @stop
 @section('content')
 @include('layouts.notificacoes')
+<div id="export-buttons">
+
+</div>
+<br>
+<br>
     <div class="card">
         <div class="card-header">
             <a href="{{route('credenciado.create')}}" class="btn btn-primary">Adicionar</a>
+
         </div>
 
         <div class="card-body">
             <table id="credenciados" class="table table-striped">
+                <div class="row">
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label for="filtro-status">Status: </label>
+                            <select class="form-control" id="filtro-status">
+                                <option class="dropdown-item" value="">Todos</option>
+                                <option class="dropdown-item" value="Inativo">Inativo</option>
+                                <option class="dropdown-item" value="Ativo">Ativo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label for="filtro-cidade">Cidade: </label>
+                            <select class="form-control" id="filtro-cidade">
+                                <option class="dropdown-item" value="">Todos</option>
+                                @foreach ($crend->unique('cidade') as $crendenciado)
+                                    <option value="{{ $crendenciado->cidade }}"> <a class="dropdown-item">{{ $crendenciado->cidade }}</a></option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label for="filtro-estado">Estado: </label>
+                            <select class="form-control" id="filtro-estado">
+                                <option class="dropdown-item" value="">Todos</option>
+                                @foreach ($crend->unique('estado') as $crendenciado)
+                                    <option value="{{ $crendenciado->estado }}"> <a class="dropdown-item">{{ $crendenciado->estado }}</a></option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+
                 <thead>
                     <tr>
                         <th>ID</th>
                         <th>Nome Fantasia</th>
                         <th>CNPJ</th>
                         <th>Produto</th>
+                        <th>Cidade</th>
+                        <th>Estado</th>
                         <th>Status</th>
                         <th>Ação</th>
                     </tr>
@@ -33,12 +79,18 @@
 
 
 @section('js')
-
-
-
 <script>
+
+
 $(document).ready(function() {
-    $('#credenciados').DataTable({
+    var table = $('#credenciados').DataTable({
+        lengthMenu: [
+            [10, 25, 50, 100, 200, -1],
+            [10, 25, 50, 100, 200, 'Todos'],
+        ],
+        dom: 'lBfrtip',
+        buttons: ['csv', 'excel', 'print', 'pdf'],
+        className: 'btn btn-success',
         "language": {
             url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Portuguese-Brasil.json',
         },
@@ -66,13 +118,50 @@ $(document).ready(function() {
                 }
 
             },
+            { data: 'cidade', name: 'cidade' },
+            { data: 'estado', name: 'estado' },
             { data: 'status', name: 'status' },
             { data: 'action', name: 'action', orderable: false, searchable: false},
         ],
         "pageLength": 10,
-        "lengthMenu": [10, 25, 50, 100, 200],
+        initComplete: function() {
+            $('.dataTables_filter').css('display', 'block');
+            $('.dataTables_filter').css('margin-top', '10px');
+            $('#export-buttons').append($('.dt-buttons'));
+        }
     });
+    $('#filtro-status').on('change', function() {
+    var status = this.value;
+    if (status) {
+        // Pesquisa exata
+        table.column(6).search('^' + status + '$', true, false).draw();
+    } else {
+        // Limpar o filtro se o valor for vazio
+        table.column(6).search('').draw();
+    }
 });
+    $('#filtro-estado').on('change', function() {
+    var prod = this.value;
+    if (prod) {
+        // Pesquisa exata
+        table.column(5).search('^' + prod + '$', true, false).draw();
+    } else {
+        // Limpar o filtro se o valor for vazio
+        table.column(5).search('').draw();
+    }
+});
+$('#filtro-cidade').on('change', function() {
+    var prod = this.value;
+    if (prod) {
+        // Pesquisa exata
+        table.column(4).search('^' + prod + '$', true, false).draw();
+    } else {
+        // Limpar o filtro se o valor for vazio
+        table.column(4).search('').draw();
+    }
+});
+});
+
 
 
 </script>

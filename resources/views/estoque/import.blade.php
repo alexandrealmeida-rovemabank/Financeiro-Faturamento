@@ -7,6 +7,7 @@
 
 @stop
 @section('content')
+@include('layouts.notificacoes')
 
     <div class="card card-primary">
         <div class="card-body">
@@ -15,7 +16,7 @@
               <div class="row">
                   <div class="col-sm-6">
                     <label>Lote</label>
-                    <select class="form-control" name="id_lote" id="id_lote" >
+                    <select class="form-control" required oninput="this.value = this.value.toUpperCase()" name="id_lote" id="id_lote" >
                         @foreach ($lote as $estoques)
                             <option><a class="dropdown-item">{{ $estoques->lote }}</a></option>
                         @endforeach
@@ -24,7 +25,7 @@
                   <div class="col-sm-6">
                     <div class="form-group">
                       <label>Arquivo xlsx</label>
-                      <input type="file" name="arquivo" class="form-control">
+                      <input type="file" name="arquivo" required oninput="this.value = this.value.toUpperCase()" class="form-control">
                     </div>
                   </div>
               </div>

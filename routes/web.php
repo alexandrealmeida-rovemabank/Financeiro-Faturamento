@@ -6,7 +6,9 @@ use App\Http\Controllers\AbastecimentoImpressaoController;
 use App\Http\Controllers\LoteController;
 use App\Http\Controllers\EstoqueController;
 use App\Http\Controllers\TerminalController;
+use App\Mail\mytestemail;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Mail;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,8 +21,19 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+
+Route::get('/testroute', function() {
+    $name = "Funny Coder";
+
+    Mail::to('alexandre.almeida@uzzipay.com')->send(new mytestemail($name));
+});
+
+
 Route::get('/', function () {
     return view('auth/login');
+});
+Route::get('/password/reset', function () {
+    return view('auth/forgot-password');
 });
 
 Route::get('/home', function () {
@@ -45,7 +58,10 @@ Route::get('/credenciado/index', [CredenciadoController::class, 'index'])->middl
 Route::get('/credenciado/create', function () {return view('credenciado.create');})->middleware(['auth', 'verified'])->name('credenciado.create');
 Route::post('/credenciado/store', [CredenciadoController::class, 'store'])->middleware(['auth', 'verified'])->name('credenciado.store');
 Route::get('/credenciado/editar/{id}', [CredenciadoController::class, 'edit'])->middleware(['auth', 'verified'])->name('credenciado.edit');
+Route::get('/credenciado/visualizar/{id}', [CredenciadoController::class, 'view'])->middleware(['auth', 'verified'])->name('credenciado.visualizar');
+Route::get('/credenciado/pdf/{id}', [CredenciadoController::class, 'gerarpdf'])->middleware(['auth', 'verified'])->name('credenciado.pdf');
 Route::put('/credenciado/atualizar/{id}', [CredenciadoController::class, 'update'])->middleware(['auth', 'verified'])->name('credenciado.atualizar');
+Route::get('/buscar-cnpj/{cnpj}', [CredenciadoController::class, 'buscarcnpj'])->middleware(['auth', 'verified'])->name('credenciado.cnpj');
 
 // Rotas impressão de cartões
 Route::get('/abastecimento/impressao/index', [AbastecimentoImpressaoController::class, 'index'])->middleware(['auth', 'verified'])->name('abastecimento.impressao.index');

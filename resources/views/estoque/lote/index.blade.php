@@ -86,7 +86,7 @@
                                     <div class="col-sm-6">
                                         <div class="form-group">
                                             <label>NF</label>
-                                            <input type="number" name="nf" id="nf" class="form-control">
+                                            <input type="text" name="nf" id="nf" class="form-control">
                                         </div>
                                     </div>
                                     <div class="col-sm-6">
@@ -147,7 +147,7 @@
                                     <div class="col-sm-6">
                                         <div class="form-group">
                                             <label>NF</label>
-                                            <input type="number" name="nf" id="edit-nf" class="form-control">
+                                            <input type="text" name="nf" id="edit-nf" class="form-control">
                                         </div>
                                     </div>
                                     <div class="col-sm-6">

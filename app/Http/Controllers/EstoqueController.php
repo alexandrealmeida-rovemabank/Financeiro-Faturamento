@@ -11,6 +11,7 @@ use App\Imports\import_ativos;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Readers\LaravelExcelReader;
 use DataTables;
+use Throwable;
 require_once 'actions.php';
 
 class EstoqueController extends Controller
@@ -20,6 +21,17 @@ class EstoqueController extends Controller
     {
         $lote = lote::all();
         $historico = historico_terminal::all();
+        // Para a coluna "modelo"
+        $modelosDistintos = estoque::distinct()->pluck('modelo');
+        // Para a coluna "lote"
+        $lotesDistintos = estoque::distinct()->pluck('id_lote');
+        // Para a coluna "categoria"
+        $categoriasDistintas = estoque::distinct()->pluck('categoria');
+        // Para a coluna "fabricante"
+        $fabricantesDistintos = estoque::distinct()->pluck('fabricante');
+        // Para a coluna "status"
+        $statusDistintos = estoque::distinct()->pluck('status');
+
         if ($request->ajax()) {
             $data = Estoque::with('lote')->get();
             return Datatables::of($data)
@@ -32,7 +44,7 @@ class EstoqueController extends Controller
         }
 
 
-        return view('estoque.index', compact('lote','historico'));
+        return view('estoque.index', compact('historico','modelosDistintos','lotesDistintos','categoriasDistintas','fabricantesDistintos','statusDistintos','lote'));
     }
 
      public function import()
@@ -51,7 +63,14 @@ class EstoqueController extends Controller
             'categoria' => 'required',
             'fabricante' => 'required',
             'modelo' => 'required',
-            'numero_serie' => 'required',
+            'numero_serie' => 'required|unique:estoque,numero_serie',
+        ],[
+            'id_lote.required' => 'O campo ID do lote é obrigatório.',
+            'categoria.required' => 'O campo categoria é obrigatório.',
+            'fabricante.required' => 'O campo fabricante é obrigatório.',
+            'modelo.required' => 'O campo modelo é obrigatório.',
+            'numero_serie.required' => 'O campo número de série é obrigatório.',
+            'numero_serie.unique' => 'O numero de série informado já está cadastrado.',
         ]);
 
 
@@ -71,25 +90,41 @@ class EstoqueController extends Controller
         return redirect()->route('estoque.index')->with('success', 'Ativo cadastrado com sucesso.');
     }
 
+
+
     public function processamento(Request $request)
     {
-        $request->validate([
-             'id_lote' => 'required',
-             'arquivo' => 'required',
-              ]);
 
-        //dd($request);
+            $request->validate([
+                'id_lote' => 'required',
+                'arquivo' => 'required',
+            ], [
+                'id_lote.required' => 'O campo lote é obrigatório.',
+                'arquivo.required' => 'É necessário selecionar um arquivo.',
+            ]);
+            try {
 
-        $data = $request->all();
-        $lote = Lote::where('lote', $request['id_lote'])->first();
-        $data['id_lote'] = $lote->id;
+            $data = $request->all();
+            $lote = Lote::where('lote', $request['id_lote'])->first();
 
+            if (!$lote) {
+                throw new \Exception('Lote não encontrado.');
+            }
 
-        $import = new import_ativos($lote->id);
-        Excel::import($import, request()->file('arquivo'));
+            $data['id_lote'] = $lote->id;
 
-        return redirect()->route('estoque.index')->with('success', 'Ativos importado com sucesso.');
+            $import = new import_ativos($lote->id);
+            Excel::import($import, request()->file('arquivo'));
+
+            return redirect()->route('estoque.index')->with('success', 'Ativos importados com sucesso.');
+        } catch (Throwable $e) {
+            // Log do erro
+            \Log::error($e);
+
+            return redirect()->back()->with('error', 'Ocorreu um erro durante a importação. Por favor, verifique seu arquivo e tente novamente. ' . $e->getMessage());
+        }
     }
+
 
     public function edit($id, Request $request)
     {
@@ -151,10 +186,10 @@ class EstoqueController extends Controller
             $credenciados[] = $credenciado;
         }
 
-        // Você pode fazer o que quiser com os objetos de credenciado aqui
 
         // Retornar os registros históricos como uma resposta JSON
         return response()->json($historico);
+        //dd($historico);
     }
 
     public function getHistoricocredenciado(Request $request)

@@ -1,0 +1,76 @@
+button.dt-button,div.dt-button,a.dt-button,input.dt-button {
+    background-color: #343a40;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    /* padding: 8px 16px; */
+    cursor: pointer;
+     margin-right: 2px;
+
+}
+.dt-button:hover {
+    background-color: #005640;
+}
+div.dt-buttons {
+    float: right;
+}
+
+
+#export-buttons {
+
+    text-align: right; /* Alinha os botões à direita */
+}
+
+.dataTables_filter {
+    text-align: left; /* Alinha o campo de pesquisa à esquerda */
+}
+.card-header-button{
+    float: inherit;
+    text-align-last: right;
+    padding: 5px;
+}
+
+.select2-container .select2-selection--single {
+    box-sizing: border-box;
+    cursor: pointer;
+    display: block;
+    height: 37px;
+    user-select: none;
+    -webkit-user-select: none;
+}
+.select2-container--default .select2-selection--single {
+    background-color: #fff;
+    border: 2px solid #aaa;
+    border-radius: 0.375rem;
+}
+
+/*  */
+
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.card {
+    margin-bottom: 20px;
+}
+
+.header-image,
+.footer-image {
+    max-width: 100%;
+}
+
+footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: #f8f9fa; /* Cor de fundo do rodapé */
+    padding: 20px 0;
+    text-align: center;
+}
+
+.footer-image {
+    margin-bottom: 10px;
+}

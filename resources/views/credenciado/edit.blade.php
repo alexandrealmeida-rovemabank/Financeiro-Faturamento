@@ -4,7 +4,7 @@
 
 @section('content_header')
 
-    <h1 class="m-0 text-dark">Adicionar Credendiado</h1>
+    <h1 class="m-0 text-dark">Editar Credendiado</h1>
 
 @stop
 
@@ -13,7 +13,7 @@
 
 <div class="card">
     <div class="card-header">
-      <h1 class="m-0 card-title text-dark">Dados Crendeciado</h1>
+      <h1 class="m-0 card-title text-dark">informações</h1>
     </div>
     <div class="card-body">
       <form action="{{route('credenciado.atualizar',[$credenciado->id]) }}" method="POST">
@@ -39,7 +39,7 @@
             <!-- text input -->
             <div class="form-group">
               <label>CNPJ</label>
-              <input type="text" name="cnpj" class="form-control" pattern="\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}" placeholder="01.123.456/0001-00" value="{{ $credenciado->cnpj_formatted }}" @disabled(true) >
+              <input type="text" name="cnpj" class="form-control" oninput="this.value = this.value.toUpperCase()" pattern="\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}" placeholder="01.123.456/0001-00" value="{{ $credenciado->cnpj_formatted }}" @disabled(true) >
 
 
             </div>
@@ -50,13 +50,13 @@
 
                 <div class="form-group">
                     <label>Nome Fantasia</label>
-                    <input type="text" name="nome_fantasia" class="form-control" placeholder="Uzzipay" value="{{ $credenciado->nome_fantasia }}" >
+                    <input type="text" name="nome_fantasia" class="form-control" required oninput="this.value = this.value.toUpperCase()" value="{{ $credenciado->nome_fantasia }}" >
                 </div>
             </div>
             <div class="col-sm-6">
               <div class="form-group">
                 <label>Razão Social</label>
-                <input type="text" name="razao_social" class="form-control" placeholder="Uzzipay LTDA" value="{{ $credenciado->razao_social }}">
+                <input type="text" name="razao_social" class="form-control" required oninput="this.value = this.value.toUpperCase()" value="{{ $credenciado->razao_social }}">
               </div>
             </div>
         </div>
@@ -66,13 +66,13 @@
               <!-- text input -->
               <div class="form-group">
                 <label>CEP</label>
-                <input type="text" name="cep" class="form-control" placeholder="76829-272" value="{{ $credenciado->cep }}">
+                <input type="text" name="cep" class="form-control" required oninput="this.value = this.value.toUpperCase()" value="{{ $credenciado->cep }}">
               </div>
             </div>
             <div class="col-sm-6">
               <div class="form-group">
                 <label>Endereço</label>
-                <input type="text" name="endereco" class="form-control" placeholder="Rua Abreu dos Anjos" value="{{ $credenciado->endereco }}" >
+                <input type="text" name="endereco" class="form-control" required oninput="this.value = this.value.toUpperCase()" value="{{ $credenciado->endereco }}" >
               </div>
             </div>
         </div>
@@ -81,13 +81,13 @@
               <!-- text input -->
               <div class="form-group">
                 <label>Número</label>
-                <input type="text" name="numero" class="form-control" placeholder="2765" value="{{ $credenciado->numero }}">
+                <input type="text" name="numero" class="form-control" required oninput="this.value = this.value.toUpperCase()" value="{{ $credenciado->numero }}">
               </div>
             </div>
             <div class="col-sm-6">
               <div class="form-group">
                 <label>Bairro</label>
-                <input type="text" class="form-control" name="bairro" placeholder="Solimões" value="{{ $credenciado->bairro }}">
+                <input type="text" class="form-control" name="bairro" required oninput="this.value = this.value.toUpperCase()" value="{{ $credenciado->bairro }}">
               </div>
             </div>
         </div>
@@ -96,13 +96,13 @@
               <!-- text input -->
               <div class="form-group">
                 <label>Cidade</label>
-                <input type="text" name="cidade" class="form-control" placeholder="Porto Velho" value="{{ $credenciado->cidade }}">
+                <input type="text" name="cidade" class="form-control" required oninput="this.value = this.value.toUpperCase()" value="{{ $credenciado->cidade }}">
               </div>
             </div>
             <div class="col-sm-6">
               <div class="form-group">
                 <label>Estado</label>
-                <input type="text" name="estado" class="form-control" placeholder="RO" value="{{ $credenciado->estado }}" >
+                <input type="text" name="estado" class="form-control" required oninput="this.value = this.value.toUpperCase()" value="{{ $credenciado->estado }}" >
               </div>
             </div>
         </div>
@@ -167,7 +167,8 @@
             <div class="col-sm-4">
                 <div class="form-group">
                     <label>Terminal</label>
-                    <select class="form-control" name="id_estoque" id="id_estoque" >
+
+                    <select class="form-control search" name="id_estoque" id="id_estoque">
                         @foreach ($estoques as $estoque)
                             @if($estoque->categoria == 'TERMINAL' & $estoque->status =="Disponível" )
                                 <option><a class="dropdown-item">{{ $estoque->numero_serie }}</a></option>
@@ -179,7 +180,7 @@
             <div class="col-sm-4">
                 <div class="form-group">
                     <label>Chip</label>
-                    <select class="form-control" name="chip" id="chip" >
+                    <select class="form-control search" name="chip" id="chip" >
                         <option><a class="dropdown-item">Sem Chip</a></option>
                         @foreach ($estoques as $estoque)
                             @if($estoque->categoria == 'CHIP' & $estoque->status =="Disponível")
@@ -192,7 +193,7 @@
             <div class="col-sm-4">
                 <div class="form-group">
                     <label>Produto</label>
-                    <select class="form-control" name="produto" id="produto" >
+                    <select class="form-control search" name="produto" id="produto" >
                         @if (str_contains($credenciado->produto, 'BIONIO'))
                             <option><a class="dropdown-item">BIONIO</a></option>
                         @endif
@@ -259,3 +260,19 @@
 
 
 @stop
+@section('css')
+
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+@endsection
+
+@section('js')
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('.search').select2();
+    });
+</script>
+
+
+@endsection

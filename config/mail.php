@@ -100,7 +100,7 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
+        'address' => env('MAIL_FROM_ADDRESS', 'no-replay@uzzipay.com'),
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 

@@ -11,6 +11,7 @@ use App\Imports\YourImport;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Readers\LaravelExcelReader;
 use DataTables;
+use Throwable;
 require_once 'actions.php';
 
 class AbastecimentoImpressaoController extends Controller
@@ -18,6 +19,8 @@ class AbastecimentoImpressaoController extends Controller
 
     public function index(Request $request)
     {
+
+        $lote_impressao = lote_impressao::all();
         if ($request->ajax()) {
             $data = lote_impressao::latest()->get();
             return Datatables::of($data)
@@ -29,7 +32,7 @@ class AbastecimentoImpressaoController extends Controller
                     ->make(true);
         }
 
-        return view('abastecimento.impressao.index');
+        return view('abastecimento.impressao.index', compact('lote_impressao'));
     }
 
     public function importar()
@@ -40,29 +43,45 @@ class AbastecimentoImpressaoController extends Controller
 
 
 
+
+
     public function processamento(Request $request)
     {
-        $request->validate([
-             'lote' => 'required',
-             'cliente' => 'required',
-             'arquivo' => 'required',
-              ]);
 
-        $data = $request->all();
+            $request->validate([
+                'lote' => 'required|unique:lote_impressao,lote',
+                'cliente' => 'required',
+                'arquivo' => 'required',
+            ], [
+                'lote.required' => 'O campo lote é obrigatório.',
+                'lote.unique' => 'O lote informado já está cadastrado.',
+                'cliente.required' => 'O campo cliente é obrigatório.',
+                'arquivo.required' => 'O campo arquivo é obrigatório.',
+            ]);
+            try {
 
-        $data['status_impressao'] = $data['status_impressao'] ?? 'Importado';
-        $data['data_importacao'] = $data['data_importacao'] ?? now();
-        $data['data_alteracao'] = $data['data_alteracao'] ?? now();
+            $data = $request->all();
+            $data['status_impressao'] = $data['status_impressao'] ?? 'Importado';
+            $data['data_importacao'] = $data['data_importacao'] ?? now();
+            $data['data_alteracao'] = $data['data_alteracao'] ?? now();
 
-        $lote_impressao = new lote_impressao;
-        $lote_impressao = lote_impressao::create($data);
+            $lote_impressao = new lote_impressao;
+            $lote_impressao = lote_impressao::create($data);
 
-        // Importar os dados usando YourImport
-        $import = new YourImport($lote_impressao->id);
-        Excel::import($import, request()->file('arquivo'));
+            // Importar os dados usando YourImport
+            $import = new YourImport($lote_impressao->id);
+            Excel::import($import, request()->file('arquivo'));
 
-        return redirect()->route('abastecimento.impressao.index')->with('success', 'Lote Criado e cartões importados com sucesso!.');
+            return redirect()->route('abastecimento.impressao.index')->with('success', 'Lote criado e cartões importados com sucesso!');
+        } catch (Throwable $e) {
+            // Log do erro
+            \Log::error($e);
+
+            return redirect()->back()->with('error', 'Ocorreu um erro durante o processamento. Por favor verifique seu arquivo e tente novamente. ' . $e->getMessage());
+
+        }
     }
+
 
     public function Editar_lote(Request $request, $id)
     {

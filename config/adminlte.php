@@ -423,15 +423,52 @@ return [
                     'asset' => false,
                     'location' => '//cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js',
                 ],
+                 [
+                     'type' => 'css',
+                     'asset' => false,
+                    'location' => '//cdn.datatables.net/1.10.25/css/dataTables.bootstrap5.min.css',
+                 ],
+                 [
+                     'type' => 'js',
+                     'asset' => false,
+                     'location' => '//cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js',
+                 ],
+                [
+                    'type' => 'js',
+                    'asset' => false,
+                    'location' => '//cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js',
+                ],
+                [
+                    'type' => 'js',
+                    'asset' => false,
+                    'location' => '//cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js',
+                ],
+                [
+                    'type' => 'js',
+                    'asset' => false,
+                    'location' => '//cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js',
+                ],
                 [
                     'type' => 'css',
                     'asset' => false,
-                    'location' => '//cdn.datatables.net/1.10.25/css/dataTables.bootstrap5.min.css',
+                    'location' => '//cdn.datatables.net/buttons/2.2.2/css/buttons.dataTables.min.css',
                 ],
+                [
+                    'type' => 'js',
+                    'asset' => false,
+                    'location' => '//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js',
+                ],
+                [
+                    'type' => 'js',
+                    'asset' => false,
+                    'location' => '//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js',
+                ],
+ 
+
             ],
         ],
 
-    'bootstrap-icons' => [
+        'bootstrap-icons' => [
 
             'active' => TRUE,
             'files'    =>[
@@ -456,12 +493,14 @@ return [
                'type' => 'css',
                'asset' => false,
                'location' => '//cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css',
-           ],
+            ],
+
+
 
            ],
         ],
         'Select2' => [
-            'active' => false,
+            'active' => TRUE,
             'files' => [
                 [
                     'type' => 'js',

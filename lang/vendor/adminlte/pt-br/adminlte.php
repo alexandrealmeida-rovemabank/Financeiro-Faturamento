@@ -25,4 +25,6 @@ return [
     'verify_if_not_recieved'      => 'caso não tenha recebido o email',
     'verify_request_another'      => 'clique aqui para solicitar um novo',
     'confirm_password_message'    => 'Por favor, confirme sua senha para continuar.',
+    'We have emailed your password reset link!'=> 'Enviamos o link de redefinição de senha para o seu e-mail!',
+    'The password field is required' => 'O campo de senha é necessária.',
 ];

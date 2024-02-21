@@ -1,6 +1,6 @@
 @extends('adminlte::page')
 
-@section('title', 'Credenciados')
+@section('title', 'Cartões' )
 
 @section('content_header')
     <h1 class="m-0 text-dark">Editar Lote</h1>
@@ -8,6 +8,12 @@
 
 @section('content')
 @include('layouts.notificacoes')
+<div id="export-buttons">
+
+</div>
+<br>
+<br>
+
 <div class="card">
     <div class="card-body">
         <table class="table table-striped" id="impressoes"  class="display">
@@ -96,6 +102,7 @@
 @stop
 
 
+
  @section('js')
     <script>
          var idLote = "{{ $lote->id }}";
@@ -104,9 +111,15 @@
 
 
         $(document).ready(function() {
-            $('#impressoes').DataTable({
-                "language": {
-                    url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Portuguese-Brasil.json',
+            var table = $('#impressoes').DataTable({
+                lengthMenu: [
+                    [10, 25, 50, 100, 200, -1],
+                    [10, 25, 50, 100, 200, 'Todos'],
+                ],
+                    dom: 'lBfrtip',
+                    buttons: ['csv', 'excel', 'print', 'pdf'],
+                    "language": {
+                        url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Portuguese-Brasil.json',
                 },
                 processing: true,
                 serverSide: true,
@@ -123,7 +136,11 @@
                         { data: 'action', name: 'action', orderable: false, searchable: false},
                 ],
                 "pageLength": 10,
-                "lengthMenu": [10, 25, 50, 100, 200],
+                initComplete: function() {
+                $('.dataTables_filter').css('display', 'block');
+                $('.dataTables_filter').css('margin-top', '10px');
+                $('#export-buttons').append($('.dt-buttons'));
+            }
 
             });
 

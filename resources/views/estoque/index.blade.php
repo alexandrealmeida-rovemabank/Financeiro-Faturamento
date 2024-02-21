@@ -13,7 +13,11 @@
 @section('content')
 
     @include('layouts.notificacoes')
+    <div id="export-buttons">
 
+    </div>
+    <br>
+    <br>
     <div class="card">
         <div class="card-header">
             <button data-bs-toggle="modal" data-bs-target="#modalCreate" class="btn btn-primary btn-add">Adicionar </button>
@@ -25,6 +29,67 @@
 
         <div class="card-body">
             <table id="estoque" class="table table-striped" class="display">
+                <div class="row">
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label for="filtro-lote">Lote: </label>
+                            <select class="form-control" id="filtro-lote">
+                                <option class="dropdown-item" value="">Todos</option>
+                                @foreach ($lote->unique('lote') as $estoq)
+                                    <option value="{{ $estoq->lote }}"> <a class="dropdown-item">{{ $estoq->lote }}</a></option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label for="filtro-categoria">Categoria: </label>
+                            <select class="form-control" id="filtro-categoria">
+                                <option class="dropdown-item" value="">Todos</option>
+                                @foreach ($categoriasDistintas as $estoq)
+                                    <option value="{{ $estoq}}"> <a class="dropdown-item">{{ $estoq }}</a></option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label for="filtro-fabricante">Fabricante: </label>
+                            <select class="form-control" id="filtro-fabricante">
+                                <option class="dropdown-item" value="">Todos</option>
+                                @foreach ($fabricantesDistintos as $estoq)
+                                    <option value="{{ $estoq }}"> <a class="dropdown-item">{{ $estoq}}</a></option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label for="filtro-modelo">Modelo: </label>
+                            <select class="form-control" id="filtro-modelo">
+                                <option class="dropdown-item" value="">Todos</option>
+                                @foreach ($modelosDistintos as $estoq)
+                                    <option value="{{ $estoq }}"> <a class="dropdown-item">{{ $estoq}}</a></option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label for="filtro-status">Status: </label>
+                            <select class="form-control" id="filtro-status">
+                                <option class="dropdown-item" value="">Todos</option>
+                                @foreach ($statusDistintos as $estoq)
+                                    <option value="{{ $estoq}}"> <a class="dropdown-item">{{ $estoq}}</a></option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -38,35 +103,7 @@
                     </tr>
                 </thead>
 
-                 {{-- <tbody>
-                    @foreach($estoque as $estoques)
 
-                    <tr>
-                        <td>{{ $estoques->id }}</td>
-                        <td>{{ $estoques->lote->lote }}</td>
-                        <td>{{ $estoques->categoria }}</td>
-                        <td>{{ $estoques->fabricante }}</td>
-                        <td>{{ $estoques->modelo }}</td>
-                        <td>{{ $estoques->numero_serie }}</td>
-                        <td>{{ $estoques->status }}</td>
-                        <td style="vertical-align: middle">
-                             <div class="btn-group" role="group">
-                                <button type="button" class="btn btn-primary dropdown-toggle " data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bi bi-three-dots-vertical"></i>
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li><a href="{{route('estoque.historico', $estoques->id)}}" class="dropdown-item">Histórico</a></li>
-                                    <li><a type="button" class="dropdown-item btn-editar"  data-bs-toggle="modal" data-bs-target="#modalEditar"
-                                        data-id="{{ $estoques->id }}" data-categoria="{{ $estoques->categoria }}" data-id_lote="{{ $estoques->lote->lote }}" data-fabricante="{{ $estoques->fabricante }}" data-modelo="{{ $estoques->modelo }}"
-                                        data-numero_serie="{{ $estoques->numero_serie }}" data-status="{{ $estoques->status }}" data-observacao="{{ $estoques->observacao }}" >Editar</a></li>
-                                    <li><a href="{{route('estoque.excluir', $estoques->id)}}" class="dropdown-item">Excluir</a></li>
-                                </ul>
-                            </div>
-
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody> --}}
 
             </table>
         </div>
@@ -271,19 +308,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {{-- @foreach($historico as $historicos)
 
-                        @if ($historicos->estoque->id == old('hist-id'))
-                        <!-- Aqui você pode adicionar as linhas da tabela dinamicamente com seus dados -->
-                        <tr>
-                            <td>{{$historicos->credenciado->nome_fantasia}}</td>
-                            <td>{{$historicos->produto}}</td>
-                            <td>{{$historicos->acao}}</td>
-                            <td>{{ strftime('%d/%m/%Y %H:%M:%S', strtotime($historicos->data)) }}</td>
-                            <td>{{$historicos->usuario}}</td>
-                        </tr>
-                        @endif
-                        @endforeach --}}
                     </tbody>
                 </table>
             </div>
@@ -298,7 +323,14 @@
 @section('js')
 <script>
     $(document).ready(function() {
-        $('#estoque').DataTable({
+       var table = $('#estoque').DataTable({
+            lengthMenu: [
+                [10, 25, 50, 100, 200, -1],
+                [10, 25, 50, 100, 200, 'Todos'],
+            ],
+            dom: 'lBfrtip',
+            buttons: ['csv', 'excel', 'print', 'pdf'],
+            className: 'btn btn-success',
             "language": {
                 url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Portuguese-Brasil.json',
             },
@@ -316,11 +348,64 @@
                 { data: 'action', name: 'action', orderable: false, searchable: false},
             ],
             "pageLength": 10,
-            "lengthMenu": [10, 25, 50, 100, 200],
-
-        });
-
+        initComplete: function() {
+            $('.dataTables_filter').css('display', 'block');
+            $('.dataTables_filter').css('margin-top', '10px');
+            $('#export-buttons').append($('.dt-buttons'));
+        }
     });
+        $('#filtro-lote').on('change', function() {
+            var lote = this.value;
+            if (lote) {
+                // Pesquisa exata
+                table.column(1).search('^' + lote + '$', true, false).draw();
+            } else {
+                // Limpar o filtro se o valor for vazio
+                table.column(1).search('').draw();
+            }
+        });
+            $('#filtro-categoria').on('change', function() {
+            var categ = this.value;
+            if (categ) {
+                // Pesquisa exata
+                table.column(2).search('^' + categ + '$', true, false).draw();
+            } else {
+                // Limpar o filtro se o valor for vazio
+                table.column(2).search('').draw();
+            }
+        });
+        $('#filtro-fabricante').on('change', function() {
+            var fab = this.value;
+            if (fab) {
+                // Pesquisa exata
+                table.column(3).search('^' + fab + '$', true, false).draw();
+            } else {
+                // Limpar o filtro se o valor for vazio
+                table.column(3).search('').draw();
+            }
+        });
+        $('#filtro-modelo').on('change', function() {
+            var mod = this.value;
+            if (mod) {
+                // Pesquisa exata
+                table.column(4).search('^' + mod + '$', true, false).draw();
+            } else {
+                // Limpar o filtro se o valor for vazio
+                table.column(4).search('').draw();
+            }
+        });
+        $('#filtro-status').on('change', function() {
+            var status = this.value;
+            if (status) {
+                // Pesquisa exata
+                table.column(6).search('^' + status + '$', true, false).draw();
+            } else {
+                // Limpar o filtro se o valor for vazio
+                table.column(6).search('').draw();
+            }
+        });
+});
+
 </script>
 
 
@@ -383,7 +468,7 @@ $(document).ready(function () {
 
 });
 
-    $(document).ready(function () {
+$(document).ready(function () {
     $(document).on('click', '.btn-historico', function () {
         var id = $(this).attr('data-id');
         var numero_serie_his = $(this).attr('data-numero_serie');
@@ -419,7 +504,7 @@ $(document).ready(function () {
     success: function(data) {
         var tbody = $('#historico tbody');
         tbody.empty();
-        
+
         data.sort(function(a, b) {
             return new Date(b.data) - new Date(a.data);
         });
@@ -428,7 +513,7 @@ $(document).ready(function () {
             // Divida a string da data em partes (data e hora)
         // Divida a string da data em partes (data e hora)
         var partesDataHora = registro.data.split(' ');
-
+        console.log();
         // Divida a string da data em partes (ano, mês e dia)
         var partesData = partesDataHora[0].split('-');
 

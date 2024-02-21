@@ -6,6 +6,9 @@ use App\Models\Estoque;
 use App\Models\terminal_vinculado;
 use Illuminate\Http\Request;
 use DataTables;
+use Dompdf\Dompdf;
+use Dompdf\Options;
+use PDF;
 require_once 'actions.php';
 
 class CredenciadoController extends Controller
@@ -20,6 +23,7 @@ class CredenciadoController extends Controller
     public function index(Request $request)
     {
         $estoques = Estoque::all();
+        $crend = Credenciado::all();
         if ($request->ajax()) {
             $data = Credenciado::latest()->get();
             return Datatables::of($data)
@@ -31,24 +35,35 @@ class CredenciadoController extends Controller
                     ->make(true);
         }
 
-        return view('credenciado.index', compact('estoques'));
+        return view('credenciado.index', compact('estoques','crend'));
     }
 
     public function store(Request $request)
     {
+        $request->validate([
+            'cnpj' => 'required|cnpj_unique',
+            'nome_fantasia' => 'required',
+            'razao_social' => 'required',
+            'cep' => 'required',
+            'endereco' => 'required',
+            'bairro' => 'required',
+            'numero' => 'required',
+            'cidade' => 'required',
+            'estado' => 'required',
+            'produto' => 'nullable|array',
+        ], [
+            'cnpj.required' => 'O CNPJ é obrigatório.',
+            'cnpj_unique' => 'Este CNPJ já está cadastrado.',
+            'nome_fantasia.required' => 'O nome fantasia é obrigatório.',
+            'razao_social.required' => 'A razão social é obrigatória.',
+            'cep.required' => 'O CEP é obrigatório.',
+            'endereco.required' => 'O endereço é obrigatório.',
+            'bairro.required' => 'O bairro é obrigatório.',
+            'numero.required' => 'O número é obrigatório.',
+            'cidade.required' => 'A cidade é obrigatória.',
+            'estado.required' => 'O estado é obrigatório.',
+        ]);
 
-         $request->validate([
-             'cnpj' => 'required|unique:credenciado,cnpj',
-             'nome_fantasia' => 'required',
-             'razao_social' => 'required',
-             'cep' => 'required',
-             'endereco' => 'required',
-             'bairro' => 'required',
-             'numero' => 'required',
-             'cidade' => 'required',
-             'estado' => 'required',
-             'produto' => 'nullable|array',// Certifique-se de que é um array
-         ]);
          $data = $request->all();
 
          $data['cnpj'] = preg_replace('/[^0-9]/', '', $data['cnpj']);
@@ -76,6 +91,14 @@ class CredenciadoController extends Controller
 
         return view('credenciado.edit', compact('credenciado', 'estoques','terminal'));
     }
+    public function view($id)
+    {
+        $credenciado = Credenciado::findOrFail($id);
+        $estoques = Estoque::all();
+        $terminal = Terminal_Vinculado::all();
+
+        return view('credenciado.view', compact('credenciado', 'estoques','terminal'));
+    }
 
     // SeuControlador.php
 
@@ -97,7 +120,18 @@ class CredenciadoController extends Controller
               'estado' => 'required',
               'status' => 'required',
              'produto' => 'nullable|array',
-          ]);
+          ],
+          [
+            'nome_fantasia.required' => 'O nome fantasia é obrigatório.',
+            'razao_social.required' => 'A razão social é obrigatória.',
+            'cep.required' => 'O CEP é obrigatório.',
+            'endereco.required' => 'O endereço é obrigatório.',
+            'bairro.required' => 'O bairro é obrigatório.',
+            'numero.required' => 'O número é obrigatório.',
+            'cidade.required' => 'A cidade é obrigatória.',
+            'estado.required' => 'O estado é obrigatório.',
+            'status.required' => 'O status do cliente é obrigatorio.',
+        ]);
 
           $data = $request->all();
 
@@ -116,5 +150,60 @@ class CredenciadoController extends Controller
 
         return redirect()->route('credenciado.index')->with('success', 'Cadastro do estabelecimento atualizado om sucesso!!.');
     }
+
+
+
+
+    public function gerarPDF($id)
+    {
+        $credenciado = Credenciado::findOrFail($id);
+        $estoques = Estoque::all();
+        $terminal = Terminal_Vinculado::all();
+
+        // Configuração do Dompdf
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+
+        $dompdf = new Dompdf($options);
+
+        // Renderizando a view do PDF
+        $html = view('credenciado.pdf', compact('credenciado', 'terminal', 'estoques'))->render();
+
+        // Carregando o HTML no Dompdf
+        $dompdf->loadHtml($html);
+
+        // Definindo o tamanho do papel e a orientação
+        $dompdf->setPaper('A4', 'portrait');
+
+        // Renderizando o PDF
+        $dompdf->render();
+
+        // Retornar o PDF como resposta
+        return $dompdf->stream('credenciado.pdf');
+    }
+
+
+    public function buscarcnpj($cnpj)
+
+{
+
+
+
+    // Aqui você pode usar a biblioteca GuzzleHttp para fazer a requisição para a API
+    $client = new \GuzzleHttp\Client();
+    $response = $client->request('GET', 'https://brasilapi.com.br/api/cnpj/v1/' . $cnpj);
+
+    // Verifique se a requisição foi bem sucedida
+    if ($response->getStatusCode() == 200) {
+        // Retorne os dados em formato JSON
+        return response()->json(json_decode($response->getBody()->getContents()));
+    } else {
+        // Retorne um erro se a requisição falhar
+        return response()->json(['error' => 'Não foi possível buscar os dados do CNPJ.'], $response->getStatusCode());
+
+    }
+}
+
+
 
 }

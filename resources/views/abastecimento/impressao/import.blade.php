@@ -10,7 +10,7 @@
 
 @stop
 @section('content')
-
+@include('layouts.notificacoes')
 
 
         <div class="card card-primary">
@@ -22,7 +22,7 @@
                   <!-- text input -->
                   <div class="form-group">
                     <label>Lote</label>
-                    <input type="text" name="lote" class="form-control" placeholder="LT00001">
+                    <input type="text" oninput="this.value = this.value.toUpperCase()" required name="lote" class="form-control" placeholder="LT00001">
 
                   </div>
                 </div>
@@ -32,13 +32,13 @@
 
                       <div class="form-group">
                           <label>Cliente</label>
-                          <input type="text" name="cliente" class="form-control" placeholder="Uzzipay" >
+                          <input type="text" name="cliente" oninput="this.value = this.value.toUpperCase()" required class="form-control" placeholder="Uzzipay" >
                       </div>
                   </div>
                   <div class="col-sm-6">
                     <div class="form-group">
                       <label>Arquivo xlsx</label>
-                      <input type="file" name="arquivo" class="form-control">
+                      <input type="file" name="arquivo" required oninput="this.value = this.value.toUpperCase()" class="form-control">
                     </div>
                   </div>
               </div>

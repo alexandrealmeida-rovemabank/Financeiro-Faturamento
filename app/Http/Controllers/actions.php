@@ -28,7 +28,7 @@ function button_credenciado($row){
         <i class="bi bi-three-dots-vertical"></i>
     </button>
     <ul class="dropdown-menu">
-        <li><a href="'.route('credenciado.edit', $row->id).'" class="dropdown-item">Visualizar</a></li>
+        <li><a href="'.route('credenciado.visualizar', $row->id).'" class="dropdown-item">Visualizar</a></li>
         <li><a href="'.route('credenciado.edit', $row->id).'" class="dropdown-item">Editar</a></li>';
 
 if($row->status == "Ativo") {
