@@ -146,7 +146,7 @@
             </div>
         </div>
 
-        <button type="submit" class="btn btn-primary">Salvar</button>
+        <button type="submit" class="btn btn-success">Salvar</button>
     </form>
 
 
@@ -208,7 +208,7 @@
             </div>
             <div class="col-sm-4" >
                 <div class="form-group" style="display: block">
-                    <button type="submit" class="btn btn-primary">Adicionar</button>
+                    <button type="submit" class="btn btn-success">Adicionar</button>
                 </div>
             </div>
 
@@ -241,7 +241,7 @@
                     <td>{{ $terminais->chip }}</td>
                     <td>{{ $terminais->produto }}</td>
                     <td>{{ $terminais->created_at}}</td>
-                    <td> <a class="btn btn-primary" href="{{ route('terminal.desvincular', $terminais->id) }}" type="submit">Desvincular</a> </td>
+                    <td> <a class="btn btn-success" href="{{ route('terminal.desvincular', $terminais->id) }}" type="submit">Desvincular</a> </td>
                 </tr>
                 @endif
                @endforeach

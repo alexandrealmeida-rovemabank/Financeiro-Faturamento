@@ -16,7 +16,7 @@
 <br>
     <div class="card">
         <div class="card-header">
-            <a href="{{route('credenciado.create')}}" class="btn btn-primary">Adicionar</a>
+            <a href="{{route('credenciado.create')}}" class="btn btn-success">Adicionar</a>
 
         </div>
 

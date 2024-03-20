@@ -56,8 +56,6 @@ class EstoqueController extends Controller
 
     public function create(Request $request)
     {
-
-
         $request->validate([
             'id_lote' => 'required',
             'categoria' => 'required',
@@ -72,7 +70,6 @@ class EstoqueController extends Controller
             'numero_serie.required' => 'O campo número de série é obrigatório.',
             'numero_serie.unique' => 'O numero de série informado já está cadastrado.',
         ]);
-
 
         $data = $request->all();
         $data['status'] = $data['status'] ?? 'Disponível';
@@ -90,11 +87,8 @@ class EstoqueController extends Controller
         return redirect()->route('estoque.index')->with('success', 'Ativo cadastrado com sucesso.');
     }
 
-
-
     public function processamento(Request $request)
     {
-
             $request->validate([
                 'id_lote' => 'required',
                 'arquivo' => 'required',
@@ -124,7 +118,6 @@ class EstoqueController extends Controller
             return redirect()->back()->with('error', 'Ocorreu um erro durante a importação. Por favor, verifique seu arquivo e tente novamente. ' . $e->getMessage());
         }
     }
-
 
     public function edit($id, Request $request)
     {

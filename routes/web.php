@@ -6,9 +6,13 @@ use App\Http\Controllers\AbastecimentoImpressaoController;
 use App\Http\Controllers\LoteController;
 use App\Http\Controllers\EstoqueController;
 use App\Http\Controllers\TerminalController;
+use App\Http\Controllers\LogisticaController;
 use App\Mail\mytestemail;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
+use App\Models\parametros_correios_cartao;
+use App\Models\User;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -37,12 +41,13 @@ Route::get('/password/reset', function () {
 });
 
 Route::get('/home', function () {
-    return view('home');
+    $user = auth()->user();
+    return view('home',compact('user'));
 })->middleware(['auth', 'verified'])->name('home');
 
-Route::get('/dashboard', function () {
-    return view('home');
-})->middleware(['auth', 'verified'])->name('home');
+// Route::get('/dashboard', function () {
+//     return view('home');
+// })->middleware(['auth', 'verified'])->name('home');
 
 
 Route::middleware('auth')->group(function () {
@@ -60,8 +65,10 @@ Route::post('/credenciado/store', [CredenciadoController::class, 'store'])->midd
 Route::get('/credenciado/editar/{id}', [CredenciadoController::class, 'edit'])->middleware(['auth', 'verified'])->name('credenciado.edit');
 Route::get('/credenciado/visualizar/{id}', [CredenciadoController::class, 'view'])->middleware(['auth', 'verified'])->name('credenciado.visualizar');
 Route::get('/credenciado/pdf/{id}', [CredenciadoController::class, 'gerarpdf'])->middleware(['auth', 'verified'])->name('credenciado.pdf');
+// Route::get('/credenciado/pdf2/{id}', [CredenciadoController::class, 'gerarpdf2'])->middleware(['auth', 'verified'])->name('credenciado.pdf');
 Route::put('/credenciado/atualizar/{id}', [CredenciadoController::class, 'update'])->middleware(['auth', 'verified'])->name('credenciado.atualizar');
 Route::get('/buscar-cnpj/{cnpj}', [CredenciadoController::class, 'buscarcnpj'])->middleware(['auth', 'verified'])->name('credenciado.cnpj');
+
 
 // Rotas impressão de cartões
 Route::get('/abastecimento/impressao/index', [AbastecimentoImpressaoController::class, 'index'])->middleware(['auth', 'verified'])->name('abastecimento.impressao.index');
@@ -99,5 +106,31 @@ Route::get('/terminal/desvincular/{id}', [TerminalController::class, 'desvincula
 // Route::get('/estoque/edit/{id}', [EstoqueController::class, 'edit'])->middleware(['auth', 'verified'])->name('estoque.edit');
 // Route::get('/estoque/excluir/{id}', [EstoqueController::class, 'excluir'])->middleware(['auth', 'verified'])->name('estoque.excluir');
 // Route::get('/estoque/historico/{id}', [EstoqueController::class, 'historico'])->middleware(['auth', 'verified'])->name('estoque.historico');
+
+
+//Lojistica
+
+Route::get('/logistica/correios/index', [LogisticaController::class, 'index_correios'])->middleware(['auth', 'verified'])->name('logistica.correios.index');
+Route::get('/logistica/correios/create',  function () { $parametros = parametros_correios_cartao::all();  return view('logistica.correios.create', compact('parametros'));} )->middleware(['auth', 'verified'])->name('logistica.correios.create');
+Route::post('/logistica/correios/solicitarPostagemReversa', [LogisticaController::class, 'solicitarPostagemReversa'])->middleware(['auth', 'verified'])->name('logistica.correios.solicitarPostagemReversa');
+Route::get('/logistica/correios/buscarCartao/{contratoSelecionado}',  [LogisticaController::class, 'buscarNumerosCartao'])->middleware(['auth', 'verified'])->name('logistica.correios.buscar-numeros-cartao');
+Route::get('/logistica/correios/cancelar/{id}', [LogisticaController::class, 'cancelarPedido'])->middleware(['auth', 'verified'])->name('logistica.correios.cancelar');
+Route::get('/logistica/correios/visualizar/{id}', [LogisticaController::class, 'view'])->middleware(['auth', 'verified'])->name('logistica.correios.visualizar');
+Route::get('/logistica/correios/rastreio',  function () {return view('logistica.correios.rastreio');} )->middleware(['auth', 'verified'])->name('logistica.correios.rastreio');
+Route::post('/logistica/correios/rastrear', [LogisticaController::class,'rastrear'])->middleware(['auth', 'verified'])->name('logistica.correios.rastrear');
+
+
+
+
+Route::get('/logistica/correios/consultarPedido', [LogisticaController::class, 'acompanharPedido'])->middleware(['auth', 'verified'])->name('logistica.correios.consultarPedido');
+// Route::get('/estoque/index/historico', [EstoqueController::class, 'getHistorico'])->middleware(['auth', 'verified'])->name('estoque.historico');
+// Route::get('/estoque/index/historico/credenciado', [EstoqueController::class, 'getHistoricocredenciado'])->middleware(['auth', 'verified'])->name('estoque.historico.credenciado');
+// Route::post('/estoque/create', [EstoqueController::class, 'create'])->middleware(['auth', 'verified'])->name('estoque.create');
+// Route::get('/estoque/import', [EstoqueController::class, 'import'])->middleware(['auth', 'verified'])->name('estoque.import');
+// Route::post('/estoque/processamento', [EstoqueController::class, 'processamento'])->middleware(['auth', 'verified'])->name('estoque.processamento');
+// Route::get('/estoque/edit/{id}', [EstoqueController::class, 'edit'])->middleware(['auth', 'verified'])->name('estoque.edit');
+// Route::get('/estoque/excluir/{id}', [EstoqueController::class, 'excluir'])->middleware(['auth', 'verified'])->name('estoque.excluir');
+// Route::get('/estoque/historico/{id}', [EstoqueController::class, 'historico'])->middleware(['auth', 'verified'])->name('estoque.historico');
+
 
 require __DIR__.'/auth.php';

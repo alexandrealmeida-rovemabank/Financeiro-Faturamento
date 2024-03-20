@@ -9,7 +9,7 @@
 @section('content')
 @include('layouts.notificacoes')
 
-    <div class="card card-primary">
+    <div class="card card-success">
         <div class="card-body">
             <form action="{{route('estoque.processamento')}}" method="POST" enctype="multipart/form-data">
               @csrf
@@ -30,7 +30,7 @@
                   </div>
               </div>
 
-              <button type="submit" class="btn btn-primary">Processar</button>
+              <button type="submit" class="btn btn-success">Processar</button>
             </form>
         </div>
         </div>

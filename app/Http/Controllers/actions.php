@@ -2,7 +2,7 @@
 
 function button_estoque($row) {
     $btn = '<div class="btn-group" role="group">
-                <button type="button" class="btn btn-primary dropdown-toggle " data-bs-toggle="dropdown" aria-expanded="false">
+                <button type="button" class="btn btn-success dropdown-toggle " data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-three-dots-vertical"></i>
                 </button>
                 <ul class="dropdown-menu">
@@ -24,7 +24,7 @@ function button_estoque($row) {
 function button_credenciado($row){
 
     $btn = '<div class="btn-group" role="group">
-    <button type="button" class="btn btn-primary dropdown-toggle " data-bs-toggle="dropdown" aria-expanded="false">
+    <button type="button" class="btn btn-success dropdown-toggle " data-bs-toggle="dropdown" aria-expanded="false">
         <i class="bi bi-three-dots-vertical"></i>
     </button>
     <ul class="dropdown-menu">
@@ -48,7 +48,7 @@ return $btn;
 
 function button_lote_cartoes($row){
     $btn ='<div class="btn-group" role="group">
-    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+    <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
         <i class="bi bi-three-dots-vertical"></i>
     </button>
     <ul class="dropdown-menu">
@@ -67,7 +67,7 @@ function button_lote_cartoes($row){
 function button_lote_cartoes_impressao_editar($row, $status){
     $btn = '';
     if($status == 'Importado'){
-     $btn .= '<button type="button" class="btn btn-primary btn-editar"
+     $btn .= '<button type="button" class="btn btn-success btn-editar"
          data-bs-toggle="modal" data-bs-target="#modalEditar"
          data-id="'.$row->id .'" data-placa="' .$row->placa .'"
          data-modelo="' .$row->modelo. '" data-combustivel="' .$row->combustivel.'"
@@ -79,3 +79,24 @@ function button_lote_cartoes_impressao_editar($row, $status){
     return $btn;
 }
 
+function button_logistica_correios($row){
+
+    $btn = '<div class="btn-group" role="group">
+    <button type="button" class="btn btn-success dropdown-toggle " data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-three-dots-vertical"></i>
+    </button>
+    <ul class="dropdown-menu">
+        <li><a href="'.route('logistica.correios.visualizar', $row->id).'" class="dropdown-item">Visualizar</a></li>';
+
+
+if($row->desc_status_objeto == "A Coletar" || $row->desc_status_objeto == "A COLETAR" ) {
+    $btn .= '<li><a class="dropdown-item" href="'.route('logistica.correios.cancelar', $row->id).'" type="submit">Cancelar</a></li>';
+}
+
+
+$btn .= '</ul></div>';
+
+return $btn;
+
+
+}

@@ -20,15 +20,15 @@
     <br>
     <div class="card">
         <div class="card-header">
-            <button data-bs-toggle="modal" data-bs-target="#modalCreate" class="btn btn-primary btn-add">Adicionar </button>
-            <a href="{{route('estoque.import')}}" class="btn btn-primary">Importar</a>
+            <button data-bs-toggle="modal" data-bs-target="#modalCreate" class="btn btn-success btn-add">Adicionar </button>
+            <a href="{{route('estoque.import')}}" class="btn btn-success">Importar</a>
 
 
 
         </div>
 
         <div class="card-body">
-            <table id="estoque" class="table table-striped" class="display">
+            <table id="estoque" class="table table-striped" class="display"  >
                 <div class="row">
                     <div class="col-sm-2">
                         <div class="form-group">
@@ -120,7 +120,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="card card-primary">
+                    <div class="card card-success">
                         <div class="card-body">
                             <form action="{{route('estoque.create')}}" method="POST" id="formCreate">
                                 @csrf
@@ -167,7 +167,7 @@
                                     </div>
                                 </div>
 
-                                <button type="submit" class="btn btn-primary" id="btnSalvar">Salvar</button>
+                                <button type="submit" class="btn btn-success" id="btnSalvar">Salvar</button>
                                 <button type="button" class="modal-close waves-effect waves-green btn btn-danger" data-bs-dismiss="modal">Fechar</button>
                             </form>
                         </div>
@@ -188,7 +188,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
             </div>
             <div class="modal-body">
-                <div class="card card-primary">
+                <div class="card card-success">
                     <div class="card-body">
                         <form action="{{route('estoque.edit', ':id')}}" method="GET" id="formEditar">
                                 @csrf
@@ -257,7 +257,7 @@
                                       </div>
                                 </div>
 
-                                <button type="submit" class="btn btn-primary" id="btnSalvar">Salvar</button>
+                                <button type="submit" class="btn btn-success" id="btnSalvar">Salvar</button>
                                 <button type="button" class="modal-close waves-effect waves-green btn btn-danger" data-bs-dismiss="modal">Fechar</button>
                             </form>
                         </div>

@@ -30,7 +30,7 @@ return [
     |
     */
 
-    'use_ico_only' => false,
+    'use_ico_only' => true,
     'use_full_favicon' => false,
 
     /*
@@ -63,11 +63,11 @@ return [
     |
     */
 
-    'logo' => '<b>Tecnologia</b>',
-    'logo_img' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
-    'logo_img_class' => 'brand-image img-circle elevation-3',
-    'logo_img_xl' => null,
-    'logo_img_xl_class' => 'brand-image-xs',
+    'logo' => false,
+    'logo_img' => 'vendor/adminlte/dist/img/Favicon Black.png',
+    'logo_img_class' => 'brand-image img',
+    'logo_img_xl' => 'vendor/adminlte/dist/img/Uzzipay_01_logo.png',
+    'logo_img_xl_class' => 'brand-image-xl',
     'logo_img_alt' => 'Admin Logo',
 
     /*
@@ -84,12 +84,12 @@ return [
     */
 
     'auth_logo' => [
-        'enabled' => false,
+        'enabled' => true,
         'img' => [
-            'path' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
+            'path' => 'vendor/adminlte/dist/img/Uzzipay_01_logo.png',
             'alt' => 'Auth Logo',
             'class' => '',
-            'width' => 50,
+            'width' => 170,
             'height' => 50,
         ],
     ],
@@ -109,8 +109,8 @@ return [
     'preloader' => [
         'enabled' => true,
         'img' => [
-            'path' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
-            'alt' => 'AdminLTE Preloader Image',
+            'path' => 'vendor/adminlte/dist/img/Icone UP.png',
+            'alt' => 'UP Preloader Image',
             'effect' => 'animation__shake',
             'width' => 60,
             'height' => 60,
@@ -130,11 +130,11 @@ return [
     */
 
     'usermenu_enabled' => true,
-    'usermenu_header' => false,
-    'usermenu_header_class' => 'bg-primary',
-    'usermenu_image' => false,
+    'usermenu_header' => true,
+    'usermenu_header_class' => 'bg-success',
+    'usermenu_image' => true,
     'usermenu_desc' => false,
-    'usermenu_profile_url' => false,
+    'usermenu_profile_url' => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -150,8 +150,8 @@ return [
 
     'layout_topnav' => null,
     'layout_boxed' => null,
-    'layout_fixed_sidebar' => null,
-    'layout_fixed_navbar' => null,
+    'layout_fixed_sidebar' => true,
+    'layout_fixed_navbar' => true,
     'layout_fixed_footer' => null,
     'layout_dark_mode' => null,
 
@@ -167,12 +167,12 @@ return [
     |
     */
 
-    'classes_auth_card' => 'card-outline card-primary',
-    'classes_auth_header' => '',
+    'classes_auth_card' => '',
+    'classes_auth_header' => 'bg-success',
     'classes_auth_body' => '',
-    'classes_auth_footer' => '',
-    'classes_auth_icon' => '',
-    'classes_auth_btn' => 'btn-flat btn-primary',
+    'classes_auth_footer' => 'text-center',
+    'classes_auth_icon' => 'fa-lg text-success',
+    'classes_auth_btn' => 'btn-flat btn bg-success',
 
     /*
     |--------------------------------------------------------------------------
@@ -192,7 +192,7 @@ return [
     'classes_content_wrapper' => '',
     'classes_content_header' => '',
     'classes_content' => '',
-    'classes_sidebar' => 'sidebar-dark-primary elevation-4',
+    'classes_sidebar' => 'sidebar-light-white elevation-4',
     'classes_sidebar_nav' => '',
     'classes_topnav' => 'navbar-white navbar-light',
     'classes_topnav_nav' => 'navbar-expand',
@@ -210,12 +210,12 @@ return [
     |
     */
 
-    'sidebar_mini' => 'lg',
-    'sidebar_collapse' => false,
-    'sidebar_collapse_auto_size' => false,
-    'sidebar_collapse_remember' => false,
+    'sidebar_mini' => 'xs',
+    'sidebar_collapse' => true,
+    'sidebar_collapse_auto_size' => 100,
+    'sidebar_collapse_remember' => true,
     'sidebar_collapse_remember_no_transition' => true,
-    'sidebar_scrollbar_theme' => 'os-theme-light',
+    'sidebar_scrollbar_theme' => 'os-theme-none',
     'sidebar_scrollbar_auto_hide' => 'l',
     'sidebar_nav_accordion' => true,
     'sidebar_nav_animation_speed' => 300,
@@ -304,7 +304,7 @@ return [
         // Sidebar items:
         [
             'type' => 'sidebar-menu-search',
-            'text' => 'search',
+            'text' => 'pesquisar',
         ],
         [
             'text' => 'blog',
@@ -322,23 +322,23 @@ return [
             'url'         => 'credenciado/index',
             'icon'        => 'bi bi-shop',
         ],
-        ['header' => 'Clientes'],
-        [
-            'text'        => 'Clientes',
-            'url'         => 'admin/pages',
-            'icon'        => 'far fa-fw fa-file',
-        ],
+        // ['header' => 'Clientes'],
+        // [
+        //     'text'        => 'Clientes',
+        //     'url'         => 'admin/pages',
+        //     'icon'        => 'far fa-fw fa-file',
+        // ],
         ['header' => 'Abastecimento'],
-        [
-            'text'        => 'Veiculos',
-            'url'         => 'admin/pages',
-            'icon'        => 'far fa-fw fa-file',
-        ],
-        [
-            'text'        => 'Grupos & SubGrupos',
-            'url'         => 'admin/pages',
-            'icon'        => 'far fa-fw fa-file',
-        ],
+        // [
+        //     'text'        => 'Veiculos',
+        //     'url'         => 'admin/pages',
+        //     'icon'        => 'far fa-fw fa-file',
+        // ],
+        // [
+        //     'text'        => 'Grupos & SubGrupos',
+        //     'url'         => 'admin/pages',
+        //     'icon'        => 'far fa-fw fa-file',
+        // ],
         [
             'text'        => 'Impressão de Cartões',
             'url'         => 'abastecimento/impressao/index',
@@ -358,20 +358,20 @@ return [
         ['header' => 'Logistica'],
         [
             'text' => 'Correios',
-            'url'  => 'admin/settings',
-            'icon' => 'fas fa-fw fa-user',
+            'url'  => 'logistica/correios/index',
+            'icon' => 'fa-solid fa-truck-fast',
         ],
-        [
-            'text' => 'Juma',
-            'url'  => 'admin/settings',
-            'icon' => 'fas fa-fw fa-user',
-        ],
-        ['header' => 'Documentos'],
-        [
-            'text' => 'Protocolos',
-            'url'  => 'admin/settings',
-            'icon' => 'fas fa-fw fa-user',
-        ],
+        // [
+        //     'text' => 'Juma',
+        //     'url'  => 'admin/settings',
+        //     'icon' => 'bi bi-bicycle',
+        // ],
+        // ['header' => 'Documentos'],
+        // [
+        //     'text' => 'Protocolos',
+        //     'url'  => 'admin/settings',
+        //     'icon' => 'fas fa-fw fa-user',
+        // ],
 
     ],
 
@@ -463,7 +463,7 @@ return [
                     'asset' => false,
                     'location' => '//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js',
                 ],
- 
+
 
             ],
         ],
@@ -481,7 +481,12 @@ return [
             'type' => 'js',
             'asset' => false,
             'location' => 'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js',
-        ],
+            ],
+            [
+                'type' => 'js',
+                'asset' => false,
+                'location' => 'https://kit.fontawesome.com/72f0f90082.js',
+                ],
 
            ],
         ],

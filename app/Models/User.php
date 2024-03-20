@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\User;
 
 class User extends Authenticatable
 {
@@ -21,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'imagem_perfil',
     ];
 
     /**
@@ -42,4 +44,20 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function adminlte_image()
+    {
+        $user_auth = auth()->user();
+        if($user_auth->imagem_perfil == ""){
+            return asset('vendor/adminlte/dist/img/user.png');
+        }
+
+        return asset('storage/'.$user_auth->imagem_perfil);
+
+    }
+
+    public function adminlte_profile_url()
+    {
+        return 'profile';
+    }
 }

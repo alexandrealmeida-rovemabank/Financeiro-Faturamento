@@ -6,9 +6,9 @@ use App\Models\Estoque;
 use App\Models\terminal_vinculado;
 use Illuminate\Http\Request;
 use DataTables;
-use Dompdf\Dompdf;
-use Dompdf\Options;
-use PDF;
+use Illuminate\Support\Facades\View;
+use Barryvdh\DomPDF\Facade\Pdf;
+
 require_once 'actions.php';
 
 class CredenciadoController extends Controller
@@ -154,34 +154,54 @@ class CredenciadoController extends Controller
 
 
 
+    // public function gerarPDF($id)
+    // {
+    //     $credenciado = Credenciado::findOrFail($id);
+    //     $estoques = Estoque::all();
+    //     $terminal = Terminal_Vinculado::all();
+
+    //     // Renderizar a view do PDF como uma string
+    //     $html = View::make('credenciado.pdf', compact('credenciado', 'terminal', 'estoques'))->render();
+
+    //     // Criar uma instância do Dompdf
+    //     $dompdf = new Dompdf(["enable_remote" => true]);
+
+    //     // Carregar o HTML no Dompdf
+    //     $dompdf->loadHtml($html);
+
+    //     // Definindo o tamanho do papel e a orientação
+    //     $dompdf->setPaper('A4');
+
+    //     // Renderizando o PDF
+    //     $dompdf->render();
+
+    //     // Retornando o PDF como uma resposta HTTP
+    //     return $dompdf->stream('credenciado.pdf', ["Attachment" => false]);
+    // }
+
+
     public function gerarPDF($id)
     {
         $credenciado = Credenciado::findOrFail($id);
         $estoques = Estoque::all();
         $terminal = Terminal_Vinculado::all();
 
-        // Configuração do Dompdf
-        $options = new Options();
-        $options->set('isHtml5ParserEnabled', true);
 
-        $dompdf = new Dompdf($options);
+        // Renderizar a view do PDF como uma string
+        $html = View::make('credenciado.pdf', compact('id','credenciado', 'terminal', 'estoques'))->render();
 
-        // Renderizando a view do PDF
-        $html = view('credenciado.pdf', compact('credenciado', 'terminal', 'estoques'))->render();
+        // Criar uma instância do Snappy
+        //$pdf = PDF::loadView('credenciado.pdf', compact('credenciado', 'terminal', 'estoques'));
+        return $html;
 
-        // Carregando o HTML no Dompdf
-        $dompdf->loadHtml($html);
 
-        // Definindo o tamanho do papel e a orientação
-        $dompdf->setPaper('A4', 'portrait');
-
-        // Renderizando o PDF
-        $dompdf->render();
-
-        // Retornar o PDF como resposta
-        return $dompdf->stream('credenciado.pdf');
     }
+    public function gerarPDF2($id)
+    {
+        $pdf = PDF::loadView('credenciado.pdf', compact('id'));
 
+        return $pdf->download('listar_contas.pdf');
+    }
 
     public function buscarcnpj($cnpj)
 

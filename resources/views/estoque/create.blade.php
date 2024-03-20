@@ -10,7 +10,7 @@
 
 @section('content')
 
-<div class="card card-primary">
+<div class="card card-success">
     {{-- <div class="card-header">
       <h1 class="m-0 card-title">Adicionar Credenciado</h1>
     </div> --}}
@@ -114,7 +114,7 @@
 
 
       </form>
-      <button type="submit" class="btn btn-primary">Adicionar</button>
+      <button type="submit" class="btn btn-success">Adicionar</button>
   </div>
 </div>
 

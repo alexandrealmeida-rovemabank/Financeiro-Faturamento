@@ -19,7 +19,7 @@
 <br>
     <div class="card">
         <div class="card-header">
-            <a href="{{route('abastecimento.impressao.importar')}}" class="btn btn-primary">Importar</a>
+            <a href="{{route('abastecimento.impressao.importar')}}" class="btn btn-success">Importar</a>
 
         </div>
 

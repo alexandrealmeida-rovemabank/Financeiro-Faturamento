@@ -1,5 +1,22 @@
+.pagination {
+    --bs-pagination-color: #000000;
+    --bs-pagination-hover-color: #28a745;
+  }
+
+
+  .nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+
+    background-color: #198754 !important;
+    color: #fff !important;
+}
+a {
+
+    text-decoration: none;
+}
+
 button.dt-button,div.dt-button,a.dt-button,input.dt-button {
-    background-color: #343a40;
+    background-color: #a9aaa9!important;
     color: #fff;
     border: none;
     border-radius: 5px;
@@ -46,11 +63,11 @@ div.dt-buttons {
 
 /*  */
 
-
 .container {
-    max-width: 800px;
+    width: 100%;
     margin: 0 auto;
-    padding: 20px;
+    padding: 0px;
+    padding-bottom: 0px; /* Adiciona espaço no final para a altura do rodapé */
 }
 
 .card {
@@ -63,14 +80,18 @@ div.dt-buttons {
 }
 
 footer {
-    position: fixed;
+    position: relative;
     bottom: 0;
-    width: 100%;
-    background-color: #f8f9fa; /* Cor de fundo do rodapé */
+    width: 100%; /* Alterado para ocupar toda a largura da página */
     padding: 20px 0;
     text-align: center;
+    z-index: 999; /* Ajusta a ordem de empilhamento para aparecer acima dos outros elementos */
 }
 
 .footer-image {
     margin-bottom: 10px;
+}
+.body
+{
+    width: 100%;
 }

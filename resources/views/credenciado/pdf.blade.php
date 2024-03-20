@@ -1,60 +1,37 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
+
 <head>
+    <meta charset="UTF-8">
+
     <title> Credenciados </title>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="ugEVOgHfjTMgQA3JnIXIZPnrPxKJQfZcuZsRjEkR">
-    <link rel="stylesheet" href="{{ public_path('vendor/fontawesome-free/css/all.min.css') }}">
-    <link rel="stylesheet" href="{{ public_path('vendor/overlayScrollbars/css/OverlayScrollbars.min.css') }}">
-    <link rel="stylesheet" href="{{ public_path('vendor/adminlte/dist/css/adminlte.min.css') }}">
-    <link rel="stylesheet" href="{{ public_path('https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic') }}">
-    <link rel="stylesheet" href="{{ public_path('//cdn.datatables.net/1.10.25/css/dataTables.bootstrap5.min.css') }}">
-    <link rel="stylesheet" href="{{ public_path('//cdn.datatables.net/buttons/2.2.2/css/buttons.dataTables.min.css') }}">
-    <link rel="stylesheet" href="{{ public_path('https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ public_path('//cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css') }}">
-    <style>
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
 
-        .card {
-            margin-bottom: 20px;
-        }
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/vendor/adminlte/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="/vendor/adminlte/dist/css/custom.css">
+    {{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+    integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> --}}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
 
-        .header-image,
-        .footer-image {
-            max-width: 100%;
-        }
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-        footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background-color: #f8f9fa; /* Cor de fundo do rodapé */
-            padding: 20px 0;
-            text-align: center;
-        }
-
-        .footer-image {
-            margin-bottom: 10px;
-        }
-    </style>
 </head>
+
 <body>
+    <div class="body">
     <div class="cont">
     <!-- Cabeçalho -->
     <header>
-        <img src="{{ asset('vendor/adminlte/dist/img/header_pdf_uzz.png') }}" class="header-image" alt="Header Image">
+        <img src="{{ asset('/vendor/adminlte/dist/img/header_pdf_uzz.png') }}" class="header-image" alt="Header Image">
     </header>
     <div class="container">
     <!-- Parte específica da página -->
     <div class="card">
         <div class="card-header">
           <h1 class="m-0 card-title text-dark">Informações</h1>
+
+          <button onclick="downloadPDF()" >Download</button>
         </div>
         <div class="card-body">
 
@@ -230,22 +207,53 @@
 
     <!-- Rodapé -->
     <footer>
-        <img src="{{ asset('vendor/adminlte/dist/img/footer_pdf_uzz.png') }}" class="footer-image" alt="Footer Image">
+        <img src="{{ asset('/vendor/adminlte/dist/img/footer_pdf_uzz.png') }}" class="footer-image" alt="Footer Image">
     </footer>
+</div>
+       <script>
+        function downloadPDF() {
 
-    <script src="http://localhost:8000/vendor/jquery/jquery.min.js"></script>
-    <script src="http://localhost:8000/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="http://localhost:8000/vendor/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
-    <script src="http://localhost:8000/vendor/adminlte/dist/js/adminlte.min.js"></script>
-    <script src="//cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
-    <script src="//cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-    <script src="//cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
-    <script src="//cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
-    <script src="//cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="http://localhost:8000/vendor/adminlte/dist/css/custom.css">
-    </body>
-    </html>
+            var doc = new jspdf.jsPDF('p', 'pc', 'letter');
+            var margin = 1;
+            var scale = 0.001 ;
+            var scale_mobile = (doc.internal.pageSize.width - margin * 2) / document.body.getBoundingClientRect();
+            var contentweb = document.querySelector('.body');
+
+            if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+
+                doc.html(contentweb, {
+                    x: margin,
+                    y: margin,
+                    html2canvas: {
+                        scale: scale_mobile,
+                    },
+                    callback: function(doc){
+                        doc.output('dataurlnewwindow', 'fichero-pdf.pdf');
+
+                    }
+                });
+                }else{
+
+                doc.html(contentweb, {
+                    x: margin,
+                    y: margin,
+                    html2canvas: {
+                        scale: scale,
+                    },
+                    callback: function(doc){
+                        doc.output('dataurlnewwindow', 'fichero-pdf.pdf');
+
+                    },
+                    width: '1000',
+                    windowWidth: '1000'
+                });
+                }
+
+
+                }
+
+
+
+       </script>
+   </body>
+   </html>

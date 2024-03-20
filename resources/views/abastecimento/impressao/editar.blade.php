@@ -42,7 +42,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="card card-primary">
+                <div class="card card-success">
                     <div class="card-body">
                         <form action="{{ route('abastecimento.impressao.edit.cartao', ':id') }}" method="GET" id="formEditar">
                             {{-- @method('PUT') --}}
@@ -87,7 +87,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-primary" id="btnSalvar">Salvar</button>
+                            <button type="submit" class="btn btn-success" id="btnSalvar">Salvar</button>
                             <button type="button" class="modal-close waves-effect waves-green btn btn-danger" data-bs-dismiss="modal">Fechar</button>
                         </form>
                     </div>

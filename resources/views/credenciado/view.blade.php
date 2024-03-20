@@ -11,8 +11,8 @@
 @section('content')
 @include('layouts.notificacoes')
 <div class="card-header-button">
-    <a href="{{route('credenciado.edit', $credenciado->id)}}" class="btn btn-primary">Editar</a>
-    <a href="{{ route('credenciado.pdf', $credenciado->id) }}" id="gerarPDF" class="btn btn-primary" target="_blank">PDF</a>
+    <a href="{{route('credenciado.edit', $credenciado->id)}}" class="btn btn-success">Editar</a>
+    <a href="{{ route('credenciado.pdf', $credenciado->id) }}" id="gerarPDF" class="btn btn-success" target="_blank">PDF</a>
 
 </div>
 <div class="card">
