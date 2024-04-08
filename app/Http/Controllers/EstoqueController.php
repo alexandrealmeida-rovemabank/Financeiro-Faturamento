@@ -79,9 +79,10 @@ class EstoqueController extends Controller
         // Renomeie 'lote' para 'id_lote'
         $lote = Lote::where('lote', $request['id_lote'])->first();
         $data['id_lote'] = $lote->id;
-        //dd($data['id_lote']);
-
+        //dd($data);
+        //$data['id'] = 632;
         $estoque = new Estoque;
+        //dd($estoque);
         $estoque = Estoque::create($data);
 
         return redirect()->route('estoque.index')->with('success', 'Ativo cadastrado com sucesso.');

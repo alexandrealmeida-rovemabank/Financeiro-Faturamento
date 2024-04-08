@@ -1,6 +1,6 @@
 @extends('adminlte::page')
 
-@section('title', 'AdminLTE')
+@section('title', 'Tecnologia Uzzipay')
 
 
 @section('content_header')

@@ -349,23 +349,26 @@ class LogisticaController extends Controller
     }
 
     public function acompanharPedido(){
-        $pedidosPendentes = Logistica_reversa::whereIn('status_objeto', ['0','1', '3', '4', '5', '6'])->get();
+        $pedidosPendentes = Logistica_reversa::whereIn('status_objeto', ['0','01', '03', '04', '05', '06'])->get();
 
         if ($pedidosPendentes->isEmpty()) {
             return redirect()->route('logistica.correios.index')->with('warning','Não existe solicitações para serem atualizadas!');
 
         }
 
+
         foreach ($pedidosPendentes as $pedido) {
             // Executar acompanharPedido
             $result = $this->acompanharPedido2($pedido);
-
+            //$resultados[$result];
             // Salvar os dados na tabela status_logistica
-            $this->salvarStatusLogistica($result);
+           $this->salvarStatusLogistica($result);
 
             // Atualizar registros na tabela Logistica_reversa
              $this->atualizarStatusLogisticaReversa($pedido, $result);
         }
+
+
 
         return redirect()->route('logistica.correios.index')->with('success','Status de Solicitações atualizados manualmente!' );
     }
@@ -398,45 +401,55 @@ class LogisticaController extends Controller
         $params = [
             'codAdministrativo' => $cod_adm,
             'tipoBusca' => 'H',
-            'numeroPedido' =>  $pedidos->num_coleta,
+            'numeroPedido' => $pedidos->num_coleta,
             'tipoSolicitacao' => $tipo,
         ];
 
 
         try {
             $result = $client->acompanharPedido($params);
+            //dd($result);
             return $result;
         } catch (\Exception $e) {
+
             return $e->getMessage();
         }
     }
 
 
     public function salvarStatusLogistica($result){
-        foreach ($result->acompanharPedido->coleta as $coleta) {
+
+
+        foreach ($result->acompanharPedido->coleta as $results) {
+            try{
+            //dd($results);
             // Verifica se o status já existe na tabela status_logistica
-            $statusExistente = statusLogisitca::where('numero_pedido', $result->acompanharPedido->coleta->numero_pedido)
-                                            ->where('status',  $result->acompanharPedido->coleta->historico->status)
+            $statusExistente = statusLogisitca::where('numero_pedido', $results->numero_pedido)
+                                            ->where('status',  $results->historico->status)
                                             ->first();
             //return $statusExistente;
             // Se o status não existir na tabela status_logistica, salva-o
             if (!$statusExistente) {
                 $status = new statusLogisitca();
-                $status->numero_pedido =    $result->acompanharPedido->coleta->numero_pedido;
-                $status->status =           $result->acompanharPedido->coleta->historico->status;
-                $status->descricao_status = $result->acompanharPedido->coleta->historico->descricao_status;
-                $status->data_atualizacao = $result->acompanharPedido->coleta->historico->data_atualizacao;
-                $status->hora_atualizacao = $result->acompanharPedido->coleta->historico->hora_atualizacao;
-                $status->observacao =       $result->acompanharPedido->coleta->historico->observacao;
+                $status->numero_pedido =    $results->numero_pedido;
+                $status->status =           $results->historico->status;
+                $status->descricao_status = $results->historico->descricao_status;
+                $status->data_atualizacao = $results->historico->data_atualizacao;
+                $status->hora_atualizacao = $results->historico->hora_atualizacao;
+                $status->observacao =       $results->historico->observacao;
                 $status->save();
             }
+        }catch(\Exception $e) {
+
+            return $e->getMessage();
+        }
         }
     }
 
     public function atualizarStatusLogisticaReversa($pedido, $result){
-
-        $atl['status_objeto'] = $result->acompanharPedido->coleta->objeto->ultimo_status;
-        $atl['desc_status_objeto'] = $result->acompanharPedido->coleta->objeto->descricao_status;
+        //dd($result->acompanharPedido->coleta[0]->objeto);
+        $atl['status_objeto'] = $result->acompanharPedido->coleta[0]->objeto->ultimo_status;
+        $atl['desc_status_objeto'] = $result->acompanharPedido->coleta[0]->objeto->descricao_status;
 
         //return $atl;
         $pedido->update($atl);
