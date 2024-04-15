@@ -32,15 +32,21 @@ class AtualizarInformacoesLogistica extends Command
 
     {
         $logFile = storage_path('logs/atualizacao_logistica.log');
-            $pedidosPendentes = Logistica_reversa::whereIn('status_objeto', ['0','01', '03', '04', '05', '06'])->get();
+        $pedidosPendentes = Logistica_reversa::whereIn('status_objeto', ['0','00','01','1', '03','3', '04','4', '05','5', '06','6','55'])->get();
 
-            if ($pedidosPendentes->isEmpty()) {
-                $this->log("Sem logística no banco", $logFile);
+        if ($pedidosPendentes->isEmpty()) {
+            $this->log("Sem logística no banco", $logFile);
+        } else {
+            $pedidos = []; // Inicialize o array de pedidos aqui
+            foreach ($pedidosPendentes as $pedido) {
+                $pedidos[] = $pedido->num_coleta; // Adicione o número de coleta ao array
             }
+            $this->log("Pedidos a serem atualizados: " . implode(", ", $pedidos), $logFile);
+        }
 
             foreach ($pedidosPendentes as $pedido) {
                 // Executar acompanharPedido
-                $result = $this->acompanharPedido($pedido);
+                $result = $this->acompanharPedido($pedido, $logFile);
 
                 // Salvar os dados na tabela status_logistica
                 $this->salvarStatusLogistica($result, $logFile);
@@ -54,7 +60,7 @@ class AtualizarInformacoesLogistica extends Command
 
 
     }
-        private function acompanharPedido($pedidos)
+        private function acompanharPedido($pedidos, $logFile)
         {
             if($pedidos->contrato == '05884660000104'){
                 $user = Config('variaveis.username_solucoes');
@@ -81,7 +87,7 @@ class AtualizarInformacoesLogistica extends Command
             $params = [
                 'codAdministrativo' => $cod_adm,
                 'tipoBusca' => 'H',
-                'numeroPedido' =>  $pedidos->num_coleta,
+                'numeroPedido' => $pedidos->num_coleta,
                 'tipoSolicitacao' => $tipo,
             ];
 
@@ -98,12 +104,30 @@ class AtualizarInformacoesLogistica extends Command
 
         private function salvarStatusLogistica($result, $logFile)
         {
-            foreach ($result->acompanharPedido->coleta as $coleta) {
+            $coletas = $result->acompanharPedido->coleta;
+
+            // Verifica se $coletas é um array ou um objeto
+            if (is_array($coletas)) {
+                // Se for um array, iteramos sobre cada elemento
+                foreach ($coletas as $coleta) {
+                    $this->salvarStatusIndividual($coleta, $logFile);
+                }
+            } elseif (is_object($coletas)) {
+                // Se for um objeto, chamamos a função salvarStatusIndividual diretamente
+                $this->salvarStatusIndividual($coletas, $logFile);
+            } else {
+                $this->log("O valor de coleta não é nem um array nem um objeto.", $logFile);
+            }
+        }
+
+        private function salvarStatusIndividual($coleta, $logFile)
+        {
+            try {
                 // Verifica se o status já existe na tabela status_logistica
                 $statusExistente = statusLogisitca::where('numero_pedido', $coleta->numero_pedido)
-                                                ->where('status',  $coleta->historico->status)
-                                                ->first();
-                //return $statusExistente;
+                    ->where('status',  $coleta->historico->status)
+                    ->first();
+
                 // Se o status não existir na tabela status_logistica, salva-o
                 if (!$statusExistente) {
                     $status = new statusLogisitca();
@@ -116,16 +140,32 @@ class AtualizarInformacoesLogistica extends Command
                     $status->save();
                     $this->log("Status salvo com sucesso.", $logFile);
                 }
+            } catch (\Exception $e) {
+                $this->log("Erro ao salvar status. {$e->getMessage()}", $logFile);
             }
         }
 
+
         private function atualizarStatusLogisticaReversa($pedido, $result, $logFile)
         {
+            if (is_array($result->acompanharPedido->coleta)) {
+                $quantidadeIntensColeta = count($result->acompanharPedido->coleta) - 1;
+                $atl['status_objeto'] = $result->acompanharPedido->coleta[$quantidadeIntensColeta]->objeto->ultimo_status;
+                $atl['desc_status_objeto'] = $result->acompanharPedido->coleta[$quantidadeIntensColeta]->objeto->descricao_status;
+                $etiqueta = $result->acompanharPedido->coleta[$quantidadeIntensColeta]->objeto->numero_etiqueta;
+            }else{
+                $atl['status_objeto'] = $result->acompanharPedido->coleta->objeto->ultimo_status;
+                $atl['desc_status_objeto'] = $result->acompanharPedido->coleta->objeto->descricao_status;
+                $etiqueta = $result->acompanharPedido->coleta->objeto->numero_etiqueta;
+            }
 
-            $atl['status_objeto'] = $result->acompanharPedido->coleta->objeto->ultimo_status;
-            $atl['desc_status_objeto'] = $result->acompanharPedido->coleta->objeto->descricao_status;
+            if($etiqueta){
+            $atl['num_etiqueta'] = $etiqueta;
 
-            //return $atl;
+            }else{
+                $atl['num_etiqueta'] = $pedido->num_etiqueta;
+            }
+
             $pedido->update($atl);
 
             if ($pedido) {
@@ -136,6 +176,7 @@ class AtualizarInformacoesLogistica extends Command
 
 
         }
+
         private function log($message, $logFile)
     {
         file_put_contents($logFile, "[" . date("Y-m-d H:i:s") . "] " . $message . "\n", FILE_APPEND);

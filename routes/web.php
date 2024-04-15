@@ -7,11 +7,12 @@ use App\Http\Controllers\LoteController;
 use App\Http\Controllers\EstoqueController;
 use App\Http\Controllers\TerminalController;
 use App\Http\Controllers\LogisticaController;
+use App\Http\Controllers\DashController;
 use App\Mail\mytestemail;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
 use App\Models\parametros_correios_cartao;
-use App\Models\User;
+
 
 
 /*
@@ -40,14 +41,11 @@ Route::get('/password/reset', function () {
     return view('auth/forgot-password');
 });
 
-Route::get('/home', function () {
-    $user = auth()->user();
-    return view('home',compact('user'));
-})->middleware(['auth', 'verified'])->name('home');
 
-// Route::get('/dashboard', function () {
-//     return view('home');
-// })->middleware(['auth', 'verified'])->name('home');
+
+Route::get('/home', [DashController::class, 'index'])->middleware(['auth', 'verified'])->name('home');
+
+
 
 
 Route::middleware('auth')->group(function () {

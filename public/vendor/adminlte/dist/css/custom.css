@@ -88,10 +88,78 @@ footer {
     z-index: 999; /* Ajusta a ordem de empilhamento para aparecer acima dos outros elementos */
 }
 
+.main-footer {
+    background-color: #fff;
+    border-top: 1px solid #dee2e6;
+    color: #869099;
+    padding: 1rem;
+    width: auto;
+}
+
 .footer-image {
     margin-bottom: 10px;
 }
 .body
 {
     width: 100%;
+}
+
+.col-lg-3 {
+    flex: 0 0 auto;
+    width: 15%;
+}
+.bi::before,[class*=" bi-"]::before,[class^=bi-]::before {
+    /* display:inline-block; */
+    font-family: bootstrap-icons!important;
+    font-style: normal;
+    font-weight: 456!important;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    vertical-align: 0.125em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale
+}
+
+
+.small-box .icon>i {
+    width: auto;
+    font-size: 60px;
+    position: absolute;
+    right: 20px;
+    top: 35px;
+    transition: -webkit-transform .3s linear;
+    transition: transform .3s linear;
+    transition: transform .3s linear, -webkit-transform .3s linear;
+    color: #198754 !important;
+}
+
+.scrollable-table {
+    max-height: 400px !important; /* Defina a altura máxima desejada para a tabela */
+    overflow-y: auto; /* Habilita a rolagem vertical quando necessário */
+}
+.scrollable-area {
+    max-height: 400px !important; /* Defina a altura máxima desejada para a tabela */
+}
+
+.small-box>.small-box-footer {
+    background-color: #198754c7 !important;
+    color: rgba(255, 255, 255, .8);
+    display: block;
+    padding: 3px 0;
+    position: relative;
+    text-align: center;
+    text-decoration: none;
+    z-index: 10;
+}
+.bg-white>a {
+    color: #ffffff !important;
+}
+
+
+
+
+canvas {
+    width: 100% !important;
+    height: 100%    !important;
 }

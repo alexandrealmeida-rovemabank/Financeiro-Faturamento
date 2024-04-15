@@ -36,5 +36,12 @@
 
 
         </div>
+
+        <footer class="main-footer">
+            <div class="float-right d-none d-sm-inline">
+              Qualquer coisa que você queira colocar à direita
+            </div>
+            <strong>Direitos autorais &copy; 2024 <a href="https://adminlte.io">AdminLTE.io</a>.</strong> Todos os direitos reservados.
+        </footer>
     </body>
 </html>

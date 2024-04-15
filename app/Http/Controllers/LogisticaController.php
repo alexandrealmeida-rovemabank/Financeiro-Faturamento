@@ -12,6 +12,7 @@ use DataTables;
 use Illuminate\Support\Facades\View;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class LogisticaController extends Controller
 {
@@ -349,25 +350,31 @@ class LogisticaController extends Controller
     }
 
     public function acompanharPedido(){
-        $pedidosPendentes = Logistica_reversa::whereIn('status_objeto', ['0','01', '03', '04', '05', '06'])->get();
+        $logFile = storage_path('logs/atualizacao_logistica.log');
+        $pedidosPendentes = Logistica_reversa::whereIn('status_objeto', ['0','00','01','1', '03','3', '04','4', '05','5', '06','6','55'])->get();
 
         if ($pedidosPendentes->isEmpty()) {
-            return redirect()->route('logistica.correios.index')->with('warning','Não existe solicitações para serem atualizadas!');
-
+            $this->log("Sem logística no banco", $logFile);
+        } else {
+            $pedidos = []; // Inicialize o array de pedidos aqui
+            foreach ($pedidosPendentes as $pedido) {
+                $pedidos[] = $pedido->num_coleta; // Adicione o número de coleta ao array
+            }
+            $this->log("Pedidos a serem atualizados: " . implode(", ", $pedidos), $logFile);
         }
 
+            foreach ($pedidosPendentes as $pedido) {
+                // Executar acompanharPedido
+                $result = $this->acompanharPedido2($pedido, $logFile);
 
-        foreach ($pedidosPendentes as $pedido) {
-            // Executar acompanharPedido
-            $result = $this->acompanharPedido2($pedido);
-            //$resultados[$result];
-            // Salvar os dados na tabela status_logistica
-           $this->salvarStatusLogistica($result);
+                // Salvar os dados na tabela status_logistica
+                $this->salvarStatusLogistica($result, $logFile);
 
-            // Atualizar registros na tabela Logistica_reversa
-             $this->atualizarStatusLogisticaReversa($pedido, $result);
-        }
+                // Atualizar registros na tabela Logistica_reversa
+                $this->atualizarStatusLogisticaReversa($pedido, $result, $logFile);
+            }
 
+            $this->log('Atualização concluída com sucesso!', $logFile);
 
 
         return redirect()->route('logistica.correios.index')->with('success','Status de Solicitações atualizados manualmente!' );
@@ -375,7 +382,7 @@ class LogisticaController extends Controller
 
 
 
-    public function acompanharPedido2($pedidos){
+    public function acompanharPedido2($pedidos,$logFile){
         if($pedidos->contrato == '05884660000104'){
             $user = Config('variaveis.username_solucoes');
             $password = config('variaveis.password_solucoes');
@@ -408,57 +415,92 @@ class LogisticaController extends Controller
 
         try {
             $result = $client->acompanharPedido($params);
-            //dd($result);
             return $result;
         } catch (\Exception $e) {
-
-            return $e->getMessage();
+            $this->log($e->getMessage(), $logFile);
+            return null;
         }
     }
 
 
-    public function salvarStatusLogistica($result){
+    public function salvarStatusLogistica($result,$logFile)
+    {
+            $coletas = $result->acompanharPedido->coleta;
 
-
-        foreach ($result->acompanharPedido->coleta as $results) {
-            try{
-            //dd($results);
-            // Verifica se o status já existe na tabela status_logistica
-            $statusExistente = statusLogisitca::where('numero_pedido', $results->numero_pedido)
-                                            ->where('status',  $results->historico->status)
-                                            ->first();
-            //return $statusExistente;
-            // Se o status não existir na tabela status_logistica, salva-o
-            if (!$statusExistente) {
-                $status = new statusLogisitca();
-                $status->numero_pedido =    $results->numero_pedido;
-                $status->status =           $results->historico->status;
-                $status->descricao_status = $results->historico->descricao_status;
-                $status->data_atualizacao = $results->historico->data_atualizacao;
-                $status->hora_atualizacao = $results->historico->hora_atualizacao;
-                $status->observacao =       $results->historico->observacao;
-                $status->save();
+            // Verifica se $coletas é um array ou um objeto
+            if (is_array($coletas)) {
+                // Se for um array, iteramos sobre cada elemento
+                foreach ($coletas as $coleta) {
+                    $this->salvarStatusIndividual($coleta, $logFile);
+                }
+            } elseif (is_object($coletas)) {
+                // Se for um objeto, chamamos a função salvarStatusIndividual diretamente
+                $this->salvarStatusIndividual($coletas, $logFile);
+            } else {
+                $this->log("O valor de coleta não é nem um array nem um objeto.", $logFile);
             }
-        }catch(\Exception $e) {
-
-            return $e->getMessage();
         }
+
+    public function salvarStatusIndividual($coleta,$logFile)
+    {
+            try {
+                // Verifica se o status já existe na tabela status_logistica
+                $statusExistente = statusLogisitca::where('numero_pedido', $coleta->numero_pedido)
+                    ->where('status',  $coleta->historico->status)
+                    ->first();
+
+                // Se o status não existir na tabela status_logistica, salva-o
+                if (!$statusExistente) {
+                    $status = new statusLogisitca();
+                    $status->numero_pedido =    $coleta->numero_pedido;
+                    $status->status =           $coleta->historico->status;
+                    $status->descricao_status = $coleta->historico->descricao_status;
+                    $status->data_atualizacao = $coleta->historico->data_atualizacao;
+                    $status->hora_atualizacao = $coleta->historico->hora_atualizacao;
+                    $status->observacao =       $coleta->historico->observacao;
+                    $status->save();
+                    $this->log("Status salvo com sucesso.", $logFile);
+                }
+            } catch (\Exception $e) {
+                $this->log("Erro ao salvar status. {$e->getMessage()}", $logFile);
+            }
         }
-    }
 
-    public function atualizarStatusLogisticaReversa($pedido, $result){
-        //dd($result->acompanharPedido->coleta[0]->objeto);
-        $atl['status_objeto'] = $result->acompanharPedido->coleta[0]->objeto->ultimo_status;
-        $atl['desc_status_objeto'] = $result->acompanharPedido->coleta[0]->objeto->descricao_status;
 
-        //return $atl;
+    public function atualizarStatusLogisticaReversa($pedido, $result,$logFile){
+        if (is_array($result->acompanharPedido->coleta)) {
+            $quantidadeIntensColeta = count($result->acompanharPedido->coleta) - 1;
+            $atl['status_objeto'] = $result->acompanharPedido->coleta[$quantidadeIntensColeta]->objeto->ultimo_status;
+            $atl['desc_status_objeto'] = $result->acompanharPedido->coleta[$quantidadeIntensColeta]->objeto->descricao_status;
+            $etiqueta = $result->acompanharPedido->coleta[$quantidadeIntensColeta]->objeto->numero_etiqueta;
+        }else{
+            $atl['status_objeto'] = $result->acompanharPedido->coleta->objeto->ultimo_status;
+            $atl['desc_status_objeto'] = $result->acompanharPedido->coleta->objeto->descricao_status;
+            $etiqueta = $result->acompanharPedido->coleta->objeto->numero_etiqueta;
+        }
+
+        if($etiqueta){
+        $atl['num_etiqueta'] = $etiqueta;
+
+        }else{
+            $atl['num_etiqueta'] = $pedido->num_etiqueta;
+        }
+
         $pedido->update($atl);
 
+        if ($pedido) {
+            $this->log("Atualização do pedido {$pedido->num_coleta} concluída com sucesso.", $logFile);
+        } else {
+            $this->log("Erro ao atualizar o pedido {$pedido->num_coleta}.", $logFile);
+        }
+
 
     }
 
-
-
+    public function log($message, $logFile)
+{
+    file_put_contents($logFile, "[" . date("Y-m-d H:i:s") . "] " . $message . "\n", FILE_APPEND);
+}
     public function rastrear(Request $request){
 
         $request->validate([
