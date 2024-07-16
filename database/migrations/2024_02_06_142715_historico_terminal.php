@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('produto');
             $table->string('acao')->nullable();
             $table->string('data')->nullable();
+            $table->string('sistema')->nullable();
             $table->string('usuario');
             $table->foreign('id_estoque')->references('id')->on('estoque')->onDelete('cascade');
             $table->foreign('id_credenciado')->references('id')->on('credenciado')->onDelete('cascade');

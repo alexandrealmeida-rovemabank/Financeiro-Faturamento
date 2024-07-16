@@ -205,24 +205,21 @@ class CredenciadoController extends Controller
 
     public function buscarcnpj($cnpj)
 
-{
+    {
+        // Aqui você pode usar a biblioteca GuzzleHttp para fazer a requisição para a API
+        $client = new \GuzzleHttp\Client();
+        $response = $client->request('GET', 'https://brasilapi.com.br/api/cnpj/v1/' . $cnpj);
 
+        // Verifique se a requisição foi bem sucedida
+        if ($response->getStatusCode() == 200) {
+            // Retorne os dados em formato JSON
+            return response()->json(json_decode($response->getBody()->getContents()));
+        } else {
+            // Retorne um erro se a requisição falhar
+            return response()->json(['error' => 'Não foi possível buscar os dados do CNPJ.'], $response->getStatusCode());
 
-
-    // Aqui você pode usar a biblioteca GuzzleHttp para fazer a requisição para a API
-    $client = new \GuzzleHttp\Client();
-    $response = $client->request('GET', 'https://brasilapi.com.br/api/cnpj/v1/' . $cnpj);
-
-    // Verifique se a requisição foi bem sucedida
-    if ($response->getStatusCode() == 200) {
-        // Retorne os dados em formato JSON
-        return response()->json(json_decode($response->getBody()->getContents()));
-    } else {
-        // Retorne um erro se a requisição falhar
-        return response()->json(['error' => 'Não foi possível buscar os dados do CNPJ.'], $response->getStatusCode());
-
+        }
     }
-}
 
 
 

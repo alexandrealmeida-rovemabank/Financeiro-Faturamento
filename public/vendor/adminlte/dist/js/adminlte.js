@@ -155,6 +155,7 @@
    */
 
 
+
   $__default["default"](document).on('click', SELECTOR_DATA_REFRESH, function (event) {
     if (event) {
       event.preventDefault();

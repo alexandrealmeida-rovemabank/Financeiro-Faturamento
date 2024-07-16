@@ -108,6 +108,11 @@ footer {
     flex: 0 0 auto;
     width: 15%;
 }
+
+#row_vincular_terminal {
+    display: ruby-text;
+    width: auto;
+}
 .bi::before,[class*=" bi-"]::before,[class^=bi-]::before {
     /* display:inline-block; */
     font-family: bootstrap-icons!important;
@@ -163,3 +168,43 @@ canvas {
     width: 100% !important;
     height: 100%    !important;
 }
+
+
+@keyframes slideOut {
+    0% {
+        margin-right: 0;
+        opacity: 1;
+    }
+    100% {
+        margin-right: -1000px;
+        opacity: 0;
+    }
+}
+
+.alert {
+    position: fixed;
+    top: 60px; /* Ajuste a posição vertical conforme necessário */
+    right: 10px; /* Ajuste a posição horizontal conforme necessário */
+    z-index: 1074; /* Certifique-se de que os alertas apareçam acima de outros conteúdos */
+    width: auto; /* Ajuste a largura conforme necessário */
+    max-width: 100%; /* Ajuste a largura máxima conforme necessário */
+    opacity: 1; /* Para a transição de opacidade */
+    transition: opacity 0.5s ease-in-out; /* Suaviza a transição de opacidade */
+}
+
+.alert.alert-dismissible {
+    padding-right: 3rem; /* Espaço para o botão de fechar */
+}
+
+.alert .close {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    z-index: 1066; /* Certifique-se de que o botão de fechar apareça acima do alerta */
+}
+
+/* Aplicação da animação */
+.alert.slide-out {
+    animation: slideOut 0.5s ease-in-out;
+}
+

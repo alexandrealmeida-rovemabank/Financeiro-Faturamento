@@ -6,6 +6,7 @@ use App\Models\estoque;
 use App\Models\credenciado;
 use App\Models\lote;
 use App\Models\historico_terminal;
+use App\Models\terminal_vinculado;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\import_ativos;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +22,8 @@ class EstoqueController extends Controller
     {
         $lote = lote::all();
         $historico = historico_terminal::all();
+        $terminal_vinculado =  terminal_vinculado::all();
+        $sistemaDistinto =  terminal_vinculado::distinct()->pluck('sistema');
         // Para a coluna "modelo"
         $modelosDistintos = estoque::distinct()->pluck('modelo');
         // Para a coluna "lote"
@@ -33,7 +36,13 @@ class EstoqueController extends Controller
         $statusDistintos = estoque::distinct()->pluck('status');
 
         if ($request->ajax()) {
-            $data = Estoque::with('lote')->get();
+            $data = Estoque::with('lote')
+                ->leftJoin('terminal_vinculado', function($join) {
+                    $join->on('estoque.id', '=', 'terminal_vinculado.id_estoque')
+                         ->where('terminal_vinculado.status', 'Vinculado');
+                })
+                ->select('estoque.*', 'terminal_vinculado.sistema')
+                ->get();
             return Datatables::of($data)
                     ->addIndexColumn()
                     ->addColumn('action', function($row){
@@ -43,8 +52,7 @@ class EstoqueController extends Controller
                     ->make(true);
         }
 
-
-        return view('estoque.index', compact('historico','modelosDistintos','lotesDistintos','categoriasDistintas','fabricantesDistintos','statusDistintos','lote'));
+        return view('estoque.index', compact('sistemaDistinto','historico','modelosDistintos','lotesDistintos','categoriasDistintas','fabricantesDistintos','statusDistintos','lote'));
     }
 
      public function import()

@@ -18,17 +18,18 @@ class TerminalController extends Controller
         $request->validate([
              'id_estoque' => 'required',
              'chip' => 'required',
-             'produto' =>'required'
+             'produto' =>'required',
+             'sistema' =>'required'
             ]);
 
 
-
-        $data = $request->all();
+            $data = $request->all();
+            //dd($data);
 
         if ($credenciado->status == "Ativo"){
             $data['id_credenciado'] = $credenciado_id;
 
-            function salvarHistorico($id_credenciado, $id_estoque, $produto, $acao, $usuario)
+            function salvarHistorico($id_credenciado, $id_estoque, $produto, $acao, $usuario, $sistema)
             {
                 $data = [
                     'id_credenciado' => $id_credenciado,
@@ -37,24 +38,26 @@ class TerminalController extends Controller
                     'acao' => $acao,
                     'data' => now(),
                     'usuario' => $usuario,
+                    'sistema' => $sistema,
                 ];
-            // dd($data);
+
                 historico_terminal::create($data);
             }
             //procurando o id do terminal pelo s/n e mundando o status
-            $estoque = Estoque::where('numero_serie', $data['id_estoque'])->first();
-            $data['id_estoque'] = $estoque->id;
+            $estoque = Estoque::where('id', $data['id_estoque'])->first();
+            //dd($estoque);
+            // $data['id_estoque'] = $estoque->id;
             $estoque->status = 'Operação';
 
             if($data['chip'] == 'Sem Chip'){
                 $data['chip'] = $data['chip'] ?? "Sem Chip";
             }else{
             //procurando o id do chip pelo s/n e mundando o status
-            $chip = Estoque::where('numero_serie', $data['chip'])->first();
+            $chip = Estoque::where('id', $data['chip'])->first();
             $chip->status = 'Operação';
             $chip->save($data);
             //dd($da);
-            salvarHistorico($credenciado_id,$chip->id, $data['produto'], 'Vinculado', auth()->user()->name ?? 'Usuário Desconhecido');
+            salvarHistorico($credenciado_id,$chip->id, $data['produto'], 'Vinculado', auth()->user()->name ?? 'Usuário Desconhecido',$data['sistema']);
             }
 
             //Atribuindo status de vinculado
@@ -71,7 +74,7 @@ class TerminalController extends Controller
             //dd($data['produto']);
             $terminal = new terminal_vinculado;
             $historico = new historico_terminal;
-
+            
             $historico->create($data);
             $estoque->save($data);
             $terminal->create($data);

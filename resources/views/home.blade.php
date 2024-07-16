@@ -5,13 +5,13 @@
 
 @section('content_header')
 
-     <h1 class="m-0 text-dark"><i>Bem-Vindo, {{ $user->name }}</i></h1>
-     <br>
+    <h1 class="m-0 text-dark"><i>Bem-Vindo, {{ $user->name }}</i></h1>
+    <br>
 
- @stop
+@stop
 
- @section('content')
- @include('layouts.notificacoes')
+@section('content')
+    @include('layouts.notificacoes')
 
 
 
@@ -29,7 +29,8 @@
                     <div class="icon">
                         <i class="fa-solid fa-store"></i>
                     </div>
-                    <a href="/credenciado/index" class="small-box-footer">Detalhes <i class="fas fa-arrow-circle-right"></i></a>
+                    <a href="/credenciado/index" class="small-box-footer">Detalhes <i
+                            class="fas fa-arrow-circle-right"></i></a>
                 </div>
             </div>
 
@@ -57,7 +58,8 @@
                     <div class="icon">
                         <i class="fa-sharp fa-solid fa-boxes-stacked"></i>
                     </div>
-                    <a href="/estoque/lote/index" class="small-box-footer">Detalhes <i class="fas fa-arrow-circle-right"></i></a>
+                    <a href="/estoque/lote/index" class="small-box-footer">Detalhes <i
+                            class="fas fa-arrow-circle-right"></i></a>
                 </div>
             </div>
 
@@ -65,14 +67,15 @@
                 <div class="card bg-white small-box" style="border-radius:0px 20px 0px 20px;">
                     <div class="inner">
                         <p class="card-title text-dark" style="color: #333; font-weight: bold;">Logísticas</p>
-                        <h3 class="card-text text-dark" style="color: #555;">{{ $resultado->postagem_reversa}}</h3>
+                        <h3 class="card-text text-dark" style="color: #555;">{{ $resultado->postagem_reversa }}</h3>
                         <br>
 
                     </div>
                     <div class="icon">
-                       <i class="fa-solid fa-truck-moving"></i>
+                        <i class="fa-solid fa-truck-moving"></i>
                     </div>
-                    <a href="/logistica/correios/index" class="small-box-footer">Detalhes <i class="fas fa-arrow-circle-right"></i></a>
+                    <a href="/logistica/correios/index" class="small-box-footer">Detalhes <i
+                            class="fas fa-arrow-circle-right"></i></a>
                 </div>
             </div>
 
@@ -86,7 +89,8 @@
                     <div class="icon">
                         <i class="fa-sharp fa-solid fa-boxes-stacked"></i>
                     </div>
-                    <a href="/abastecimento/impressao/index" class="small-box-footer">Detalhes <i class="fas fa-arrow-circle-right"></i></a>
+                    <a href="/abastecimento/impressao/index" class="small-box-footer">Detalhes <i
+                            class="fas fa-arrow-circle-right"></i></a>
                 </div>
             </div>
 
@@ -100,7 +104,8 @@
                     <div class="icon">
                         <i class="fa-regular fa-credit-card"></i>
                     </div>
-                    <a href="/abastecimento/impressao/index" class="small-box-footer">Detalhes <i class="fas fa-arrow-circle-right"></i></a>
+                    <a href="/abastecimento/impressao/index" class="small-box-footer">Detalhes <i
+                            class="fas fa-arrow-circle-right"></i></a>
                 </div>
             </div>
         </div>
@@ -131,11 +136,11 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($estoquePorStatus as $item)
-                                <tr>
-                                    <td>{{ $item->status }}</td>
-                                    <td>{{ $item->quantidade }}</td>
-                                </tr>
+                                @foreach ($estoquePorStatus as $item)
+                                    <tr>
+                                        <td>{{ $item->status }}</td>
+                                        <td>{{ $item->quantidade }}</td>
+                                    </tr>
                                 @endforeach
                             </tbody>
                         </table>
@@ -145,15 +150,15 @@
 
             <div class="col">
                 <div class="card">
-                    <div class="card-body scrollable-area" >
-                        <canvas class="graficos" id="graficoPolarArea"  ></canvas>
+                    <div class="card-body scrollable-area">
+                        <canvas class="graficos" id="graficoPolarArea"></canvas>
                     </div>
                 </div>
             </div>
             <div class="col">
                 <div class="card">
-                    <div class="card-body scrollable-area" >
-                        <canvas class="graficos" id="graficoPolarAreaModelo" ></canvas>
+                    <div class="card-body scrollable-area">
+                        <canvas class="graficos" id="graficoPolarAreaModelo"></canvas>
                     </div>
                 </div>
             </div>
@@ -181,11 +186,11 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($estoquePorLote as $item)
-                                <tr>
-                                    <td>{{ $item->lote }}</td>
-                                    <td>{{ $item->quantidade }}</td>
-                                </tr>
+                                @foreach ($estoquePorLote as $item)
+                                    <tr>
+                                        <td>{{ $item->lote }}</td>
+                                        <td>{{ $item->quantidade }}</td>
+                                    </tr>
                                 @endforeach
                             </tbody>
                         </table>
@@ -211,7 +216,7 @@
             <div class="col-md-4">
                 <div class="card h-100">
                     <div class="card-body" style="max-height: 300px; ">
-                        <canvas id="graficopizzacontrato" ></canvas>
+                        <canvas id="graficopizzacontrato"></canvas>
                     </div>
                 </div>
             </div>
@@ -219,7 +224,7 @@
             <div class="col-md-4">
                 <div class="card h-100">
                     <div class="card-body" style="max-height: 300px;">
-                        <canvas class="graficos" id="graficoBarras" style="height: 100%; width: 100%; " ></canvas>
+                        <canvas class="graficos" id="graficoBarras" style="height: 100%; width: 100%; "></canvas>
                     </div>
                 </div>
             </div>
@@ -230,19 +235,19 @@
 
 @section('footer')
 
-        <!-- To the right -->
-        <div class="float-right d-none d-sm-inline" style="width: 100%">
-         Equipe de Tecnologia
-        </div>
-        <!-- Default to the left -->
-        <strong><a href="https://uzzipay.com/">Uzzipay</a> &copy; 2024 </strong> Todos os direitos reservados.
+    <!-- To the right -->
+    <div class="float-right d-none d-sm-inline" style="width: 100%">
+        Equipe de Tecnologia
+    </div>
+    <!-- Default to the left -->
+    <strong><a href="https://uzzipay.com/">Uzzipay</a> &copy; 2024 </strong> Todos os direitos reservados.
 
 @endsection
 
 
 
 
-    {{-- <div class="container-fluid">
+{{-- <div class="container-fluid">
         <div class="card-header">
             <h3 class="m-0 text-dark"><i></i></h3>
         </div>
@@ -309,159 +314,42 @@
 @section('js')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-    var ctxPizza = document.getElementById('graficoPizza').getContext('2d');
-    var ctxPizzaContrato = document.getElementById('graficopizzacontrato').getContext('2d');
-    var ctxBarras = document.getElementById('graficoBarras').getContext('2d');
-    var ctxPolarModelo = document.getElementById('graficoPolarAreaModelo').getContext('2d');
+        var ctxPizza = document.getElementById('graficoPizza').getContext('2d');
+        var ctxPizzaContrato = document.getElementById('graficopizzacontrato').getContext('2d');
+        var ctxBarras = document.getElementById('graficoBarras').getContext('2d');
+        var ctxPolarModelo = document.getElementById('graficoPolarAreaModelo').getContext('2d');
         var ctxPolar = document.getElementById('graficoPolarArea').getContext('2d');
 
-    // Dados e rótulos para o gráfico de pizza
-    var dadosPizza = @json($logisticasPorTipo->pluck('total'));
-    var labelsPizza = @json($logisticasPorTipo->pluck('tipo_coleta'));
+        // Dados e rótulos para o gráfico de pizza
+        var dadosPizza = @json($logisticasPorTipo->pluck('total'));
+        var labelsPizza = @json($logisticasPorTipo->pluck('tipo_coleta'));
 
-    labelsPizza = labelsPizza.map(function(label) {
-        if (label === 'A') {
-            return 'Aut. de Postagem';
-        } else if (label === 'CA') {
-            return 'Coleta Domiciliar';
-        } else {
-            return label;
-        }
-    });
-
-    var optionsPizza = {
-        maintainAspectRatio: false,
-        plugins: {
-            title: {
-                display: true,
-                text: 'Solicitações por Tipo',
-                font: {
-                    size: 20
-                }
-            },
-            legend: {
-                position: 'left',
-                labels: {
-                    font: {
-                        size: 14
-                    }
-                }
+        labelsPizza = labelsPizza.map(function(label) {
+            if (label === 'A') {
+                return 'Aut. de Postagem';
+            } else if (label === 'CA') {
+                return 'Coleta Domiciliar';
+            } else {
+                return label;
             }
-        },
-        animation: {
-            duration: 2000,
-            easing: 'easeOutBounce',
-            onProgress: function(animation) {},
-            onComplete: function(animation) {}
-        }
-    };
+        });
 
-    var chartPizza = new Chart(ctxPizza, {
-        type: 'pie',
-        data: {
-            labels: labelsPizza,
-            datasets: [{
-                data: dadosPizza,
-                backgroundColor: [
-                    '#198754',
-                    '#005640',
-                ]
-            }]
-        },
-        options: optionsPizza
-    });
-
-    var dadosPizzaContrato = @json($logisticasPorContrato->pluck('total'));
-    var labelsPizzaContrato = @json($logisticasPorContrato->pluck('contrato'));
-
-    labelsPizzaContrato = labelsPizzaContrato.map(function(label) {
-        if (label === '05884660000104') {
-            return 'Uzzipay Soluções';
-        } else if (label === '32192325000100') {
-            return 'Uzzipay IP';
-        } else {
-            return label;
-        }
-    });
-
-    var optionsPizzaContrato = {
-        maintainAspectRatio: false,
-        plugins: {
-            title: {
-                display: true,
-                text: 'Solicitações por Contrato',
-                font: {
-                    size: 20
-                }
-            },
-            legend: {
-                position: 'left',
-                labels: {
-                    font: {
-                        size: 14
-                    }
-                }
-            }
-        },
-        animation: {
-            duration: 2000,
-            easing: 'easeOutBounce',
-            onProgress: function(animation) {},
-            onComplete: function(animation) {}
-        }
-    };
-
-    var chartPizzaContrato = new Chart(ctxPizzaContrato, {
-        type: 'pie',
-        data: {
-            labels: labelsPizzaContrato,
-            datasets: [{
-                data: dadosPizzaContrato,
-                backgroundColor: [
-                    '#198754',
-                    '#005640',
-                ]
-            }]
-        },
-        options: optionsPizzaContrato
-    });
-
-    var monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-        "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-    ];
-    var monthNumbers = @json($solicitacoesPorMes->pluck('mes'));
-    var labels = monthNumbers.map(monthNumber => monthNames[monthNumber - 1]); // Converta números de meses em nomes
-
-    var dataBarras = {
-        labels: labels,
-        datasets: [{
-            label: 'Quantidade de Solicitações',
-            data: @json($solicitacoesPorMes->pluck('quantidade')),
-            backgroundColor: [
-                '#005640'
-            ],
-            borderColor: [
-                '#198754'
-            ],
-            borderWidth: 3
-        }]
-    };
-
-    var config = {
-        type: 'bar',
-        data: dataBarras,
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            },
+        var optionsPizza = {
+            maintainAspectRatio: false,
             plugins: {
                 title: {
                     display: true,
-                    text: 'Solicitações Por Mês',
+                    text: 'Solicitações por Tipo',
                     font: {
                         size: 20
+                    }
+                },
+                legend: {
+                    position: 'left',
+                    labels: {
+                        font: {
+                            size: 14
+                        }
                     }
                 }
             },
@@ -471,91 +359,207 @@
                 onProgress: function(animation) {},
                 onComplete: function(animation) {}
             }
-        }
-    };
+        };
 
-    // Criação do gráfico de barras
-    var chartBarras = new Chart(ctxBarras, config);
-
-
-    var dadosAreaFabricante = @json($estoquePorFabricante->pluck('quantidade'));
-    var labelsAreaFabricante = @json($estoquePorFabricante->pluck('fabricante'));
-
-    // Dados e opções para o gráfico de área
-    var dataArea = {
-        labels: labelsAreaFabricante,
-        datasets: [{
-            label: 'Fabricante',
-            data: dadosAreaFabricante
-
-        }]
-    };
-
-    var configArea = {
-        type: 'polarArea',
-        data: dataArea,
-        options: {
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
+        var chartPizza = new Chart(ctxPizza, {
+            type: 'pie',
+            data: {
+                labels: labelsPizza,
+                datasets: [{
+                    data: dadosPizza,
+                    backgroundColor: [
+                        '#198754',
+                        '#005640',
+                    ]
+                }]
             },
+            options: optionsPizza
+        });
+
+        var dadosPizzaContrato = @json($logisticasPorContrato->pluck('total'));
+        var labelsPizzaContrato = @json($logisticasPorContrato->pluck('contrato'));
+
+        labelsPizzaContrato = labelsPizzaContrato.map(function(label) {
+            if (label === '05884660000104') {
+                return 'Uzzipay Soluções';
+            } else if (label === '32192325000100') {
+                return 'Uzzipay IP';
+            } else {
+                return label;
+            }
+        });
+
+        var optionsPizzaContrato = {
+            maintainAspectRatio: false,
             plugins: {
                 title: {
                     display: true,
-                    text: 'Estoque Por Fabricante',
+                    text: 'Solicitações por Contrato',
                     font: {
                         size: 20
                     }
-                }
-            },
-        }
-
-    };
-
-    var chartArea = new Chart(ctxPolar, configArea);
-
-
-    var dadosAreaModelo = @json($estoquePorModelo->pluck('quantidade'));
-    var labelsAreaModelo = @json($estoquePorModelo->pluck('modelo'));
-
-    // Dados e opções para o gráfico de área
-    var dataAreaModelo = {
-        labels: labelsAreaModelo,
-        datasets: [{
-            label: 'Modelo',
-            data: dadosAreaModelo
-
-        }]
-    };
-
-    var configAreaModelo = {
-        type: 'polarArea',
-        data: dataAreaModelo,
-        options: {
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            },
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Estoque Por Modelo',
-                    font: {
-                        size: 20
+                },
+                legend: {
+                    position: 'left',
+                    labels: {
+                        font: {
+                            size: 14
+                        }
                     }
                 }
             },
-        }
+            animation: {
+                duration: 2000,
+                easing: 'easeOutBounce',
+                onProgress: function(animation) {},
+                onComplete: function(animation) {}
+            }
+        };
 
-    };
+        var chartPizzaContrato = new Chart(ctxPizzaContrato, {
+            type: 'pie',
+            data: {
+                labels: labelsPizzaContrato,
+                datasets: [{
+                    data: dadosPizzaContrato,
+                    backgroundColor: [
+                        '#198754',
+                        '#005640',
+                    ]
+                }]
+            },
+            options: optionsPizzaContrato
+        });
 
-    var chartAreaModelo = new Chart(ctxPolarModelo, configAreaModelo);
-});
+        var monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+            "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+        ];
+        var monthNumbers = @json($solicitacoesPorMes->pluck('mes'));
+        var labels = monthNumbers.map(monthNumber => monthNames[monthNumber -
+        1]); // Converta números de meses em nomes
+
+        var dataBarras = {
+            labels: labels,
+            datasets: [{
+                label: 'Quantidade de Solicitações',
+                data: @json($solicitacoesPorMes->pluck('quantidade')),
+                backgroundColor: [
+                    '#005640'
+                ],
+                borderColor: [
+                    '#198754'
+                ],
+                borderWidth: 3
+            }]
+        };
+
+        var config = {
+            type: 'bar',
+            data: dataBarras,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Solicitações Por Mês',
+                        font: {
+                            size: 20
+                        }
+                    }
+                },
+                animation: {
+                    duration: 2000,
+                    easing: 'easeOutBounce',
+                    onProgress: function(animation) {},
+                    onComplete: function(animation) {}
+                }
+            }
+        };
+
+        // Criação do gráfico de barras
+        var chartBarras = new Chart(ctxBarras, config);
 
 
+        var dadosAreaFabricante = @json($estoquePorFabricante->pluck('quantidade'));
+        var labelsAreaFabricante = @json($estoquePorFabricante->pluck('fabricante'));
+
+        // Dados e opções para o gráfico de área
+        var dataArea = {
+            labels: labelsAreaFabricante,
+            datasets: [{
+                label: 'Fabricante',
+                data: dadosAreaFabricante
+
+            }]
+        };
+
+        var configArea = {
+            type: 'polarArea',
+            data: dataArea,
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Estoque Por Fabricante',
+                        font: {
+                            size: 20
+                        }
+                    }
+                },
+            }
+
+        };
+
+        var chartArea = new Chart(ctxPolar, configArea);
+
+
+        var dadosAreaModelo = @json($estoquePorModelo->pluck('quantidade'));
+        var labelsAreaModelo = @json($estoquePorModelo->pluck('modelo'));
+
+        // Dados e opções para o gráfico de área
+        var dataAreaModelo = {
+            labels: labelsAreaModelo,
+            datasets: [{
+                label: 'Modelo',
+                data: dadosAreaModelo
+
+            }]
+        };
+
+        var configAreaModelo = {
+            type: 'polarArea',
+            data: dataAreaModelo,
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Estoque Por Modelo',
+                        font: {
+                            size: 20
+                        }
+                    }
+                },
+            }
+
+        };
+
+        var chartAreaModelo = new Chart(ctxPolarModelo, configAreaModelo);
+    });
 </script>
 @endsection

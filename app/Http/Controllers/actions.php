@@ -100,3 +100,25 @@ return $btn;
 
 
 }
+
+function button_logistica_juma($row){
+
+    $btn = '<div class="btn-group" role="group">
+    <button type="button" class="btn btn-success dropdown-toggle " data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-three-dots-vertical"></i>
+    </button>
+    <ul class="dropdown-menu">
+        <li><a href="'.route('logistica.correios.visualizar', $row->id).'" class="dropdown-item">Visualizar</a></li>';
+
+
+if($row->desc_status_objeto == "A Coletar" || $row->desc_status_objeto == "A COLETAR" ) {
+    $btn .= '<li><a class="dropdown-item" href="'.route('logistica.correios.cancelar', $row->id).'" type="submit">Cancelar</a></li>';
+}
+
+
+$btn .= '</ul></div>';
+
+return $btn;
+
+
+}

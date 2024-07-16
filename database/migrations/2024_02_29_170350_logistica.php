@@ -88,7 +88,7 @@ return new class extends Migration
             'updated_at' => now(),
         ]);
 
-        Schema::create('statusLogisitca', function (Blueprint $table) {
+        Schema::create('statusLogistica', function (Blueprint $table) {
             $table->id();
             $table->text('status');
             $table->text('descricao_status');
@@ -98,6 +98,8 @@ return new class extends Migration
             $table->text('numero_pedido');
             $table->timestamps();
         });
+
+
     }
 
 

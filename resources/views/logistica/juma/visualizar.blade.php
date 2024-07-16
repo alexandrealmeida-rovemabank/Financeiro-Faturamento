@@ -64,12 +64,10 @@
                 </div>
                 <div class="col-sm-6">
                     <div class="form-group">
-                        <label>Etiqueta:</label>
-                        <a id="num_etiqueta">{{ $solicitacao->num_etiqueta }}</a>
-
+                    <label>Etiqueta:</label>
+                        <a>{{ $solicitacao->num_etiqueta }}</a>
                     </div>
                 </div>
-
             </div>
             <div class="row">
                 <div class="col-sm-6">
@@ -90,36 +88,19 @@
                 <div class="col-sm-6">
                     <!-- Select multiple-->
                     <div class="form-group">
-                        <label>Data da Solicitação:</label>
+                        <label>Código Status Objeto:</label>
                         <a>{{ $solicitacao->data_solicitacao }}</a>
                     </div>
                 </div>
                 <div class="col-sm-6">
                     <div class="form-group">
-                    <label>Hora da Solictação:</label>
+                    <label>Descrição Status:</label>
                         <a>{{ $solicitacao->hora_solictacao }}</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <div id="resultado" class="card" style="display: none;">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h1 class="m-0 card-title text-dark">Rastreamento da Solicitação</h1>
-            <button id="toggle-button" class="btn btn-link" onclick="toggleResultado()">
-                <i id="toggle-icon" class="fa fa-chevron-down"></i>
-            </button>
-        </div>
-
-        <div class="card-body" id="resultado-body" style="display: none;">
-            <ul id="lista-resultados" class="list-group">
-                <!-- Os resultados serão adicionados aqui dinamicamente -->
-            </ul>
-        </div>
-    </div>
-
-
 {{-- FIM CONTRATO --}}
 
 {{-- Aki sera as atualizações via API do rastreamento --}}
@@ -416,128 +397,11 @@
         </div>
     </div>
 
+
+
+
+
+
+
 @stop
-@section('css')
-<style>
-    .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
 
-    #toggle-button {
-        text-decoration: none;
-        position: absolute;
-        right: 20px;
-        top: 50%;
-        transform: translateY(-50%);
-    }
-
-    #toggle-icon {
-        transition: transform 0.3s;
-    }
-
-    #toggle-icon.collapsed {
-        transform: rotate(-90deg);
-    }
-</style>
-
-
-@endsection()
-@section('js')
-<script>
-    function showAlert(type, message) {
-        var alertId = '#alert-' + type + '-v2';
-        var messageId = '#alert-' + type + '-message-v2';
-
-        $(messageId).text(message);
-        $(alertId).addClass('slide-out');
-        $(alertId).css('display', 'flex');
-
-        setTimeout(function() {
-            $(alertId).removeClass('slide-out');
-            $(alertId).css('display', 'none');
-        }, 5000);
-    }
-
-    function buscarRastreamento() {
-        var etiqueta = document.getElementById('num_etiqueta').innerText;
-
-        $.ajax({
-            url: '/rastrear_index/' + etiqueta,
-            type: 'GET',
-            success: function(response) {
-                exibirResultados(response.result);
-            },
-            error: function(error) {
-                console.log(error);
-                showAlert('error', 'Houve algum erro ao buscar a coleta.');
-            }
-        });
-    }
-
-    function exibirResultados(result) {
-        var listaResultados = document.getElementById('lista-resultados');
-        listaResultados.innerHTML = '';
-
-        if (result && result.objetos && result.objetos.length > 0) {
-            result.objetos.forEach(function(objeto) {
-                var listItem = document.createElement('div');
-                listItem.classList.add('card');
-                listItem.classList.add('mb-3');
-
-                var cardBody = document.createElement('div');
-                cardBody.classList.add('card-body');
-
-                var cardTitle = document.createElement('h5');
-                cardTitle.classList.add('card-title');
-                cardTitle.textContent = 'Informações da Encomenda';
-
-                var cardText = document.createElement('p');
-                cardText.classList.add('card-text');
-
-                var codigoObjeto = document.createElement('p');
-                codigoObjeto.innerHTML = '<strong>Código do Objeto:</strong> ' + objeto.codObjeto;
-
-                var eventosList = document.createElement('ul');
-                eventosList.classList.add('list-group');
-
-                objeto.eventos.forEach(function(evento) {
-                    var eventoItem = document.createElement('li');
-                    eventoItem.classList.add('list-group-item');
-                    eventoItem.innerHTML = '<strong>Evento:</strong> ' + evento.descricao + '<br>' +
-                                            '<strong>Data e Hora do Evento:</strong> ' + evento.dtHrCriado + '<br>' +
-                                            '<strong>Unidade:</strong> ' + evento.unidade.endereco.cidade + ', ' + evento.unidade.endereco.uf + '<br>';
-                    eventosList.appendChild(eventoItem);
-                });
-
-                cardText.appendChild(codigoObjeto);
-                cardText.appendChild(eventosList);
-                cardBody.appendChild(cardTitle);
-                cardBody.appendChild(cardText);
-                listItem.appendChild(cardBody);
-                listaResultados.appendChild(listItem);
-            });
-
-            document.getElementById('resultado').style.display = 'block';
-        } else {
-            document.getElementById('resultado').style.display = 'none';
-        }
-    }
-    function toggleResultado() {
-        var body = document.getElementById('resultado-body');
-        var icon = document.getElementById('toggle-icon');
-
-        if (body.style.display === 'none') {
-            body.style.display = 'block';
-            icon.classList.remove('collapsed');
-        } else {
-            body.style.display = 'none';
-            icon.classList.add('collapsed');
-        }
-    }
-    document.addEventListener('DOMContentLoaded', function() {
-        buscarRastreamento();
-    });
-</script>
-@endsection

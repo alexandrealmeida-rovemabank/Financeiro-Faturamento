@@ -361,17 +361,17 @@ return [
             'url'  => 'logistica/correios/index',
             'icon' => 'fa-solid fa-truck-fast',
         ],
-        // [
-        //     'text' => 'Juma',
-        //     'url'  => 'admin/settings',
-        //     'icon' => 'bi bi-bicycle',
-        // ],
-        // ['header' => 'Documentos'],
-        // [
-        //     'text' => 'Protocolos',
-        //     'url'  => 'admin/settings',
-        //     'icon' => 'fas fa-fw fa-user',
-        // ],
+        [
+            'text' => 'Juma',
+            'url'  => 'logistica/juma/index',
+            'icon' => 'bi bi-bicycle',
+        ],
+        ['header' => 'LOG de Sistema'],
+        [
+            'text' => 'Correios Logisitca',
+            'url'  => 'processos',
+            'icon' => 'fas fa-fw fa-user',
+        ],
 
     ],
 

@@ -83,7 +83,18 @@
 
 
 $(document).ready(function() {
+    setTimeout(function() {
+            $('#alert-success, #alert-error, #alert-warning').each(function() {
+                $(this).animate({
+                    marginRight: '-=1000',
+                    opacity: 0
+                }, 'slow', function() {
+                    $(this).remove(); // Remove o elemento após a animação
+                });
+            });
+        }, 5000);
     var table = $('#credenciados').DataTable({
+
         lengthMenu: [
             [10, 25, 50, 100, 200, -1],
             [10, 25, 50, 100, 200, 'Todos'],

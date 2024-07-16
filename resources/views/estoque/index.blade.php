@@ -5,9 +5,6 @@
 @section('content_header')
     <h1 class="m-0 text-dark">Estoque</h1>
 
-
-
-
 @stop
 
 @section('content')
@@ -22,7 +19,6 @@
         <div class="card-header">
             <button data-bs-toggle="modal" data-bs-target="#modalCreate" class="btn btn-success btn-add">Adicionar </button>
             <a href="{{route('estoque.import')}}" class="btn btn-success">Importar</a>
-
 
 
         </div>
@@ -89,6 +85,18 @@
                             </select>
                         </div>
                     </div>
+
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label for="filtro-sistema">Sistema: </label>
+                            <select class="form-control" id="filtro-sistema">
+                                <option class="dropdown-item" value="">Todos</option>
+                                @foreach ($sistemaDistinto as $sis)
+                                    <option value="{{ $sis}}"> <a class="dropdown-item">{{ $sis}}</a></option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
                 </div>
                 <thead>
                     <tr>
@@ -98,6 +106,7 @@
                         <th>Fabricante</th>
                         <th>Modelo</th>
                         <th>Numero de serie</th>
+                        <th>Sistema</th>
                         <th>Status</th>
                         <th>Ação</th>
                     </tr>
@@ -323,6 +332,20 @@
 @section('js')
 <script>
     $(document).ready(function() {
+        // Função para animar alertas deslizando para a direita após 5 segundos
+        setTimeout(function() {
+            $('#alert-success, #alert-error, #alert-warning').each(function() {
+                $(this).animate({
+                    marginRight: '-=1000',
+                    opacity: 0
+                }, 'slow', function() {
+                    $(this).remove(); // Remove o elemento após a animação
+                });
+            });
+        }, 5000); // 5000 milissegundos = 5 segundos
+    });
+
+    $(document).ready(function() {
        var table = $('#estoque').DataTable({
             lengthMenu: [
                 [10, 25, 50, 100, 200, -1],
@@ -344,6 +367,7 @@
                 { data: 'fabricante', name: 'fabricante'},
                 { data: 'modelo', name: 'modelo' },
                 { data: 'numero_serie', name: 'numero_serie'},
+                { data: 'sistema', name: 'sistema'}, // Adiciona a coluna sistema
                 { data: 'status', name: 'status' },
                 { data: 'action', name: 'action', orderable: false, searchable: false},
             ],
@@ -394,14 +418,24 @@
                 table.column(4).search('').draw();
             }
         });
+        $('#filtro-sistema').on('change', function() {
+            var sistema = this.value;
+            if (sistema) {
+                // Pesquisa exata
+                table.column(6).search('^' + sistema + '$', true, false).draw();
+            } else {
+                // Limpar o filtro se o valor for vazio
+                table.column(6).search('').draw();
+            }
+        });
         $('#filtro-status').on('change', function() {
             var status = this.value;
             if (status) {
                 // Pesquisa exata
-                table.column(6).search('^' + status + '$', true, false).draw();
+                table.column(7).search('^' + status + '$', true, false).draw();
             } else {
                 // Limpar o filtro se o valor for vazio
-                table.column(6).search('').draw();
+                table.column(7).search('').draw();
             }
         });
 });
@@ -425,6 +459,7 @@ $(document).ready(function () {
 
 <script>
 $(document).ready(function () {
+
     $(document).on('click', '.btn-editar', function () {
         var id = $(this).attr('data-id');
         var id_lote = $(this).attr('data-id_lote');

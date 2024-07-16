@@ -8,23 +8,21 @@
 
 @section('content')
 @include('layouts.notificacoes')
-<div id="export-buttons">
+<div id="export-buttons"></div>
 
-</div>
-<br>
-<br>
+<br><br>
 
 <div class="card">
     <div class="card-body">
-        <table class="table table-striped" id="impressoes"  class="display">
+        <table class="table table-striped display" id="impressoes">
             <thead>
                 <tr>
                     <th>ID</th>
                     <th>Placa</th>
                     <th>Modelo</th>
-                    <th>Combustivel</th>
+                    <th>Combustível</th>
                     <th>Trilha</th>
-                    <th>Numero Cartão</th>
+                    <th>Número Cartão</th>
                     <th>Cliente</th>
                     <th>Grupo e Subgrupo</th>
                     <th>Ação</th>
@@ -44,13 +42,13 @@
             <div class="modal-body">
                 <div class="card card-success">
                     <div class="card-body">
+                        <!-- Formulário para editar o cartão -->
                         <form action="{{ route('abastecimento.impressao.edit.cartao', ':id') }}" method="GET" id="formEditar">
-                            {{-- @method('PUT') --}}
-
                             @csrf
                             <input type="hidden" name="id" id="modal-id">
                             <input type="hidden" name="idlote" id="idlote">
 
+                            <!-- Campo para editar a placa -->
                             <div class="row">
                                 <div class="col-sm-6">
                                     <div class="form-group">
@@ -59,6 +57,8 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Campos para editar modelo e combustível -->
                             <div class="row">
                                 <div class="col-sm-6">
                                     <div class="form-group">
@@ -68,11 +68,13 @@
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="form-group">
-                                        <label>Combustivel</label>
+                                        <label>Combustível</label>
                                         <input type="text" name="combustivel" id="combustivel" class="form-control">
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Campos para editar cliente e grupo/subgrupo -->
                             <div class="row">
                                 <div class="col-sm-6">
                                     <div class="form-group">
@@ -87,76 +89,77 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Botões de ação do formulário -->
                             <button type="submit" class="btn btn-success" id="btnSalvar">Salvar</button>
-                            <button type="button" class="modal-close waves-effect waves-green btn btn-danger" data-bs-dismiss="modal">Fechar</button>
+                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Fechar</button>
                         </form>
                     </div>
                 </div>
             </div>
-
-
         </div>
     </div>
 </div>
-
 @stop
 
+@section('js')
+<script>
+    $(document).ready(function() {
+        // Máscara para valores em dinheiro
+        $('.dinheiro').mask('#.##0,00', {reverse: true});
 
+        // Remover alertas após 5 segundos
+        setTimeout(function() {
+            $('#alert-success, #alert-error, #alert-warning').each(function() {
+                $(this).animate({
+                    marginRight: '-=1000',
+                    opacity: 0
+                }, 'slow', function() {
+                    $(this).remove();
+                });
+            });
+        }, 5000);
 
- @section('js')
-    <script>
-         var idLote = "{{ $lote->id }}";
-         var url = '/abastecimento/impressao/edit/' + idLote;
-         console.log(url);
+        var idLote = "{{ $lote->id }}";
+        var url = '/abastecimento/impressao/edit/' + idLote;
 
-
-        $(document).ready(function() {
-            var table = $('#impressoes').DataTable({
-                lengthMenu: [
-                    [10, 25, 50, 100, 200, -1],
-                    [10, 25, 50, 100, 200, 'Todos'],
-                ],
-                    dom: 'lBfrtip',
-                    buttons: ['csv', 'excel', 'print', 'pdf'],
-                    "language": {
-                        url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Portuguese-Brasil.json',
-                },
-                processing: true,
-                serverSide: true,
-                ajax: url,
-                columns: [
-                        { data: 'id', name: 'id' },
-                        { data: 'placa', name: 'placa' },
-                        { data: 'modelo', name: 'modelo'},
-                        { data: 'combustivel', name: 'combustivel'},
-                        { data: 'trilha', name: 'trilha'},
-                        { data: 'numero_cartao', name: 'numero_cartao'},
-                        { data: 'cliente', name: 'cliente'},
-                        { data: 'gruposubgrupo', name: 'gruposubgrupo'},
-                        { data: 'action', name: 'action', orderable: false, searchable: false},
-                ],
-                "pageLength": 10,
-                initComplete: function() {
+        // Inicializar DataTable com as configurações desejadas
+        var table = $('#impressoes').DataTable({
+            lengthMenu: [
+                [10, 25, 50, 100, 200, -1],
+                [10, 25, 50, 100, 200, 'Todos'],
+            ],
+            dom: 'lBfrtip',
+            buttons: ['csv', 'excel', 'print', 'pdf'],
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Portuguese-Brasil.json',
+            },
+            processing: true,
+            serverSide: true,
+            ajax: url,
+            columns: [
+                { data: 'id', name: 'id' },
+                { data: 'placa', name: 'placa' },
+                { data: 'modelo', name: 'modelo' },
+                { data: 'combustivel', name: 'combustivel' },
+                { data: 'trilha', name: 'trilha' },
+                { data: 'numero_cartao', name: 'numero_cartao' },
+                { data: 'cliente', name: 'cliente' },
+                { data: 'gruposubgrupo', name: 'gruposubgrupo' },
+                { data: 'action', name: 'action', orderable: false, searchable: false },
+            ],
+            pageLength: 10,
+            initComplete: function() {
                 $('.dataTables_filter').css('display', 'block');
                 $('.dataTables_filter').css('margin-top', '10px');
                 $('#export-buttons').append($('.dt-buttons'));
             }
-
-            });
-
         });
-    </script>
 
+        var myModal = new bootstrap.Modal(document.getElementById('modalEditar'));
 
-    <script>
-    var myModal = new bootstrap.Modal(document.getElementById('modalEditar'));
-    </script>
-
-
-
-<script>
-    $(document).ready(function () {
-        $(document).on('click', '.btn-editar', function () {
+        // Evento de clique para editar o cartão
+        $(document).on('click', '.btn-editar', function() {
             var id = $(this).data('id');
             var placa = $(this).data('placa');
             var modelo = $(this).data('modelo');
@@ -165,9 +168,7 @@
             var gruposubgrupo = $(this).data('gruposubgrupo');
             var idlote = $(this).data('idlote');
 
-            console.log(placa);
-
-            // Preencher os campos do modal
+            // Preencher os campos do modal com os dados do cartão
             $('#modal-id').val(id);
             $('#idlote').val(idlote);
             $('#placa').val(placa);
@@ -176,77 +177,14 @@
             $('#cliente').val(cliente);
             $('#gruposubgrupo').val(gruposubgrupo);
 
-
-            // Atualizar a ação do formulário com o ID
+            // Atualizar a ação do formulário com o ID do cartão
             var formAction = "{{ route('abastecimento.impressao.edit.cartao', ':id') }}";
             formAction = formAction.replace(':id', id);
             $('#formEditar').attr('action', formAction);
 
-            // Mostrar o modal
-            $('#modalEditar').modal('show');
+            // Mostrar o modal de edição
+            myModal.show();
         });
-
-
     });
 </script>
-
-
-
-@endsection
-
-
-
-
-
-{{--@section('js')
-@parent
-
-    <script>src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"</script>
-    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
-
-    {{-- esse que dá o estilo <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
-
-
-    <script>
-        new DataTable('#importação');
-    </script>
-
-<script>
-    $(document).ready(function () {
-        $('#tabela-editavel').DataTable();
-    });
-</script>
-
-<!-- resources/views/sua/view/editar.blade.php -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    var myModal = new bootstrap.Modal(document.getElementById('modalEditar'));
-</script>
-
-
-
-    <script>
-        $(document).ready(function () {
-            $('.btn-editar').on('click', function () {
-                var id = $(this).data('id');
-                var placa = $(this).data('placa');
-                var modelo = $(this).data('modelo');
-                var combustivel = $(this).data('combustivel');
-                var cliente = $(this).data('cliente');
-                var gruposubgrupo = $(this).data('gruposubgrupo');
-
-                // Preencher os campos do modal
-                $('#modal-id').val(id);
-                $('#modal-placa').val(placa);
-                $('#modal-modelo').val(modelo);
-                $('#modal-combustivel').val(combustivel);
-                $('#modal-cliente').val(cliente);
-                $('#modal-gruposubgrupo').val(gruposubgrupo);
-
-                // Mostrar o modal
-                $('#modalEditar').modal('show');
-            });
-        });
-    </script>
-@endsection--}}
+@stop

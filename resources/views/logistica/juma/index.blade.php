@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Correios')
+@section('title', 'Juma')
 
 @section('content_header')
-    <h1 class="m-0 text-dark">Logistica Reversa (Correios)</h1>
+    <h1 class="m-0 text-dark">Logistica Juma</h1>
 
 @stop
 
@@ -22,16 +22,15 @@
                     <i class="bi bi-three-dots-vertical"></i>
                 </button>
                 <ul class="dropdown-menu">
-                    <li><a href="{{route('logistica.correios.create')}}" class="dropdown-item">Solicitar</a></li>
-                    <li><a href="{{route('logistica.correios.consultarPedido')}}" class="dropdown-item">Atualizar Solicitações</a></li>
-                    <li><a href="{{route('logistica.correios.rastreio')}}" class="dropdown-item">Rastrear Objeto</a></li>
+                    <li><a href="{{route('logistica.correios.create')}}" class="dropdown-item">Adicionar</a></li>
+
                 </ul>
             </div>
         </div>
 
          <div class="card-body" style="overflow-x:auto;">
-            <table id="correios" class="table table-striped" class="display" style="text-align: center;">
-                <div class="row">
+            <table id="juma" class="table table-striped" class="display" style="text-align: center;">
+                {{-- <div class="row">
                     <div class="col-sm-2">
                         <div class="form-group">
                             <label for="filtro-contrato">Contrato: </label>
@@ -78,21 +77,20 @@
                                 @endforeach
                             </select>
                         </div>
-                    </div>
+                    </div> --}}
 
                 </div>
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Contrato</th>
-                        <th>Numero Catão</th>
-                        <th>Tipo de Solicitação</th>
-                        <th>Remetente</th>
-                        <th>Destinatario</th>
-                        <th>Numero da Coleta</th>
-                        <th>Código de Rastreio</th>
-                        <th>Status da Logística</th>
+                        <th>Nº Pedido</th>
+                        <th>Nº OS</th>
+                        <th>Quantidade Destino</th>
+                        <th>Valor</th>
                         <th>Produto</th>
+                        <th>Retorno</th>
+                        <th>Código de Rastreio</th>
+                        <th>Observação</th>
                         <th>Data de Solictação</th>
                         <th>Data de Atualização</th>
                         <th>Ação</th>
@@ -105,25 +103,14 @@
         </div>
     </div>
 
+
+
 @stop
 
 @section('js')
-<script>
+ <script>
     $(document).ready(function() {
-        // Remover alertas após 5 segundos
-        setTimeout(function() {
-            $('#alert-success, #alert-error, #alert-warning').each(function() {
-                $(this).animate({
-                    marginRight: '-=1000',
-                    opacity: 0
-                }, 'slow', function() {
-                    $(this).remove();
-                });
-            });
-        }, 5000);
-    });
-    $(document).ready(function() {
-       var table = $('#correios').DataTable({
+       var table = $('#juma').DataTable({
             lengthMenu: [
                 [10, 25, 50, 100, 200, -1],
                 [10, 25, 50, 100, 200, 'Todos'],
@@ -136,30 +123,16 @@
             },
              processing: true,
              serverSide: true,
-             ajax: '{{ route('logistica.correios.index') }}',
+             ajax: '{{ route('logistica.juma.index') }}',
              columns: [
                  { data: 'id', name: 'id' },
-                 { data: 'contrato', name: 'contrato' },
-                 { data: 'num_cartao', name: 'num_cartao'},
-                 {
-                   data: 'tipo_coleta',
-                   name: 'tipo_coleta',
-                   render: function (data, type, full, meta) {
-                    if (data === 'CA') {
-                        return 'COLETA DOMICILIAR';
-                    } else if (data === 'A') {
-                        return 'AUTORIZAÇÃO DE POSTAGEM';
-                    } else {
-                        return data; // Se o valor não for 'CA' ou 'A', retorna o valor original
-                    }
-                   }
-                 },
-                 { data: 'nome_fantasia_remetente', name: 'nome_fantasia_remetente'},
-                 { data: 'nome_fantasia_destinatario', name: 'nome_fantasia_destinatario' },
-                 { data: 'num_coleta', name: 'num_coleta'},
-                 { data: 'num_etiqueta', name: 'num_etiqueta'},
-                 { data: 'desc_status_objeto', name: 'desc_status_objeto'},
+                 { data: 'num_pedido', name: 'num_pedido' },
+                 { data: 'num_os', name: 'num_os'},
+                 { data: 'qtd_destino', name: 'qtd_destino'},
+                 { data: 'valor', name: 'valor'},
                  { data: 'produto', name: 'produto' },
+                 { data: 'retorno', name: 'retorno'},
+                 { data: 'observacao', name: 'observacao'},
                  {
                    data: 'created_at',
                    name: 'created_at',
@@ -186,46 +159,7 @@
             $('#export-buttons').append($('.dt-buttons'));
         }
     });
-         $('#filtro-contrato').on('change', function() {
-             var contrato = this.value;
-             if (contrato) {
-                 // Pesquisa exata
-                 table.column(1).search('^' + contrato + '$', true, false).draw();
-             } else {
-                 // Limpar o filtro se o valor for vazio
-                 table.column(1).search('').draw();
-             }
-         });
-             $('#filtro-solicitacao').on('change', function() {
-             var solicitacao = this.value;
-             if (solicitacao) {
-                 // Pesquisa exata
-                 table.column(3).search('^' + solicitacao + '$', true, false).draw();
-             } else {
-                 // Limpar o filtro se o valor for vazio
-                 table.column(3).search('').draw();
-             }
-         });
-         $('#filtro-status').on('change', function() {
-             var status = this.value;
-             if (status) {
-                 // Pesquisa exata
-                 table.column(8).search('^' + status + '$', true, false).draw();
-             } else {
-                 // Limpar o filtro se o valor for vazio
-                 table.column(8).search('').draw();
-             }
-         });
-         $('#filtro-produto').on('change', function() {
-             var produto = this.value;
-             if (produto) {
-                 // Pesquisa exata
-                 table.column(9).search('^' + produto + '$', true, false).draw();
-             } else {
-                 // Limpar o filtro se o valor for vazio
-                 table.column(9).search('').draw();
-             }
-         });
+
 
 });
 

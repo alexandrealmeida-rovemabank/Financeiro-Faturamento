@@ -163,55 +163,70 @@
 
     <form action="{{route('terminal.vincular',[$credenciado->id]) }}" method="GET">
         @csrf
-        <div class="row">
-            <div class="col-sm-4">
+        <div class="row" id="row_vincular_terminal">
+            <div class="col-lg-3 col-md-6 col-sm-12">
                 <div class="form-group">
                     <label>Terminal</label>
-
                     <select class="form-control search" name="id_estoque" id="id_estoque">
                         @foreach ($estoques as $estoque)
-                            @if($estoque->categoria == 'TERMINAL' & $estoque->status =="Disponível" )
-                                <option><a class="dropdown-item">{{ $estoque->numero_serie }}</a></option>
+                            @if($estoque->categoria == 'TERMINAL' && $estoque->status == "Disponível" )
+                                <option value="{{ $estoque->id }}">{{ $estoque->numero_serie }}</option>
                             @endif
                         @endforeach
                     </select>
                 </div>
             </div>
-            <div class="col-sm-4">
+            <div class="col-lg-3 col-md-6 col-sm-12">
                 <div class="form-group">
                     <label>Chip</label>
                     <select class="form-control search" name="chip" id="chip" >
-                        <option><a class="dropdown-item">Sem Chip</a></option>
+                        <option value="Sem Chip">Sem Chip</option>
                         @foreach ($estoques as $estoque)
-                            @if($estoque->categoria == 'CHIP' & $estoque->status =="Disponível")
-                                <option><a class="dropdown-item">{{ $estoque->numero_serie }}</a></option>
+                            @if($estoque->categoria == 'CHIP' && $estoque->status == "Disponível")
+                                <option value="{{ $estoque->id }}">{{ $estoque->numero_serie }}</option>
                             @endif
                         @endforeach
                     </select>
                 </div>
             </div>
-            <div class="col-sm-4">
+            <div class="col-lg-3 col-md-6 col-sm-12">
                 <div class="form-group">
                     <label>Produto</label>
-                    <select class="form-control search" name="produto" id="produto" >
+                    <select class="form-control search" name="produto" id="produto">
                         @if (str_contains($credenciado->produto, 'BIONIO'))
-                            <option><a class="dropdown-item">BIONIO</a></option>
+                            <option value="BIONIO">BIONIO</option>
                         @endif
                         @if (str_contains($credenciado->produto, 'ELIQ'))
-                            <option><a class="dropdown-item">ELIQ</a></option>
+                            <option value="ELIQ">ELIQ</option>
                         @endif
                         @if (str_contains($credenciado->produto, 'MAQUININHA'))
-                            <option><a class="dropdown-item">MAQUININHA</a></option>
+                            <option value="MAQUININHA">MAQUININHA</option>
                         @endif
                     </select>
                 </div>
             </div>
-            <div class="col-sm-4" >
-                <div class="form-group" style="display: block">
-                    <button type="submit" class="btn btn-success">Adicionar</button>
+            <div class="col-lg-3 col-md-6 col-sm-12">
+                <div class="form-group">
+                    <label>Sistemas</label>
+                    <select class="form-control search" name="sistema" id="sistema">
+                        @if (str_contains($credenciado->produto, 'BIONIO'))
+                            <option value="INFOX">INFOX</option>
+                        @endif
+                        @if (str_contains($credenciado->produto, 'ELIQ'))
+                            <option value="SIGYO">SIGYO</option>
+                            <option value="LOGPAY">LOGPAY</option>
+                        @endif
+                        @if (str_contains($credenciado->produto, 'MAQUININHA'))
+                            <option value="GSURF">GSURF</option>
+                        @endif
+                    </select>
                 </div>
             </div>
-
+            <div class="col-lg-3 col-md-6 col-sm-12">
+                <div class="form-group">
+                    <button type="submit" class="btn btn-success mt-4">Adicionar</button>
+                </div>
+            </div>
         </div>
     </form>
     </div>
@@ -226,6 +241,7 @@
                     <th>Modedlo</th>
                     <th>Chip</th>
                     <th>Produto</th>
+                    <th>Sistema</th>
                     <th>Data de Vinculação</th>
                     <th>Ação</th>
                 </tr>
@@ -240,6 +256,7 @@
                     <td>{{ $terminais->estoque->modelo }}</td>
                     <td>{{ $terminais->chip }}</td>
                     <td>{{ $terminais->produto }}</td>
+                    <td>{{ $terminais->sistema }}</td>
                     <td>{{ $terminais->created_at}}</td>
                     <td> <a class="btn btn-success" href="{{ route('terminal.desvincular', $terminais->id) }}" type="submit">Desvincular</a> </td>
                 </tr>
@@ -271,8 +288,17 @@
 <script>
     $(document).ready(function () {
         $('.search').select2();
+
+        setTimeout(function() {
+            $('#alert-success, #alert-error, #alert-warning').each(function() {
+                $(this).animate({
+                    marginRight: '-=1000',
+                    opacity: 0
+                }, 'slow', function() {
+                    $(this).remove(); // Remove o elemento após a animação
+                });
+            });
+        }, 5000);
     });
 </script>
-
-
 @endsection

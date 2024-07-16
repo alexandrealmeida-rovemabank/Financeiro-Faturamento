@@ -16,6 +16,7 @@ class terminal_vinculado extends Model
         'id_credenciado',
         'status',
         'chip',
+        'sistema',
         'produto',
     ];
 

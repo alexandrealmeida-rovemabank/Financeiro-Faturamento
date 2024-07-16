@@ -3,11 +3,14 @@
 @section('title', 'Correios - solicitação')
 
 @section('content_header')
-    <h1 class="m-0 text-dark">Solicitação de Logística Reversa</h1>
+
+    <h1 class="m-0 text-dark">Solicitação de Logística Juma</h1>
+
 @stop
 
 @section('content')
 @include('layouts.notificacoes')
+
 
 <form action="{{ route('logistica.correios.solicitarPostagemReversa') }}" method="POST">
     @csrf
@@ -87,7 +90,8 @@
                     <!-- text input -->
                     <div class="form-group">
                     <label>CNPJ*</label>
-                        <input type="text" name="cnpj_remetente" class="form-control" required oninput="this.value = this.value.toUpperCase()">
+                    <input type="text" name="cnpj_remetente" class="form-control" required oninput="this.value = this.value.toUpperCase()">
+                    <div id="error" style="display: none; color: red;"></div>
                     </div>
                 </div>
             </div>
@@ -109,10 +113,10 @@
             {{-- Endereço --}}
             <div class="row">
                 <div class="col-sm-6">
-                    <label for="cep_remetente">CEP*</label>
-                    <div class="form-group d-flex">
-                        <input type="text" id="cep_remetente" name="cep_remetente" class="form-control" required oninput="this.value = this.value.toUpperCase()">
-                        <a id="btn-consultar" class="btn btn-success">Consultar</a>
+                    <!-- text input -->
+                    <div class="form-group">
+                    <label>CEP*</label>
+                    <input type="text" name="cep_remetente" class="form-control" required oninput="this.value = this.value.toUpperCase()">
                     </div>
                 </div>
                 <div class="col-sm-6">
@@ -200,7 +204,7 @@
 </div>
 {{-- Destinatario --}}
 
-    <div id="destinatario" class="card" style="display: none;">
+    <div class="card">
         <div class="card-header">
             <h1 class="m-0 card-title text-dark">Destinatário</h1>
         </div>
@@ -211,6 +215,7 @@
                 <div class="form-group">
                     <label>CNPJ*</label>
                     <input type="text" name="cnpj_destinatario" class="form-control" required oninput="this.value = this.value.toUpperCase()">
+                    <div id="error" style="display: none; color: red;"></div>
                 </div>
                 </div>
             </div>
@@ -236,7 +241,6 @@
                 <div class="form-group">
                     <label>CEP*</label>
                     <input type="text" name="cep_destinatario" class="form-control" required oninput="this.value = this.value.toUpperCase()">
-
                 </div>
                 </div>
                 <div class="col-sm-6">
@@ -319,7 +323,7 @@
 {{-- Final_destinatario --}}
 
 {{-- Informações sobre a coleta  --}}
-    <div id="coleta" class="card" style="display: none;">
+    <div class="card">
         <div class="card-header">
             <h1 class="m-0 card-title text-dark">Informações de Coleta</h1>
         </div>
@@ -380,81 +384,30 @@
             </div>
         </div>
     </div>
+
     <button type="submit" class="btn btn-success">Salvar</button>
+
 </form>
 
+
+
 @stop
+
 @section('js')
 <script src="https://igorescobar.github.io/jQuery-Mask-Plugin/js/jquery.mask.min.js"></script>
 <script>
-function showAlert(type, message) {
-    var alertId = '#alert-' + type + '-v2';
-    var messageId = '#alert-' + type + '-message-v2';
 
-    // Define o texto da mensagem
-    $(messageId).text(message);
-
-    // Mostra a notificação adicionando a classe de animação
-    $(alertId).addClass('slide-out');
-    $(alertId).css('display', 'flex');
-
-
-    // Configura um timeout para remover a classe e esconder a notificação após 5 segundos
-    setTimeout(function() {
-        $(alertId).removeClass('slide-out');
-        $(alertId).css('display', 'none');
-    }, 5000); // 5000 milissegundos = 5 segundos
-}
-
-$(document).ready(function() {
     $('.dinheiro').mask('#.##0,00', {reverse: true});
-    setTimeout(function() {
-            $('#alert-success, #alert-error, #alert-warning').each(function() {
-                $(this).animate({
-                    marginRight: '-=1000',
-                    opacity: 0
-                }, 'slow', function() {
-                    $(this).remove(); // Remove o elemento após a animação
-                });
-            });
-        }, 5000);
-    $('#btn-consultar').on('click', function() {
-        var cep = $('input[name="cep_remetente"]').val().replace(/[^\d]/g, '');
-        var codServico = $('input[name="cod_servico"]').val();
-        $('#loading-spinner-remetente').show();
-        $.ajax({
-            url: '/verificarColeta/' + cep + '/' + codServico,
-            type: 'GET',
-            success: function(response) {
-                if (response.coletaDisponivel === true) {
-                    showAlert('success', 'Coleta Domiciliar e Autorização de postagem Disponível!');
-                    $('#destinatario').css('display', 'flex');
-                    $('#coleta').css('display', 'flex');
-                    $('#tipo_coleta').prop('disabled', false);
-                } else {
-                    showAlert('warning', 'Coleta não disponível. Apenas autorização de postagem.');
-                    $('#tipo_coleta').val('A').prop('disabled', true);
-                    $('#destinatario').css('display', 'flex');
-                    $('#coleta').css('display', 'flex');
-                }
-                $('#loading-spinner-remetente').hide();
-            },
-            error: function(error) {
-                console.log(error);
-                showAlert('error', 'Houve algum erro ao verificar a coleta.');
-                $('#loading-spinner-remetente').hide();
-            }
-        });
-    });
-
+    $(document).ready(function() {
     $('input[name="cnpj_remetente"]').on('change', function() {
-        var cnpj = $(this).val().replace(/[^\d]/g, '');
-        $('#loading-spinner-remetente').show();
+        var cnpj = $(this).val();
+        let cnpjSemPontuacao = cnpj.replace(/[^\d]/g, '');
+        $('#loading-spinner-remetente').show(); // ID único para o spinner de remetente
         $.ajax({
-            url: '/buscar-cnpj/' + cnpj,
+            url: '/buscar-cnpj/' + cnpjSemPontuacao,
             type: 'GET',
             success: function(data) {
-                showAlert('success', 'CNPJ encontrado na Receita!');
+                // Preencha os campos do formulário com os dados retornados
                 $('input[name="nome_fantasia_remetente"]').val(data.nome_fantasia);
                 $('input[name="email_remetente"]').val(data.email);
                 $('input[name="cep_remetente"]').val(data.cep);
@@ -465,24 +418,31 @@ $(document).ready(function() {
                 $('input[name="estado_remetente"]').val(data.uf);
                 $('input[name="telefone_remetente"]').val(data.ddd);
                 $('input[name="celular_remetente"]').val(data.ddd_telefone_1);
-                $('#loading-spinner-remetente').hide();
+                // Continue preenchendo os outros campos...
+                $('#loading').hide();
             },
             error: function(error) {
-                showAlert('error', 'Houve algum erro ao buscar as informações do CNPJ, Por favor digite manualmente!');
-                $('#loading-spinner-remetente').hide();
                 console.log(error);
+                $('#error').text('Não foi possível encontrar o CNPJ.').show();
+            },
+            complete: function() {
+                $('#loading-spinner-remetente').hide(); // Esconder o spinner após a requisição AJAX
             }
         });
     });
 
+});
+
+$(document).ready(function() {
     $('input[name="cnpj_destinatario"]').on('change', function() {
-        var cnpj = $(this).val().replace(/[^\d]/g, '');
+        var cnpj = $(this).val();
+        let cnpjSemPontuacao = cnpj.replace(/[^\d]/g, '');
         $('#loading-spinner-destinatario').show();
         $.ajax({
-            url: '/buscar-cnpj/' + cnpj,
+            url: '/buscar-cnpj/' + cnpjSemPontuacao,
             type: 'GET',
             success: function(data) {
-                showAlert('success', 'CNPJ encontrado na Receita!');
+                // Preencha os campos do formulário com os dados retornados
                 $('input[name="nome_fantasia_destinatario"]').val(data.nome_fantasia);
                 $('input[name="email_destinatario"]').val(data.email);
                 $('input[name="cep_destinatario"]').val(data.cep);
@@ -493,69 +453,97 @@ $(document).ready(function() {
                 $('input[name="estado_destinatario"]').val(data.uf);
                 $('input[name="telefone_destinatario"]').val(data.ddd);
                 $('input[name="celular_destinatario"]').val(data.ddd_telefone_1);
-                $('#loading-spinner-destinatario').hide();
+                // Continue preenchendo os outros campos...
+                $('#loading').hide();
             },
             error: function(error) {
-                showAlert('error', 'Houve algum erro ao buscar as informações do CNPJ, Por favor digite manualmente!');
-                $('#loading-spinner-destinatario').hide();
                 console.log(error);
+                $('#error').text('Não foi possível encontrar o CNPJ.').show();
+            },
+            complete: function() {
+                $('#loading-spinner-destinatario').hide(); // Esconder o spinner após a requisição AJAX
+            }
+
+        });
+    });
+});
+
+
+
+    $(document).ready(function() {
+        $('#tipo_coleta').on('change', function() {
+            var tipoColeta = $(this).val();
+            var $arField = $('#ar');
+            if (tipoColeta === 'CA') {
+                $arField.val('0'); // Defina o valor padrão como "Não"
+                $arField.prop('disabled', true);
+            } else {
+                $arField.prop('disabled', false);
             }
         });
     });
 
-    $('#tipo_coleta').on('change', function() {
-        var tipoColeta = $(this).val();
-        var $arField = $('#ar');
-        if (tipoColeta === 'CA') {
-            $arField.val('0'); // Defina o valor padrão como "Não"
-            $arField.prop('disabled', true);
-        } else {
-            $arField.prop('disabled', false);
-        }
-    });
 
-    $('input[name="contrato"]').on('change', function() {
-        var contratoSelecionado = $(this).val();
-        var $numCartaoField = $('#num_cartao');
-        $numCartaoField.empty();
-        $.ajax({
-            url: '/logistica/correios/buscarCartao/' + contratoSelecionado,
-            type: 'GET',
-            success: function(response) {
+
+    $(document).ready(function() {
+        $('input[name="contrato"]').on('change', function() {
+            var contratoSelecionado = $(this).val();
+            var $numCartaoField = $('#num_cartao');
+            $numCartaoField.empty();
+            // Limpe as opções existentes
+
+            // Faça a solicitação AJAX para buscar os números de cartão com base no contrato selecionado
+            $.ajax({
+                url: '/logistica/correios/buscarCartao/'+ contratoSelecionado, // Substitua pelo caminho para o endpoint que retorna o nome fantasia
+                type: 'GET',
+
+
+
+                success: function(response) {
+                console.log(response);
+                // Adicione as novas opções ao campo de seleção de número de cartão
                 $.each(response, function(index, numeroCartao) {
                     $numCartaoField.append($('<option></option>').attr('value', numeroCartao).text(numeroCartao));
                 });
             },
             error: function(error) {
                 console.log(error);
+                // Trate os erros, se necessário
             }
+        });
         });
     });
 
-    var embalagens = [
-        { tipo: ' ', codigo: ' ', descricao: 'Não autorizado a aquisição de caixa' },
-        { tipo: '0', codigo: '116600403', descricao: 'Caixa de Encomenda "B" (16x11x6 cm)' },
-        { tipo: '0', codigo: '116600055', descricao: 'Caixa Encomenda 01 (18x13,5x9 cm)' },
-        { tipo: '0', codigo: '116600063', descricao: 'Caixa Encomenda 02 (27x18x9 cm)' },
-        { tipo: '2', codigo: '116600071', descricao: 'Caixa Encomenda 03 (27x22,5x13,5 cm)' },
-        { tipo: '0', codigo: '116600080', descricao: 'Caixa Encomenda 04 (36x27x18 cm)' },
-        { tipo: '2', codigo: '116600160', descricao: 'Caixa Encomenda 05 (54x36x27 cm)' },
-        { tipo: '0', codigo: '116600179', descricao: 'Caixa Encomenda 06 (36x27x27 cm)' },
-        { tipo: '0', codigo: '116600187', descricao: 'Caixa Encomenda 07 (36x28x4 cm)' },
-        { tipo: '0', codigo: '765000660', descricao: 'Envelope Bolha Grande (20x28 cm)' },
-        { tipo: '2', codigo: '765000652', descricao: 'Envelope Bolha Médio (21x18 cm)' },
-        { tipo: '2', codigo: '765000644', descricao: 'Envelope SEDEX Plástico Grande (40x28 cm)' },
-        { tipo: '0', codigo: '765000636', descricao: 'Envelope SEDEX Plástico Médio (35,3x25 cm)' }
-    ];
 
-    var selectEmbalagem = document.getElementById('tipo_embalagem');
+        // Dados da tabela de embalagens
+        var embalagens = [
+            { tipo: ' ', codigo: ' ', descricao: 'Não autorizado a aquisição de caixa' },
+            { tipo: '0', codigo: '116600403', descricao: 'Caixa de Encomenda "B" (16x11x6 cm)' },
+            { tipo: '0', codigo: '116600055', descricao: 'Caixa Encomenda 01 (18x13,5x9 cm)' },
+            { tipo: '0', codigo: '116600063', descricao: 'Caixa Encomenda 02 (27x18x9 cm)' },
+            { tipo: '2', codigo: '116600071', descricao: 'Caixa Encomenda 03 (27x22,5x13,5 cm)' },
+            { tipo: '0', codigo: '116600080', descricao: 'Caixa Encomenda 04 (36x27x18 cm)' },
+            { tipo: '2', codigo: '116600160', descricao: 'Caixa Encomenda 05 (54x36x27 cm)' },
+            { tipo: '0', codigo: '116600179', descricao: 'Caixa Encomenda 06 (36x27x27 cm)' },
+            { tipo: '0', codigo: '116600187', descricao: 'Caixa Encomenda 07 (36x28x4 cm)' },
+            { tipo: '0', codigo: '765000660', descricao: 'Envelope Bolha Grande (20x28 cm)' },
+            { tipo: '2', codigo: '765000652', descricao: 'Envelope Bolha Médio (21x18 cm)' },
+            { tipo: '2', codigo: '765000644', descricao: 'Envelope SEDEX Plástico Grande (40x28 cm)' },
+            { tipo: '0', codigo: '765000636', descricao: 'Envelope SEDEX Plástico Médio (35,3x25 cm)' }
+        ];
 
-    embalagens.forEach(function(embalagem) {
-        var option = document.createElement('option');
-        option.value = embalagem.tipo + '-' + embalagem.codigo + '-' + embalagem.descricao;
-        option.textContent = embalagem.descricao;
-        selectEmbalagem.appendChild(option);
-    });
-});
+        // Obtém o elemento select
+        var selectEmbalagem = document.getElementById('tipo_embalagem');
+
+        // Preenche o select com as opções
+        embalagens.forEach(function(embalagem) {
+            var option = document.createElement('option');
+            option.value = embalagem.tipo + '-' + embalagem.codigo + '-' + embalagem.descricao;
+            option.textContent = embalagem.descricao;
+            selectEmbalagem.appendChild(option);
+        });
+
+
+
 </script>
 @endsection

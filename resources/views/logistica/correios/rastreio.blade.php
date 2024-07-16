@@ -11,21 +11,18 @@
     @include('layouts.notificacoes')
 
     <div class="container-sm">
-        <form id="rastrear-form" action="{{ route('logistica.correios.rastrear') }}" method="POST">
-            @csrf
-            <div class="input-group mb-3">
-                <input type="text" name="cod_rastreio" id="cod_rastreio" class="form-control" placeholder="Digite o codigo de rastreio" aria-label="Recipient's username" aria-describedby="button-addon2">
-                <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Rastrear</button>
-            </div>
-        </form>
+        <div class="input-group mb-3">
+            <input type="text" name="cod_rastreio_input" id="cod_rastreio_input" class="form-control" placeholder="Digite o código de rastreio" aria-label="Recipient's username" aria-describedby="button-addon2">
+            <button class="btn btn-outline-secondary" type="submit" onclick="buscarRastreamento()" id="button-addon2">Rastrear</button>
+        </div>
     </div>
+
     <div id="loading-spinner" class="text-center" style="display: none;">
         <div class="spinner-border text-success" role="status">
             <span class="sr-only">Loading...</span>
         </div>
         <p class="mt-2">Carregando...</p>
     </div>
-
 
     <div id="resultado" class="card" style="display: none;">
         <div class="card-header">
@@ -39,100 +36,175 @@
         </div>
     </div>
 
+    <div class="card-body">
+        <table id="table_rastreio" class="table table-striped display">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Remetente</th>
+                    <th>Destinatário</th>
+                    <th>Etiqueta</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($pedidosPendentes as $pedidos)
+                <tr>
+                    <td>{{ $pedidos->id }}</td>
+                    <td>{{ $pedidos->nome_fantasia_remetente }}</td>
+                    <td>{{ $pedidos->nome_fantasia_destinatario }}</td>
+                    <td class="cod_rastreio">{{ $pedidos->num_etiqueta }}</td>
+                    <td>
+                        <button type="button" class="btn btn-success" onclick="buscarRastreamentoTabela(this)">Rastrear</button>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 
+@endsection
 
-    <script>
-        document.getElementById('rastrear-form').addEventListener('submit', function(event) {
-            event.preventDefault(); // Evita que o formulário seja enviado normalmente
-
-            document.getElementById('loading-spinner').style.display = 'block';
-
-            // Obtém o valor do campo de código de rastreio
-            var codigoRastreio = document.getElementById('cod_rastreio').value;
-
-            // Faz uma requisição AJAX para buscar os resultados
-            // Aqui você deve fazer a requisição para o seu backend que retorna os resultados
-            // Assim que os resultados forem recebidos, a função de callback será chamada
-            // Substitua a URL pela URL correta para fazer a requisição para o seu backend
-            fetch('{{ route("logistica.correios.rastrear") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') // Obtém o token CSRF do meta tag
-                },
-                body: JSON.stringify({ cod_rastreio: codigoRastreio }) // Envia o código de rastreio no corpo da requisição
-            })
-            .then(function(response) {
-                if (!response.ok) {
-                    throw new Error('Erro ao fazer a requisição');
-                }
-                return response.json();
-            })
-            .then(function(data) {
-                // Exibe os resultados na página
-                exibirResultados(data);
-            })
-            .catch(function(error) {
-                console.error('Erro:', error);
-            })
-            .finally(function() {
-                // Oculta o ícone de carregamento após a requisição ser concluída (com sucesso ou erro)
-                document.getElementById('loading-spinner').style.display = 'none';
+@section('js')
+<script>
+    $(document).ready(function () {
+        setTimeout(function() {
+            $('#alert-success, #alert-error, #alert-warning').each(function() {
+                $(this).animate({
+                    marginRight: '-=1000',
+                    opacity: 0
+                }, 'slow', function() {
+                    $(this).remove();
+                });
             });
+        }, 5000);
+
+        $('#table_rastreio').DataTable({
+            lengthMenu: [
+                [10, 25, 50, 100, 200, -1],
+                [10, 25, 50, 100, 200, 'Todos'],
+            ],
+            className: 'btn btn-success',
+            "language": {
+                url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Portuguese-Brasil.json',
+            },
+            drawCallback: function() {
+                $('.dropdown-toggle').dropdown();
+            }
         });
+    });
 
-        function exibirResultados(result) {
-            // Verifica se há resultados
-            if (result && result.objetos && result.objetos.length > 0) {
-                var listaResultados = document.getElementById('lista-resultados');
-                listaResultados.innerHTML = ''; // Limpa a lista de resultados
+    function buscarRastreamento() {
+        var codigoRastreio = document.getElementById('cod_rastreio_input').value;
+        if (!codigoRastreio) {
+            alert('Por favor, insira um código de rastreio.');
+            return;
+        }
 
-                // Adiciona os resultados à lista
-                result.objetos.forEach(function(objeto) {
-                    var listItem = document.createElement('div');
-                    listItem.classList.add('card');
-                    listItem.classList.add('mb-3');
+        document.getElementById('loading-spinner').style.display = 'block';
 
-                    var cardBody = document.createElement('div');
-                    cardBody.classList.add('card-body');
+        $.ajax({
+            url: '/rastrear_index/' + codigoRastreio,
+            type: 'GET',
+            success: function(response) {
+                exibirResultados(response.result);
+            },
+            error: function(error) {
+                console.log(error);
+                alert('Houve algum erro ao buscar a coleta.');
+            },
+            complete: function() {
+                document.getElementById('loading-spinner').style.display = 'none';
+            }
+        });
+    }
 
-                    var cardTitle = document.createElement('h5');
-                    cardTitle.classList.add('card-title');
-                    cardTitle.textContent = 'Informações da Encomenda';
+    function buscarRastreamentoTabela(button) {
+        var codigoRastreio = $(button).closest('tr').find('.cod_rastreio').text();
+        if (!codigoRastreio) {
+            alert('Código de rastreio não encontrado.');
+            return;
+        }
 
-                    var cardText = document.createElement('p');
-                    cardText.classList.add('card-text');
+        document.getElementById('loading-spinner').style.display = 'block';
 
-                    var codigoObjeto = document.createElement('p');
-                    codigoObjeto.innerHTML = '<strong>Código do Objeto:</strong> ' + objeto.codObjeto;
+        $.ajax({
+            url: '/rastrear_index/' + codigoRastreio,
+            type: 'GET',
+            success: function(response) {
+                exibirResultados(response.result);
+            },
+            error: function(error) {
+                console.log(error);
+                alert('Houve algum erro ao buscar a coleta.');
+            },
+            complete: function() {
+                document.getElementById('loading-spinner').style.display = 'none';
+            }
+        });
+    }
 
-                    var eventosList = document.createElement('ul');
-                    eventosList.classList.add('list-group');
+    function exibirResultados(result) {
+        if (result && result.objetos && result.objetos.length > 0) {
+            var listaResultados = document.getElementById('lista-resultados');
+            listaResultados.innerHTML = '';
 
-                    objeto.eventos.forEach(function(evento) {
-                        var eventoItem = document.createElement('li');
-                        eventoItem.classList.add('list-group-item');
-                        eventoItem.innerHTML = '<strong>Evento:</strong> ' + evento.descricao + '<br>' +
-                                                '<strong>Data e Hora do Evento:</strong> ' + evento.dtHrCriado + '<br>' +
-                                                '<strong>Unidade:</strong> ' + evento.unidade.endereco.cidade + ', ' + evento.unidade.endereco.uf + '<br>';
-                        eventosList.appendChild(eventoItem);
-                    });
+            result.objetos.forEach(function(objeto) {
+                var listItem = document.createElement('div');
+                listItem.classList.add('card');
+                listItem.classList.add('mb-3');
 
-                    cardText.appendChild(codigoObjeto);
-                    cardText.appendChild(eventosList);
-                    cardBody.appendChild(cardTitle);
-                    cardBody.appendChild(cardText);
-                    listItem.appendChild(cardBody);
-                    listaResultados.appendChild(listItem);
+                var cardBody = document.createElement('div');
+                cardBody.classList.add('card-body');
+
+                var cardTitle = document.createElement('h5');
+                cardTitle.classList.add('card-title');
+                cardTitle.textContent = 'Informações da Encomenda';
+
+                var cardText = document.createElement('p');
+                cardText.classList.add('card-text');
+
+                var codigoObjeto = document.createElement('p');
+                codigoObjeto.innerHTML = '<strong>Código do Objeto:</strong> ' + objeto.codObjeto;
+
+                var eventosList = document.createElement('ul');
+                eventosList.classList.add('list-group');
+
+                objeto.eventos.forEach(function(evento) {
+                    var eventoItem = document.createElement('li');
+                    eventoItem.classList.add('list-group-item');
+                    eventoItem.innerHTML = '<strong>Evento:</strong> ' + evento.descricao + '<br>' +
+                                            '<strong>Data e Hora do Evento:</strong> ' + evento.dtHrCriado + '<br>' +
+                                            '<strong>Unidade:</strong> ' + evento.unidade.endereco.cidade + ', ' + evento.unidade.endereco.uf + '<br>';
+                    eventosList.appendChild(eventoItem);
                 });
 
-                // Exibe o resultado na página
-                document.getElementById('resultado').style.display = 'block';
-            } else {
-                // Caso não haja resultados, oculta a seção de resultados
-                document.getElementById('resultado').style.display = 'none';
-            }
-        }
-    </script>
+                cardText.appendChild(codigoObjeto);
+                cardText.appendChild(eventosList);
+                cardBody.appendChild(cardTitle);
+                cardBody.appendChild(cardText);
+                listItem.appendChild(cardBody);
+                listaResultados.appendChild(listItem);
+            });
+            document.getElementById('resultado').scrollIntoView({ behavior: 'smooth' });
 
+            document.getElementById('resultado').style.display = 'block';
+        } else {
+            document.getElementById('resultado').style.display = 'none';
+        }
+    }
+
+    function toggleResultado() {
+        var body = document.getElementById('resultado-body');
+        var icon = document.getElementById('toggle-icon');
+
+        if (body.style.display === 'none') {
+            body.style.display = 'block';
+            icon.classList.remove('collapsed');
+        } else {
+            body.style.display = 'none';
+            icon.classList.add('collapsed');
+        }
+    }
+</script>
 @endsection

@@ -17,6 +17,7 @@ class historico_terminal extends Model
         'produto',
         'acao',
         'data',
+        'sistema',
         'usuario',
     ];
     public $timestamps = false;

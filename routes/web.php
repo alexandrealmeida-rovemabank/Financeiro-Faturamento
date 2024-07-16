@@ -12,6 +12,8 @@ use App\Mail\mytestemail;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
 use App\Models\parametros_correios_cartao;
+use App\Http\Controllers\ProcessosController;
+
 
 
 
@@ -106,7 +108,7 @@ Route::get('/terminal/desvincular/{id}', [TerminalController::class, 'desvincula
 // Route::get('/estoque/historico/{id}', [EstoqueController::class, 'historico'])->middleware(['auth', 'verified'])->name('estoque.historico');
 
 
-//Lojistica
+//Lojistica->correiros
 
 Route::get('/logistica/correios/index', [LogisticaController::class, 'index_correios'])->middleware(['auth', 'verified'])->name('logistica.correios.index');
 Route::get('/logistica/correios/create',  function () { $parametros = parametros_correios_cartao::all();  return view('logistica.correios.create', compact('parametros'));} )->middleware(['auth', 'verified'])->name('logistica.correios.create');
@@ -114,13 +116,15 @@ Route::post('/logistica/correios/solicitarPostagemReversa', [LogisticaController
 Route::get('/logistica/correios/buscarCartao/{contratoSelecionado}',  [LogisticaController::class, 'buscarNumerosCartao'])->middleware(['auth', 'verified'])->name('logistica.correios.buscar-numeros-cartao');
 Route::get('/logistica/correios/cancelar/{id}', [LogisticaController::class, 'cancelarPedido'])->middleware(['auth', 'verified'])->name('logistica.correios.cancelar');
 Route::get('/logistica/correios/visualizar/{id}', [LogisticaController::class, 'view'])->middleware(['auth', 'verified'])->name('logistica.correios.visualizar');
-Route::get('/logistica/correios/rastreio',  function () {return view('logistica.correios.rastreio');} )->middleware(['auth', 'verified'])->name('logistica.correios.rastreio');
+Route::get('/logistica/correios/rastreio',  [LogisticaController::class, 'rastreio_index'] )->middleware(['auth', 'verified'])->name('logistica.correios.rastreio');
 Route::post('/logistica/correios/rastrear', [LogisticaController::class,'rastrear'])->middleware(['auth', 'verified'])->name('logistica.correios.rastrear');
-
-
-
-
 Route::get('/logistica/correios/consultarPedido', [LogisticaController::class, 'acompanharPedido'])->middleware(['auth', 'verified'])->name('logistica.correios.consultarPedido');
+Route::get('/verificarColeta/{cep}/{cod_servico}', [LogisticaController::class, 'Verificar_Coleta'])->middleware(['auth', 'verified'])->name('logistica.correios.coleta');
+Route::get('/rastrear_index/{etiqueta}', [LogisticaController::class, 'rastrear_index']);
+
+//Lojistica->Juma
+Route::get('/logistica/juma/index', [LogisticaController::class, 'index_juma'])->middleware(['auth', 'verified'])->name('logistica.juma.index');
+
 // Route::get('/estoque/index/historico', [EstoqueController::class, 'getHistorico'])->middleware(['auth', 'verified'])->name('estoque.historico');
 // Route::get('/estoque/index/historico/credenciado', [EstoqueController::class, 'getHistoricocredenciado'])->middleware(['auth', 'verified'])->name('estoque.historico.credenciado');
 // Route::post('/estoque/create', [EstoqueController::class, 'create'])->middleware(['auth', 'verified'])->name('estoque.create');
@@ -130,5 +134,10 @@ Route::get('/logistica/correios/consultarPedido', [LogisticaController::class, '
 // Route::get('/estoque/excluir/{id}', [EstoqueController::class, 'excluir'])->middleware(['auth', 'verified'])->name('estoque.excluir');
 // Route::get('/estoque/historico/{id}', [EstoqueController::class, 'historico'])->middleware(['auth', 'verified'])->name('estoque.historico');
 
+// routes/web.php
+
+
+Route::get('/processos', [ProcessosController::class, 'index'])->name('processos.index');
+Route::get('/progresso', [ProcessosController::class, 'progresso'])->name('acompanhamento.progresso');
 
 require __DIR__.'/auth.php';

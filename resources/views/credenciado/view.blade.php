@@ -197,5 +197,22 @@
 
 @stop
 @section('js')
+<script>
+    $(document).ready(function() {
+        // Máscara para valores em dinheiro
+        $('.dinheiro').mask('#.##0,00', {reverse: true});
 
+        // Remover alertas após 5 segundos
+        setTimeout(function() {
+            $('#alert-success, #alert-error, #alert-warning').each(function() {
+                $(this).animate({
+                    marginRight: '-=1000',
+                    opacity: 0
+                }, 'slow', function() {
+                    $(this).remove();
+                });
+            });
+        }, 5000);
+    });
+</script>
 @endsection

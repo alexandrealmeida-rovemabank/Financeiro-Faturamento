@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('chip');
             $table->string('produto');
             $table->string('status');
+            $table->string('sistema')->nullable();
             $table->timestamps();
             $table->foreign('id_estoque')->references('id')->on('estoque')->onDelete('cascade');
             $table->foreign('id_credenciado')->references('id')->on('credenciado')->onDelete('cascade');
