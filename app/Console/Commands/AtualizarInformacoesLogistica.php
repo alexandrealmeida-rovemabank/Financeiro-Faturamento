@@ -6,7 +6,7 @@ use Illuminate\Console\Command;
 use SoapClient;
 use App\Models\parametros_correios_cartao;
 use App\Models\Logistica_reversa;
-use App\Models\statusLogisitca;
+use App\Models\statusLogistica;
 use Illuminate\Support\Facades\Log;
 
 class AtualizarInformacoesLogistica extends Command
@@ -120,13 +120,13 @@ class AtualizarInformacoesLogistica extends Command
     {
         try {
             // Verifica se o status já existe na tabela status_logistica
-            $statusExistente = statusLogisitca::where('numero_pedido', $coleta->numero_pedido)
+            $statusExistente = statusLogistica::where('numero_pedido', $coleta->numero_pedido)
                 ->where('status',  $coleta->historico->status)
                 ->first();
 
             // Se o status não existir na tabela status_logistica, salva-o
             if (!$statusExistente) {
-                $status = new statusLogisitca();
+                $status = new statusLogistica();
                 $status->numero_pedido =    $coleta->numero_pedido;
                 $status->status =           $coleta->historico->status;
                 $status->descricao_status = $coleta->historico->descricao_status;
