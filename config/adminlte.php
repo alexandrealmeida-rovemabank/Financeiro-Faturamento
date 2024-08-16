@@ -131,7 +131,7 @@ return [
 
     'usermenu_enabled' => true,
     'usermenu_header' => true,
-    'usermenu_header_class' => 'bg-success',
+    'usermenu_header_class' => 'bg-primary',
     'usermenu_image' => true,
     'usermenu_desc' => false,
     'usermenu_profile_url' => true,
@@ -168,11 +168,11 @@ return [
     */
 
     'classes_auth_card' => '',
-    'classes_auth_header' => 'bg-success',
+    'classes_auth_header' => 'bg-primary',
     'classes_auth_body' => '',
     'classes_auth_footer' => 'text-center',
-    'classes_auth_icon' => 'fa-lg text-success',
-    'classes_auth_btn' => 'btn-flat btn bg-success',
+    'classes_auth_icon' => 'fa-lg text-primary',
+    'classes_auth_btn' => 'btn-flat btn bg-primary',
 
     /*
     |--------------------------------------------------------------------------

@@ -6814,7 +6814,7 @@ a.bg-secondary:focus,a.bg-secondary:hover,button.bg-secondary:focus,button.bg-se
 }
 
 .bg-success {
-    background-color: #28a745!important
+    /* background-color: #28a745!important; */
 }
 
 a.bg-success:focus,a.bg-success:hover,button.bg-success:focus,button.bg-success:hover {
@@ -42735,7 +42735,7 @@ blockquote.quote-gray-dark h1,blockquote.quote-gray-dark h2,blockquote.quote-gra
 }
 
 .bg-success {
-    background-color: #28a745!important
+    /* background-color: #28a745!important; */
 }
 
 .bg-success,.bg-success>a {
