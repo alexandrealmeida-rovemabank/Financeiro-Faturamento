@@ -110,7 +110,7 @@
             </div>
         </div>
         <!-- Botão para adicionar credenciado -->
-        <button type="submit" class="btn btn-success">Adicionar</button>
+        <button type="submit" class="btn btn-primary">Adicionar</button>
       </form>
   </div>
 </div>

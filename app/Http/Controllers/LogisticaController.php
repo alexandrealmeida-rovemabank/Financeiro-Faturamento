@@ -97,7 +97,8 @@ class LogisticaController extends Controller
     }
 
     public function solicitarPostagemReversa(Request $request){
-    // Validação dos dados do request
+        // Validação dos dados do request
+
         $request->validate([
             'contrato' => 'required',
             'num_cartao' => 'required',
@@ -126,6 +127,7 @@ class LogisticaController extends Controller
             'produto' => 'required',
             'embalagem' => 'required'
         ]);
+
 
         $data = $request->all();
 
@@ -157,6 +159,8 @@ class LogisticaController extends Controller
             $user = config('variaveis.username_ip');
             $password = config('variaveis.password_ip');
         }
+
+
 
         // Chamada à função de solicitação de postagem
         return $this->solicitarPostagem($data, $logistica, config('variaveis.link'), $user, $password);

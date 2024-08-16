@@ -146,7 +146,7 @@
             </div>
         </div>
 
-        <button type="submit" class="btn btn-success">Salvar</button>
+        <button type="submit" class="btn btn-primary">Salvar</button>
     </form>
 
 
@@ -224,7 +224,7 @@
             </div>
             <div class="col-lg-3 col-md-6 col-sm-12">
                 <div class="form-group">
-                    <button type="submit" class="btn btn-success mt-4">Adicionar</button>
+                    <button type="submit" class="btn btn-primary mt-4">Adicionar</button>
                 </div>
             </div>
         </div>
@@ -258,7 +258,7 @@
                     <td>{{ $terminais->produto }}</td>
                     <td>{{ $terminais->sistema }}</td>
                     <td>{{ $terminais->created_at}}</td>
-                    <td> <a class="btn btn-success" href="{{ route('terminal.desvincular', $terminais->id) }}" type="submit">Desvincular</a> </td>
+                    <td> <a class="btn btn-primary" href="{{ route('terminal.desvincular', $terminais->id) }}" type="submit">Desvincular</a> </td>
                 </tr>
                 @endif
                @endforeach

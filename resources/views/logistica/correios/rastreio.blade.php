@@ -55,7 +55,7 @@
                     <td>{{ $pedidos->nome_fantasia_destinatario }}</td>
                     <td class="cod_rastreio">{{ $pedidos->num_etiqueta }}</td>
                     <td>
-                        <button type="button" class="btn btn-success" onclick="buscarRastreamentoTabela(this)">Rastrear</button>
+                        <button type="button" class="btn btn-primary" onclick="buscarRastreamentoTabela(this)">Rastrear</button>
                     </td>
                 </tr>
                 @endforeach
@@ -84,7 +84,7 @@
                 [10, 25, 50, 100, 200, -1],
                 [10, 25, 50, 100, 200, 'Todos'],
             ],
-            className: 'btn btn-success',
+            className: 'btn btn-primary',
             "language": {
                 url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Portuguese-Brasil.json',
             },

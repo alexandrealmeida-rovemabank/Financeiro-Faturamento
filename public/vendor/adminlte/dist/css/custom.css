@@ -1,13 +1,13 @@
 .pagination {
     --bs-pagination-color: #000000;
-    --bs-pagination-hover-color: #28a745;
+    --bs-pagination-hover-color: #004AE6;
   }
 
 
   .nav-pills .nav-link.active,
 .nav-pills .show > .nav-link {
 
-    background-color: #198754 !important;
+    background-color: #004AE6 !important;
     color: #fff !important;
 }
 a {
@@ -16,7 +16,7 @@ a {
 }
 
 button.dt-button,div.dt-button,a.dt-button,input.dt-button {
-    background-color: #a9aaa9!important;
+    background-color: #004AE6!important;
     color: #fff;
     border: none;
     border-radius: 5px;
@@ -26,7 +26,7 @@ button.dt-button,div.dt-button,a.dt-button,input.dt-button {
 
 }
 .dt-button:hover {
-    background-color: #005640;
+    background-color: #004AE6;
 }
 div.dt-buttons {
     float: right;
@@ -136,7 +136,7 @@ footer {
     transition: -webkit-transform .3s linear;
     transition: transform .3s linear;
     transition: transform .3s linear, -webkit-transform .3s linear;
-    color: #198754 !important;
+    color: #004AE6 !important;
 }
 
 .scrollable-table {
@@ -148,7 +148,7 @@ footer {
 }
 
 .small-box>.small-box-footer {
-    background-color: #198754c7 !important;
+    background-color: #004AE6 !important;
     color: rgba(255, 255, 255, .8);
     display: block;
     padding: 3px 0;
@@ -206,5 +206,10 @@ canvas {
 /* Aplicação da animação */
 .alert.slide-out {
     animation: slideOut 0.5s ease-in-out;
+}
+
+.btn-primary {
+    background-color: #004AE6;
+    border-color: #004AE6;
 }
 

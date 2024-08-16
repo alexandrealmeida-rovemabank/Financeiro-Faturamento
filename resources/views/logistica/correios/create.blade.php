@@ -112,7 +112,7 @@
                     <label for="cep_remetente">CEP*</label>
                     <div class="form-group d-flex">
                         <input type="text" id="cep_remetente" name="cep_remetente" class="form-control" required oninput="this.value = this.value.toUpperCase()">
-                        <a id="btn-consultar" class="btn btn-success">Consultar</a>
+                        <a id="btn-consultar" class="btn btn-primary">Consultar</a>
                     </div>
                 </div>
                 <div class="col-sm-6">
@@ -330,8 +330,7 @@
                     <div class="form-group">
                         <label>Tipo de Coleta*</label>
                         <select class="form-control search" name="tipo_coleta" id="tipo_coleta" >
-                            <option value="CA">Coleta Domiciliar</option>
-                            <option value="A">Autorização de Postagem</option>
+
                         </select>
                     </div>
                 </div>
@@ -344,16 +343,16 @@
             </div>
             <div class="row">
 
-                        <input type="hidden"  name="qtd_item" class="form-control" value="1" />
+                <input type="hidden"  name="qtd_item" class="form-control" value="1" />
 
 
                 <div class="col-sm-6">
                     <!-- Select multiple-->
                     <div class="form-group">
                         <label>AR - Aviso de Recebimento</label>
-                        <select class="form-control search" name="ar" id="ar" disabled >
-                            <option value="0">Não</option>
-                            <option value="1">Sim</option>
+                        <select class="form-control search" name="ar" id="ar">
+                            {{-- <option value="0">Não</option>
+                            <option value="1">Sim</option> --}}
                         </select>
                     </div>
                 </div>
@@ -380,13 +379,14 @@
             </div>
         </div>
     </div>
-    <button type="submit" class="btn btn-success">Salvar</button>
+    <button type="submit" class="btn btn-primary">Salvar</button>
 </form>
 
 @stop
 @section('js')
 <script src="https://igorescobar.github.io/jQuery-Mask-Plugin/js/jquery.mask.min.js"></script>
 <script>
+
 function showAlert(type, message) {
     var alertId = '#alert-' + type + '-v2';
     var messageId = '#alert-' + type + '-message-v2';
@@ -407,6 +407,7 @@ function showAlert(type, message) {
 }
 
 $(document).ready(function() {
+
     $('.dinheiro').mask('#.##0,00', {reverse: true});
     setTimeout(function() {
             $('#alert-success, #alert-error, #alert-warning').each(function() {
@@ -418,34 +419,82 @@ $(document).ready(function() {
                 });
             });
         }, 5000);
-    $('#btn-consultar').on('click', function() {
-        var cep = $('input[name="cep_remetente"]').val().replace(/[^\d]/g, '');
-        var codServico = $('input[name="cod_servico"]').val();
-        $('#loading-spinner-remetente').show();
-        $.ajax({
-            url: '/verificarColeta/' + cep + '/' + codServico,
-            type: 'GET',
-            success: function(response) {
-                if (response.coletaDisponivel === true) {
-                    showAlert('success', 'Coleta Domiciliar e Autorização de postagem Disponível!');
-                    $('#destinatario').css('display', 'flex');
-                    $('#coleta').css('display', 'flex');
-                    $('#tipo_coleta').prop('disabled', false);
-                } else {
-                    showAlert('warning', 'Coleta não disponível. Apenas autorização de postagem.');
-                    $('#tipo_coleta').val('A').prop('disabled', true);
-                    $('#destinatario').css('display', 'flex');
-                    $('#coleta').css('display', 'flex');
-                }
-                $('#loading-spinner-remetente').hide();
-            },
-            error: function(error) {
-                console.log(error);
-                showAlert('error', 'Houve algum erro ao verificar a coleta.');
-                $('#loading-spinner-remetente').hide();
+
+        $('#btn-consultar').on('click', function() {
+    var cep = $('input[name="cep_remetente"]').val().replace(/[^\d]/g, '');
+    var codServico = $('input[name="cod_servico"]').val();
+    var $select = $('#tipo_coleta');
+
+    $('#loading-spinner-remetente').show();
+    $.ajax({
+        url: '/verificarColeta/' + cep + '/' + codServico,
+        type: 'GET',
+        success: function(response) {
+            if (response.coletaDisponivel === true) {
+                showAlert('success', 'Coleta Domiciliar e Autorização de postagem Disponível!');
+                $('#destinatario').css('display', 'flex');
+                $('#coleta').css('display', 'flex');
+                $('#tipo_coleta').prop('disabled', false);
+                var opcoes = [
+                    { value: 'CA', text: 'Coleta Domiciliar' },
+                    { value: 'A', text: 'Autorização de Postagem' }
+                ];
+                $select.empty();
+                $.each(opcoes, function(index, opcao) {
+                    $select.append($('<option></option>').val(opcao.value).text(opcao.text));
+                });
+            } else {
+                showAlert('warning', 'Coleta não disponível. Apenas autorização de postagem.');
+                $('#tipo_coleta').prop('disabled', false);
+                $('#destinatario').css('display', 'flex');
+                $('#coleta').css('display', 'flex');
+                var opcoes = [
+                    { value: 'A', text: 'Autorização de Postagem' }
+                ];
+                $select.empty();
+                $.each(opcoes, function(index, opcao) {
+                    $select.append($('<option></option>').val(opcao.value).text(opcao.text));
+                });
             }
-        });
+
+            // Dispara o evento change para que o valor seja processado automaticamente
+            $select.trigger('change');
+            $('#loading-spinner-remetente').hide();
+        },
+        error: function(error) {
+            console.log(error);
+            showAlert('error', 'Houve algum erro ao verificar a coleta.');
+            $('#loading-spinner-remetente').hide();
+        }
     });
+});
+
+$('#tipo_coleta').on('change', function() {
+    var coleta = $(this).val();
+    console.log(coleta);
+    var $ar = $('#ar');
+
+    if (coleta === 'CA') {
+        var lista = [
+            { value: '0', text: 'Não' }
+        ];
+        $ar.empty();
+        $.each(lista, function(index, item) {
+            $ar.append($('<option></option>').val(item.value).text(item.text));
+        });
+    } else {
+        var lista = [
+            { value: '0', text: 'Não' },
+            { value: '1', text: 'Sim' }
+        ];
+        $ar.empty();
+        $.each(lista, function(index, item) {
+            $ar.append($('<option></option>').val(item.value).text(item.text));
+        });
+    }
+});
+
+
 
     $('input[name="cnpj_remetente"]').on('change', function() {
         var cnpj = $(this).val().replace(/[^\d]/g, '');
@@ -503,16 +552,7 @@ $(document).ready(function() {
         });
     });
 
-    $('#tipo_coleta').on('change', function() {
-        var tipoColeta = $(this).val();
-        var $arField = $('#ar');
-        if (tipoColeta === 'CA') {
-            $arField.val('0'); // Defina o valor padrão como "Não"
-            $arField.prop('disabled', true);
-        } else {
-            $arField.prop('disabled', false);
-        }
-    });
+
 
     $('input[name="contrato"]').on('change', function() {
         var contratoSelecionado = $(this).val();

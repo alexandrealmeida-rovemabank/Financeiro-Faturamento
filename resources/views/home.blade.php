@@ -240,7 +240,7 @@
         Equipe de Tecnologia
     </div>
     <!-- Default to the left -->
-    <strong><a href="https://uzzipay.com/">Uzzipay</a> &copy; 2024 </strong> Todos os direitos reservados.
+    <strong><a href="https://rovemabank.com.br/">Rovema Bank</a> &copy; 2024 </strong> Todos os direitos reservados.
 
 @endsection
 
@@ -368,8 +368,8 @@
                 datasets: [{
                     data: dadosPizza,
                     backgroundColor: [
-                        '#198754',
-                        '#005640',
+                        '#00D0FF',
+                        '#004AE6',
                     ]
                 }]
             },
@@ -423,8 +423,8 @@
                 datasets: [{
                     data: dadosPizzaContrato,
                     backgroundColor: [
-                        '#198754',
-                        '#005640',
+                        '#00D0FF',
+                        '#004AE6',
                     ]
                 }]
             },
@@ -444,10 +444,10 @@
                 label: 'Quantidade de Solicitações',
                 data: @json($solicitacoesPorMes->pluck('quantidade')),
                 backgroundColor: [
-                    '#005640'
+                    '#004AE6'
                 ],
                 borderColor: [
-                    '#198754'
+                    '#00D0FF'
                 ],
                 borderWidth: 3
             }]

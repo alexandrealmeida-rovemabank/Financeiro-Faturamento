@@ -18,7 +18,7 @@
     <div class="card">
         <div class="card-header">
             <div class="btn-group" role="group">
-                <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-three-dots-vertical"></i>
                 </button>
                 <ul class="dropdown-menu">
@@ -130,7 +130,7 @@
             ],
             dom: 'lBfrtip',
             buttons: ['csv', 'excel', 'print', 'pdf'],
-            className: 'btn btn-success',
+            className: 'btn btn-primary',
             "language": {
                 url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Portuguese-Brasil.json',
             },

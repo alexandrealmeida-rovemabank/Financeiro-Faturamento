@@ -16,7 +16,7 @@
 <br>
     <div class="card">
         <div class="card-header">
-            <a href="{{route('credenciado.create')}}" class="btn btn-success">Adicionar</a>
+            <a href="{{route('credenciado.create')}}" class="btn btn-primary">Adicionar</a>
 
         </div>
 
@@ -101,7 +101,7 @@ $(document).ready(function() {
         ],
         dom: 'lBfrtip',
         buttons: ['csv', 'excel', 'print', 'pdf'],
-        className: 'btn btn-success',
+        className: 'btn btn-primary',
         "language": {
             url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Portuguese-Brasil.json',
         },

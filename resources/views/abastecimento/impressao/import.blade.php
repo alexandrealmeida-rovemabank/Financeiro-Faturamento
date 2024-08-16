@@ -40,7 +40,7 @@
                 </div>
             </div>
             <!-- Botão para submeter o formulário -->
-            <button type="submit" class="btn btn-success">Processar</button>
+            <button type="submit" class="btn btn-primary">Processar</button>
         </form>
     </div>
 </div>

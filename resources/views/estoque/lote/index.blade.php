@@ -11,7 +11,7 @@
     <div class="card">
         <div class="card-header">
             <!-- Botão para abrir o modal de adicionar lote -->
-            <button data-bs-toggle="modal" data-bs-target="#modalCreate" class="btn btn-success btn-add">Adicionar </button>
+            <button data-bs-toggle="modal" data-bs-target="#modalCreate" class="btn btn-primary btn-add">Adicionar </button>
         </div>
 
         <div class="card-body">
@@ -38,7 +38,7 @@
                         <td style="vertical-align: middle">
                             <!-- Grupo de botões para ações (Editar/Excluir) -->
                             <div class="btn-group" role="group">
-                                <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="bi bi-three-dots-vertical"></i>
                                 </button>
                                 <ul class="dropdown-menu">
@@ -91,7 +91,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-success" id="btnSalvar">Salvar</button>
+                            <button type="submit" class="btn btn-primary" id="btnSalvar">Salvar</button>
                             <button type="button" class="modal-close waves-effect waves-green btn btn-danger" data-bs-dismiss="modal">Fechar</button>
                         </form>
                     </div>
@@ -146,7 +146,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-success" id="btnSalvar">Salvar</button>
+                            <button type="submit" class="btn btn-primary" id="btnSalvar">Salvar</button>
                             <button type="button" class="modal-close waves-effect waves-green btn btn-danger" data-bs-dismiss="modal">Fechar</button>
                         </form>
                     </div>

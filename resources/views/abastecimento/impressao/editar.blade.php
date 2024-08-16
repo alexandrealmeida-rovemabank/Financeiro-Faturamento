@@ -91,7 +91,7 @@
                             </div>
 
                             <!-- Botões de ação do formulário -->
-                            <button type="submit" class="btn btn-success" id="btnSalvar">Salvar</button>
+                            <button type="submit" class="btn btn-primary" id="btnSalvar">Salvar</button>
                             <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Fechar</button>
                         </form>
                     </div>
@@ -105,8 +105,6 @@
 @section('js')
 <script>
     $(document).ready(function() {
-        // Máscara para valores em dinheiro
-        $('.dinheiro').mask('#.##0,00', {reverse: true});
 
         // Remover alertas após 5 segundos
         setTimeout(function() {

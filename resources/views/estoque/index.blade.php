@@ -17,8 +17,8 @@
     <br>
     <div class="card">
         <div class="card-header">
-            <button data-bs-toggle="modal" data-bs-target="#modalCreate" class="btn btn-success btn-add">Adicionar </button>
-            <a href="{{route('estoque.import')}}" class="btn btn-success">Importar</a>
+            <button data-bs-toggle="modal" data-bs-target="#modalCreate" class="btn btn-primary btn-add">Adicionar </button>
+            <a href="{{route('estoque.import')}}" class="btn btn-primary">Importar</a>
 
 
         </div>
@@ -176,7 +176,7 @@
                                     </div>
                                 </div>
 
-                                <button type="submit" class="btn btn-success" id="btnSalvar">Salvar</button>
+                                <button type="submit" class="btn btn-primary" id="btnSalvar">Salvar</button>
                                 <button type="button" class="modal-close waves-effect waves-green btn btn-danger" data-bs-dismiss="modal">Fechar</button>
                             </form>
                         </div>
@@ -266,7 +266,7 @@
                                       </div>
                                 </div>
 
-                                <button type="submit" class="btn btn-success" id="btnSalvar">Salvar</button>
+                                <button type="submit" class="btn btn-primary" id="btnSalvar">Salvar</button>
                                 <button type="button" class="modal-close waves-effect waves-green btn btn-danger" data-bs-dismiss="modal">Fechar</button>
                             </form>
                         </div>
@@ -353,7 +353,7 @@
             ],
             dom: 'lBfrtip',
             buttons: ['csv', 'excel', 'print', 'pdf'],
-            className: 'btn btn-success',
+            className: 'btn btn-primary',
             "language": {
                 url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Portuguese-Brasil.json',
             },

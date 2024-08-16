@@ -16,7 +16,7 @@
 <div class="card">
     <div class="card-header">
         <!-- Botão para importar novo lote -->
-        <a href="{{route('abastecimento.impressao.importar')}}" class="btn btn-success">Importar</a>
+        <a href="{{route('abastecimento.impressao.importar')}}" class="btn btn-primary">Importar</a>
     </div>
 
     <div class="card-body">
@@ -112,7 +112,7 @@ $(document).ready(function() {
         ],
         dom: 'lBfrtip',
         buttons: ['csv', 'excel', 'print', 'pdf'],
-        className: 'btn btn-success',
+        className: 'btn btn-primary',
         "language": {
             url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Portuguese-Brasil.json',
         },

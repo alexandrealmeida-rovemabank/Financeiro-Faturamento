@@ -64,9 +64,9 @@ return [
     */
 
     'logo' => false,
-    'logo_img' => 'vendor/adminlte/dist/img/Favicon Black.png',
+    'logo_img' => 'vendor/adminlte/dist/img/favicon-rb.png',
     'logo_img_class' => 'brand-image img',
-    'logo_img_xl' => 'vendor/adminlte/dist/img/Uzzipay_01_logo.png',
+    'logo_img_xl' => 'vendor/adminlte/dist/img/Rovema Pay.png',
     'logo_img_xl_class' => 'brand-image-xl',
     'logo_img_alt' => 'Admin Logo',
 
@@ -86,7 +86,7 @@ return [
     'auth_logo' => [
         'enabled' => true,
         'img' => [
-            'path' => 'vendor/adminlte/dist/img/Uzzipay_01_logo.png',
+            'path' => 'vendor/adminlte/dist/img/Rovema Pay.png',
             'alt' => 'Auth Logo',
             'class' => '',
             'width' => 170,
@@ -109,7 +109,7 @@ return [
     'preloader' => [
         'enabled' => true,
         'img' => [
-            'path' => 'vendor/adminlte/dist/img/Icone UP.png',
+            'path' => 'vendor/adminlte/dist/img/Logo Rovema Bank.png',
             'alt' => 'UP Preloader Image',
             'effect' => 'animation__shake',
             'width' => 60,

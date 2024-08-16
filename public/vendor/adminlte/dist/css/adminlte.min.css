@@ -5102,8 +5102,8 @@ input[type=button].btn-block,input[type=reset].btn-block,input[type=submit].btn-
 .page-item.active .page-link {
     z-index: 3;
     color: #fff;
-    background-color: #1e7e34;
-    border-color: #1e7e34;
+    background-color: #004AE6;
+    border-color: #004AE6;
 }
 
 .page-item.disabled .page-link {
@@ -12781,9 +12781,9 @@ body:not(.layout-fixed) .main-sidebar .sidebar {
 }
 
 .brand-link .brand-image-xl {
-    line-height: .8;
-    max-height: 40px;
-    width: auto
+    line-height: 0.8;
+    max-height: 30px;
+    width: auto;
 }
 
 .brand-link .brand-image-xl.single {
@@ -14197,8 +14197,8 @@ body:not(.layout-fixed) .main-sidebar .sidebar {
 }
 
 .logo-xl.brand-image-xl,.logo-xs.brand-image-xl {
-    left: 12px;
-    top: 6px
+    left: 30px;
+    top: 12px;
 }
 
 .logo-xs {
@@ -14953,7 +14953,7 @@ body:not(.layout-fixed) .main-sidebar .sidebar {
 
 @media (prefers-reduced-motion:reduce) {
     .main-sidebar .brand-text,.main-sidebar .logo-xl,.main-sidebar .logo-xs,.sidebar .nav-link p,.sidebar .user-panel .info {
-        transition: none
+        transition: none;
     }
 }
 

@@ -129,7 +129,7 @@
             </div>
         </div>
         <!-- Botão para salvar alterações -->
-        <button type="submit" class="btn btn-success">Salvar</button>
+        <button type="submit" class="btn btn-primary">Salvar</button>
     </form>
 </div>
 </div>
@@ -138,9 +138,6 @@
 @section('js')
 <script>
     $(document).ready(function() {
-        // Máscara para valores em dinheiro
-        $('.dinheiro').mask('#.##0,00', {reverse: true});
-
         // Remover alertas após 5 segundos
         setTimeout(function() {
             $('#alert-success, #alert-error, #alert-warning').each(function() {

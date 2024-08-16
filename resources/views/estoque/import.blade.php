@@ -34,7 +34,7 @@
             </div>
 
             <!-- Botão para processar a importação -->
-            <button type="submit" class="btn btn-success">Processar</button>
+            <button type="submit" class="btn btn-primary">Processar</button>
         </form>
     </div>
 </div>
