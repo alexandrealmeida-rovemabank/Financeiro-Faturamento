@@ -145,6 +145,8 @@
     }
 
     function exibirResultados(result) {
+        console.log('result:', result);
+
         if (result && result.objetos && result.objetos.length > 0) {
             var listaResultados = document.getElementById('lista-resultados');
             listaResultados.innerHTML = '';

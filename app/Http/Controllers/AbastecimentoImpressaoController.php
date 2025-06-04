@@ -16,24 +16,37 @@ require_once 'actions.php';
 
 class AbastecimentoImpressaoController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:visualizar abastecimento')->only(['index','Editar_lote']);
+        $this->middleware('permission:criar abastecimento')->only(['create', 'store']);
+        $this->middleware('permission:editar abastecimento')->only(['edit_cartao','edit_status']);
+        $this->middleware('permission:excluir abastecimento')->only(['excluir_lote']);
+         $this->middleware('permission:importar abastecimento')->only(['importar', 'processamento']);
+    }
 
     public function index(Request $request)
     {
+        $lote_impressao = lote_impressao::withCount('impressoes')->get();  // <== Aqui conta
 
-        $lote_impressao = lote_impressao::all();
         if ($request->ajax()) {
-            $data = lote_impressao::latest()->get();
+            $data = lote_impressao::withCount('impressoes')->latest()->get();
+
             return Datatables::of($data)
-                    ->addIndexColumn()
-                    ->addColumn('action', function($row){
-                        return button_lote_cartoes($row);
-                    })
-                    ->rawColumns(['action'])
-                    ->make(true);
+                ->addIndexColumn()
+                ->addColumn('quantidade_cartoes', function($row){
+                    return $row->impressoes_count;  // <== Aqui pega a contagem
+                })
+                ->addColumn('action', function($row){
+                    return button_lote_cartoes($row);
+                })
+                ->rawColumns(['action'])
+                ->make(true);
         }
 
         return view('abastecimento.impressao.index', compact('lote_impressao'));
     }
+
 
     public function importar()
     {

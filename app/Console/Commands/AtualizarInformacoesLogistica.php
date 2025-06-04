@@ -8,6 +8,7 @@ use App\Models\parametros_correios_cartao;
 use App\Models\Logistica_reversa;
 use App\Models\statusLogistica;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class AtualizarInformacoesLogistica extends Command
 {
@@ -32,8 +33,14 @@ class AtualizarInformacoesLogistica extends Command
 
     {
         $logFile = storage_path('logs/atualizacao_logistica.log');
-        $pedidosPendentes = Logistica_reversa::whereIn('status_objeto', ['0', '00', '01', '1', '03', '3', '04', '4', '05', '5', '06', '6', '55'])->get();
+        //$pedidosPendentes = Logistica_reversa::whereIn('status_objeto', ['0', '00', '01', '1', '03', '3', '04', '4', '05', '5', '06', '6', '55'])->get();
+       
+        //será autulizado somente solicitações dos ultimos 4 meses
+        $quatroMesesAtras = Carbon::now()->subMonths(4);
 
+        $pedidosPendentes = Logistica_reversa::whereIn('status_objeto', ['0', '00', '01', '1', '03', '3', '04', '4', '05', '5', '06', '6', '55'])
+            ->where('created_at', '>=', $quatroMesesAtras)
+            ->get();
         if ($pedidosPendentes->isEmpty()) {
             $this->log("Sem logística no banco", $logFile);
         } else {

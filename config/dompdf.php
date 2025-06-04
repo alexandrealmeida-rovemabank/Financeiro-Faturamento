@@ -19,6 +19,7 @@ return array(
      * Dejavu Sans font is missing glyphs for converted entities, turn it off if you need to show € and £.
      */
     'convert_entities' => true,
+    'isPhpEnabled' => true,
 
     'options' => array(
         /**
@@ -235,7 +236,7 @@ return array(
          *
          * @var bool
          */
-        "enable_php" => false,
+        "enable_php" => true,
 
         /**
          * Enable inline Javascript

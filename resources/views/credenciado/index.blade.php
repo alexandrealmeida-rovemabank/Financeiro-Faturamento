@@ -16,7 +16,9 @@
 <br>
     <div class="card">
         <div class="card-header">
-            <a href="{{route('credenciado.create')}}" class="btn btn-primary">Adicionar</a>
+            @if(auth()->user()->can('criar credenciado'))
+                <a href="{{route('credenciado.create')}}" class="btn btn-primary">Adicionar</a>
+            @endif 
 
         </div>
 

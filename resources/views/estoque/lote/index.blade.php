@@ -11,7 +11,9 @@
     <div class="card">
         <div class="card-header">
             <!-- Botão para abrir o modal de adicionar lote -->
-            <button data-bs-toggle="modal" data-bs-target="#modalCreate" class="btn btn-primary btn-add">Adicionar </button>
+            @if(auth()->user()->can('editar estoque'))
+                <button data-bs-toggle="modal" data-bs-target="#modalCreate" class="btn btn-primary btn-add">Adicionar </button>
+            @endif
         </div>
 
         <div class="card-body">

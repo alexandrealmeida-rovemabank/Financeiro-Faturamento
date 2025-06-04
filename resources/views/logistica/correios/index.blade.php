@@ -22,9 +22,17 @@
                     <i class="bi bi-three-dots-vertical"></i>
                 </button>
                 <ul class="dropdown-menu">
-                    <li><a href="{{route('logistica.correios.create')}}" class="dropdown-item">Solicitar</a></li>
-                    <li><a href="{{route('logistica.correios.consultarPedido')}}" class="dropdown-item">Atualizar Solicitações</a></li>
-                    <li><a href="{{route('logistica.correios.rastreio')}}" class="dropdown-item">Rastrear Objeto</a></li>
+                    @if(auth()->user()->can('criar logistica'))
+                        <li><a href="{{route('logistica.correios.create')}}" class="dropdown-item">Solicitar</a></li>
+                    @endif
+                    @if(auth()->user()->can('criar logistica'))
+                        <li><a href="{{route('logistica.correios.consultarPedido')}}" class="dropdown-item">Atualizar Solicitações</a></li>
+                    @endif
+
+                    @if(auth()->user()->can('visualizar logistica'))
+                        <li><a href="{{route('logistica.correios.rastreio')}}" class="dropdown-item">Rastrear Objeto</a></li>
+                    @endif
+
                 </ul>
             </div>
         </div>
@@ -131,6 +139,7 @@
             dom: 'lBfrtip',
             buttons: ['csv', 'excel', 'print', 'pdf'],
             className: 'btn btn-primary',
+            order: [[0, 'desc']],
             "language": {
                 url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Portuguese-Brasil.json',
             },

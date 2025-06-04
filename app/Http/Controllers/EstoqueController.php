@@ -17,6 +17,14 @@ require_once 'actions.php';
 
 class EstoqueController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:visualizar estoque')->only(['index','getHistorico','getHistoricocredenciado']);
+        $this->middleware('permission:criar estoque')->only(['create']);
+        $this->middleware('permission:editar estoque')->only(['edit']);
+        $this->middleware('permission:excluir estoque')->only(['excluir']);
+         $this->middleware('permission:importar estoque')->only(['import', 'processamento']);
+    }
 
     public function index(Request $request)
     {

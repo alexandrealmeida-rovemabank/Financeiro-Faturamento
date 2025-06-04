@@ -81,6 +81,7 @@
                     <th>Data de importação</th>
                     <th>Data de modificação</th>
                     <th>Status</th>
+                    <th>Qtd Cartões</th> 
                     <th>Ação</th>
                 </tr>
             </thead>
@@ -113,6 +114,7 @@ $(document).ready(function() {
         dom: 'lBfrtip',
         buttons: ['csv', 'excel', 'print', 'pdf'],
         className: 'btn btn-primary',
+        order: [[0, 'desc']],
         "language": {
             url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Portuguese-Brasil.json',
         },
@@ -140,6 +142,7 @@ $(document).ready(function() {
                 }
             },
             { data: 'status_impressao', name: 'status_impressao' },
+            { data: 'quantidade_cartoes', name: 'quantidade_cartoes' },  // NOVO
             { data: 'action', name: 'action', orderable: false, searchable: false },
         ],
         "pageLength": 10,

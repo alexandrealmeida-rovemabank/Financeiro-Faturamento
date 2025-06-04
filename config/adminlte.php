@@ -66,7 +66,7 @@ return [
     'logo' => false,
     'logo_img' => 'vendor/adminlte/dist/img/favicon-rb.png',
     'logo_img_class' => 'brand-image img',
-    'logo_img_xl' => 'vendor/adminlte/dist/img/Rovema Pay.png',
+    //'logo_img_xl' => 'vendor/adminlte/dist/img/Rovema Pay.png',
     'logo_img_xl_class' => 'brand-image-xl',
     'logo_img_alt' => 'Admin Logo',
 
@@ -84,7 +84,7 @@ return [
     */
 
     'auth_logo' => [
-        'enabled' => true,
+        'enabled' => False,
         'img' => [
             'path' => 'vendor/adminlte/dist/img/Rovema Pay.png',
             'alt' => 'Auth Logo',
@@ -107,7 +107,7 @@ return [
     */
 
     'preloader' => [
-        'enabled' => true,
+        'enabled' => True,
         'img' => [
             'path' => 'vendor/adminlte/dist/img/Logo Rovema Bank.png',
             'alt' => 'UP Preloader Image',
@@ -148,10 +148,10 @@ return [
     |
     */
 
-    'layout_topnav' => null,
+    'layout_topnav' => true,
     'layout_boxed' => null,
-    'layout_fixed_sidebar' => true,
-    'layout_fixed_navbar' => true,
+    'layout_fixed_sidebar' => null,
+    'layout_fixed_navbar' => null,
     'layout_fixed_footer' => null,
     'layout_dark_mode' => null,
 
@@ -192,10 +192,10 @@ return [
     'classes_content_wrapper' => '',
     'classes_content_header' => '',
     'classes_content' => '',
-    'classes_sidebar' => 'sidebar-light-white elevation-4',
+    // 'classes_sidebar' => 'sidebar-light-white elevation-4',
     'classes_sidebar_nav' => '',
-    'classes_topnav' => 'navbar-white navbar-light',
-    'classes_topnav_nav' => 'navbar-expand',
+    // 'classes_topnav' => 'navbar-white navbar-light',
+    'classes_topnav_nav' => 'navbar-expand-lg',
     'classes_topnav_container' => 'container',
 
     /*
@@ -210,11 +210,11 @@ return [
     |
     */
 
-    'sidebar_mini' => 'xs',
-    'sidebar_collapse' => true,
+    'sidebar_mini' => null,
+    'sidebar_collapse' => false,
     'sidebar_collapse_auto_size' => 100,
-    'sidebar_collapse_remember' => true,
-    'sidebar_collapse_remember_no_transition' => true,
+    'sidebar_collapse_remember' => null,
+    'sidebar_collapse_remember_no_transition' => null,
     'sidebar_scrollbar_theme' => 'os-theme-none',
     'sidebar_scrollbar_auto_hide' => 'l',
     'sidebar_nav_accordion' => true,
@@ -290,89 +290,147 @@ return [
     */
 
     'menu' => [
-        // Navbar items:
-        [
-            'type'         => 'navbar-search',
-            'text'         => 'search',
-            'topnav_right' => true,
-        ],
-        [
-            'type'         => 'fullscreen-widget',
-            'topnav_right' => true,
-        ],
-
-        // Sidebar items:
-        [
-            'type' => 'sidebar-menu-search',
-            'text' => 'pesquisar',
-        ],
-        [
-            'text' => 'blog',
-            'url'  => 'admin/blog',
-            'can'  => 'manage-blog',
-        ],
         [
             'text'        => 'Dashboard',
             'url'         => 'home',
             'icon'        => 'bi bi-speedometer2',
         ],
-        ['header' => 'Credenciados'],
+        
         [
-            'text'        => 'Credenciados',
-            'url'         => 'credenciado/index',
-            'icon'        => 'bi bi-shop',
-        ],
-        // ['header' => 'Clientes'],
-        // [
-        //     'text'        => 'Clientes',
-        //     'url'         => 'admin/pages',
-        //     'icon'        => 'far fa-fw fa-file',
-        // ],
-        ['header' => 'Abastecimento'],
-        // [
-        //     'text'        => 'Veiculos',
-        //     'url'         => 'admin/pages',
-        //     'icon'        => 'far fa-fw fa-file',
-        // ],
-        // [
-        //     'text'        => 'Grupos & SubGrupos',
-        //     'url'         => 'admin/pages',
-        //     'icon'        => 'far fa-fw fa-file',
-        // ],
-        [
-            'text'        => 'Impressão de Cartões',
-            'url'         => 'abastecimento/impressao/index',
-            'icon'        => 'bi bi-credit-card',
-        ],
-        ['header' => 'Controle de Ativos'],
-        [
-            'text'        => 'Estoque',
-            'url'         => 'estoque/index',
-            'icon'        => 'bi bi-ui-checks-grid',
-        ],
-        [
-            'text'        => 'Lote',
-            'url'         => 'estoque/lote/index',
-            'icon'        => 'bi bi-boxes',
-        ],
-        ['header' => 'Logistica'],
-        [
-            'text' => 'Correios',
-            'url'  => 'logistica/correios/index',
-            'icon' => 'fa-solid fa-truck-fast',
-        ],
-        [
-            'text' => 'Juma',
-            'url'  => 'logistica/juma/index',
-            'icon' => 'bi bi-bicycle',
-        ],
-        ['header' => 'LOG de Sistema'],
-        [
-            'text' => 'Correios Logisitca',
-            'url'  => 'processos',
-            'icon' => 'fas fa-fw fa-user',
+            'text' => 'Credenciados',
+            'icon' => 'bi bi-shop',
+            'can'  => 'visualizar credenciado',
+            'submenu' => [
+                [
+                    'text' => 'Listar',
+                    'url' => 'credenciado/index',
+                    'can'  => 'visualizar credenciado',
+                ],
+                [
+                    'text' => 'Cadastrar',
+                    'url' => 'credenciado/create',
+                    'can'  => 'criar credenciado',
+                ],
+            ],
         ],
 
+        [
+            'text' => 'Abastecimento',
+            'icon' => 'bi bi-credit-card',
+            'can'  => 'visualizar abastecimento',
+            'submenu' => [
+                [
+                    'text' => 'Lotes',
+                    'url' => 'abastecimento/impressao/index',
+                    'can'  => 'visualizar abastecimento',
+                ],
+                [
+                    'text' => 'Importar',
+                    'url' => 'abastecimento/impressao/create',
+                    'can'  => 'criar abastecimento',
+                ],
+            ],
+        ],
+
+        [
+            'text' => 'Estoque',
+            'icon' => 'bi bi-ui-checks-grid',
+             'can'  => 'visualizar estoque',
+            'submenu' => [
+                [
+                    'text' => 'Terminais',
+                    'url' => 'estoque/index',
+                    'can'  => 'visualizar estoque',
+                ],
+                [
+                    'text' => 'Importar Terminais',
+                    'url' => 'estoque/import',
+                    'can'  => 'importar estoque',
+                ],
+                [
+                    'text' => 'Lote',
+                    'url' => 'estoque/lote/index',
+                    'can'  => 'visualizar estoque',
+                ],
+
+
+            ],
+        ],
+        
+        [
+            'text' => 'Logistica',
+            'icon' => 'fa-solid fa-truck-fast',
+            'can'  => 'visualizar logistica',
+            'submenu' => [
+                [
+                    'text' => 'Solicitações Correios',
+                    'url' => 'logistica/correios/index',
+                    'can'  => 'visualizar logistica',
+                ],
+                [
+                    'text' => 'Nova Solicitação',
+                    'url' => 'logistica/correios/create',
+                    'can'  => 'criar logistica',
+                    // 'icon'        => 'bi bi-boxes',
+                ],
+                [
+                    'text' => 'Rastrear Solicitação',
+                    'url' => 'logistica/correios/rastreio',
+                    'can'  => 'visualizar logistica',
+                    // 'icon'        => 'bi bi-boxes',
+                ],
+                [
+                    'text' => 'Solicitações Juma',
+                    'url' => 'juma/index',
+                    'can'  => 'visualizar logistica',
+                    // 'icon'        => 'bi bi-boxes',
+                ],
+
+            ],
+        ],
+        
+        [
+            'text' => 'Relatórios',
+            'icon' => 'bi bi-clipboard-data-fill',
+            'can'  => 'visualizar relatorio',
+            'submenu' => [
+                [
+                    'text' => 'Estoque',
+                    'url' => 'inventario/estoque/index',
+                    'can'  => 'visualizar relatorio',
+                ],
+                [
+                    'text' => 'Cartões',
+                    'url' => 'inventario/cartao/index',
+                    'can'  => 'visualizar relatorio',
+                    // 'icon'        => 'bi bi-boxes',
+                ],
+
+            ],
+        ],
+            [
+                'text' => 'Sistema',
+                'icon' => 'bi bi-gear-fill',
+                'can'  => 'visualizar sistema',
+                'submenu' => [
+                    [
+                        'text' => 'Log Correios',
+                        'url' => 'processos',
+                        'can'  => 'visualizar sistema',
+                    ],
+                    [
+                        'text' => 'Usuarios',
+                        'url' => 'users',
+                        'can'  => 'visualizar sistema',
+                    ],
+                    [
+                        'text' => 'Gerenciar Roles',
+                        'url' => 'roles',
+                        'can'  => 'visualizar sistema',
+                    ],
+                ],
+        ],
+    
     ],
 
     /*

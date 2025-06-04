@@ -20,8 +20,21 @@ class CredenciadoController extends Controller
     //     return view('credenciado.index', compact('credenciado','estoques'));
     // }
 
+    public function __construct()
+{
+    $this->middleware('permission:visualizar credenciado')->only('index','view');
+    $this->middleware('permission:criar credenciado')->only(['create', 'store']);
+    $this->middleware('permission:editar credenciado')->only(['edit', 'update']);
+    $this->middleware('permission:gerar credenciado')->only('gerarPDF','gerarPDF2');
+}
+
+
     public function index(Request $request)
     {
+        // if (!auth()->user()->hasPermissionTo('visualizar')) {
+        //     abort(403);
+        // }
+
         $estoques = Estoque::all();
         $crend = Credenciado::all();
         if ($request->ajax()) {
@@ -40,6 +53,9 @@ class CredenciadoController extends Controller
 
     public function store(Request $request)
     {
+        // if (!auth()->user()->hasPermissionTo('criar credenciados')) {
+        //     abort(403);
+        // }
         $request->validate([
             'cnpj' => 'required|cnpj_unique',
             'nome_fantasia' => 'required',
@@ -85,6 +101,9 @@ class CredenciadoController extends Controller
 
     public function edit($id)
     {
+       if (auth()->user()->hasPermissionTo('editar')) {
+        abort(403);
+        }
         $credenciado = Credenciado::findOrFail($id);
         $estoques = Estoque::all();
         $terminal = Terminal_Vinculado::all();
@@ -93,6 +112,9 @@ class CredenciadoController extends Controller
     }
     public function view($id)
     {
+        // if (!auth()->user()->can('visualizar')) {
+        // abort(403);
+        // }
         $credenciado = Credenciado::findOrFail($id);
         $estoques = Estoque::all();
         $terminal = Terminal_Vinculado::all();
@@ -104,6 +126,9 @@ class CredenciadoController extends Controller
 
     public function update(Request $request, $id)
     {
+        // if (!auth()->user()->hasPermissionTo('editar')) {
+        // abort(403);
+        // }
 
         $credenciado = Credenciado::findOrFail($id);
 
@@ -182,6 +207,9 @@ class CredenciadoController extends Controller
 
     public function gerarPDF($id)
     {
+        //   if (!auth()->user()->hasPermissionTo('gerar')) {
+        // abort(403);
+        // }
         $credenciado = Credenciado::findOrFail($id);
         $estoques = Estoque::all();
         $terminal = Terminal_Vinculado::all();
@@ -198,6 +226,9 @@ class CredenciadoController extends Controller
     }
     public function gerarPDF2($id)
     {
+        //   if (!auth()->user()->hasPermissionTo('gerar')) {
+        // abort(403);
+        // }
         $pdf = PDF::loadView('credenciado.pdf', compact('id'));
 
         return $pdf->download('listar_contas.pdf');

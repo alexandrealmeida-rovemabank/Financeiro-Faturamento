@@ -5,8 +5,8 @@
 
 @section('content_header')
 
-    <h1 class="m-0 text-dark"><i>Bem-Vindo, {{ $user->name }}</i></h1>
-    <br>
+    <!-- <h1 class="m-0 text-dark"><i>Bem-Vindo, {{ $user->name }}</i></h1>
+    <br> -->
 
 @stop
 
@@ -14,102 +14,41 @@
     @include('layouts.notificacoes')
 
 
-
-
-
     <div class="container-fluid">
-        <div class="row">
-            <div class="col"> <!-- Use col-lg-4 para aumentar o tamanho do card -->
-                <div class="card bg-white small-box" style="border-radius:0px 20px 0px 20px;">
-                    <div class="inner">
-                        <p class="card-title text-dark" style="color: #333; font-weight: bold;">Credenciados</p>
-                        <h3 class="card-text text-dark" style="color: #555;">{{ $resultado->credenciado }}</h3>
-                        <br>
-                    </div>
-                    <div class="icon">
-                        <i class="fa-solid fa-store"></i>
-                    </div>
-                    <a href="/credenciado/index" class="small-box-footer">Detalhes <i
-                            class="fas fa-arrow-circle-right"></i></a>
-                </div>
-            </div>
+        <div class="container-fluid">
+            <!-- Cards Row -->
+            <div class="row mb-4">
+                @php
+                    $cards = [
+                        ['title' => 'Credenciados', 'value' => $resultado->credenciado, 'icon' => 'fa-store', 'link' => '/credenciado/index', 'color' => 'primary'],
+                        ['title' => 'Estoque', 'value' => $resultado->estoque, 'icon' => 'fa-box', 'link' => '/estoque/index', 'color' => 'info'],
+                        ['title' => 'Lotes', 'value' => $resultado->lote, 'icon' => 'fa-boxes-stacked', 'link' => '/estoque/lote/index', 'color' => 'success'],
+                        ['title' => 'Logísticas', 'value' => $resultado->postagem_reversa, 'icon' => 'fa-truck-moving', 'link' => '/logistica/correios/index', 'color' => 'warning'],
+                        ['title' => 'Lote de Cartões', 'value' => $resultado->lote_impressao, 'icon' => 'fa-layer-group', 'link' => '/abastecimento/impressao/index', 'color' => 'danger'],
+                        ['title' => 'Cartões', 'value' => $resultado->impressao, 'icon' => 'fa-credit-card', 'link' => '/abastecimento/impressao/index', 'color' => 'secondary']
+                    ];
+                @endphp
 
-            <div class="col"> <!-- Use col-lg-4 para aumentar o tamanho do card -->
-                <div class="card bg-white small-box" style="border-radius:0px 20px 0px 20px;">
-                    <div class="inner">
-                        <p class="card-title text-dark" style="color: #333; font-weight: bold;">Estoque</p>
-                        <h3 class="card-text text-dark" style="color: #555;">{{ $resultado->estoque }}</h3>
-                        <br>
+                @foreach($cards as $card)
+                    <div class="col-md-2">
+                        <div class="small-box bg-white elevation-3" style="border-radius:0px 20px 0px 20px;">
+                            <div class="inner">
+                                <h3>{{ number_format($card['value'], 0, ',', '.') }}</h3>
+                                <p>{{ $card['title'] }}</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas {{ $card['icon'] }}"></i>
+                            </div>
+                            <a href="{{ $card['link'] }}" class="small-box-footer">
+                                Detalhes <i class="fas fa-arrow-circle-right"></i>
+                            </a>
+                        </div>
                     </div>
-                    <div class="icon">
-                        <i class="bi bi-ui-checks-grid"></i>
-                    </div>
-                    <a href="/estoque/index" class="small-box-footer">Detalhes <i class="fas fa-arrow-circle-right"></i></a>
-                </div>
-            </div>
-
-            <div class="col"> <!-- Use col-lg-4 para aumentar o tamanho do card -->
-                <div class="card bg-white small-box" style="border-radius:0px 20px 0px 20px;">
-                    <div class="inner">
-                        <p class="card-title text-dark" style="color: #333; font-weight: bold;">Lotes</p>
-                        <h3 class="card-text text-dark" style="color: #555;">{{ $resultado->lote }}</h3>
-                        <br>
-                    </div>
-                    <div class="icon">
-                        <i class="fa-sharp fa-solid fa-boxes-stacked"></i>
-                    </div>
-                    <a href="/estoque/lote/index" class="small-box-footer">Detalhes <i
-                            class="fas fa-arrow-circle-right"></i></a>
-                </div>
-            </div>
-
-            <div class="col"> <!-- Use col-lg-4 para aumentar o tamanho do card -->
-                <div class="card bg-white small-box" style="border-radius:0px 20px 0px 20px;">
-                    <div class="inner">
-                        <p class="card-title text-dark" style="color: #333; font-weight: bold;">Logísticas</p>
-                        <h3 class="card-text text-dark" style="color: #555;">{{ $resultado->postagem_reversa }}</h3>
-                        <br>
-
-                    </div>
-                    <div class="icon">
-                        <i class="fa-solid fa-truck-moving"></i>
-                    </div>
-                    <a href="/logistica/correios/index" class="small-box-footer">Detalhes <i
-                            class="fas fa-arrow-circle-right"></i></a>
-                </div>
-            </div>
-
-            <div class="col"> <!-- Use col-lg-4 para aumentar o tamanho do card -->
-                <div class="card bg-white small-box" style="border-radius:0px 20px 0px 20px;">
-                    <div class="inner">
-                        <p class="card-title text-dark" style="color: #333; font-weight: bold;">Lote de Cartões</p>
-                        <h3 class="card-text text-dark" style="color: #555;">{{ $resultado->lote_impressao }}</h3>
-                        <br>
-                    </div>
-                    <div class="icon">
-                        <i class="fa-sharp fa-solid fa-boxes-stacked"></i>
-                    </div>
-                    <a href="/abastecimento/impressao/index" class="small-box-footer">Detalhes <i
-                            class="fas fa-arrow-circle-right"></i></a>
-                </div>
-            </div>
-
-            <div class="col"> <!-- Use col-lg-4 para aumentar o tamanho do card -->
-                <div class="card bg-white small-box" style="border-radius:0px 20px 0px 20px;">
-                    <div class="inner">
-                        <p class="card-title text-dark" style="color: #333; font-weight: bold;">Cartões</p>
-                        <h3 class="card-text text-dark" style="color: #555;">{{ $resultado->impressao }}</h3>
-                        <br>
-                    </div>
-                    <div class="icon">
-                        <i class="fa-regular fa-credit-card"></i>
-                    </div>
-                    <a href="/abastecimento/impressao/index" class="small-box-footer">Detalhes <i
-                            class="fas fa-arrow-circle-right"></i></a>
-                </div>
+                @endforeach
             </div>
         </div>
     </div>
+
 
 
     <div class="container-fluid">
@@ -243,7 +182,6 @@
     <strong><a href="https://rovemabank.com.br/">Rovema Bank</a> &copy; 2024 </strong> Todos os direitos reservados.
 
 @endsection
-
 
 
 
@@ -560,6 +498,32 @@
         };
 
         var chartAreaModelo = new Chart(ctxPolarModelo, configAreaModelo);
+
+    // Solicitações Chart
+    new Chart(document.getElementById('solicitacoesChart'), {
+                type: 'bar',
+                data: {
+                    labels: {!! json_encode($solicitacoesPorMes->pluck('mes')->map(function($mes) {
+                        return ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'][$mes - 1];
+                    })) !!},
+                    datasets: [{
+                        label: 'Solicitações',
+                        data: {!! json_encode($solicitacoesPorMes->pluck('quantidade')) !!},
+                        backgroundColor: 'rgba(0, 123, 255, 0.7)',
+                        borderColor: 'rgba(0, 123, 255, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
     });
 </script>
 @endsection

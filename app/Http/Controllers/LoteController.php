@@ -6,6 +6,13 @@ use App\Models\lote;
 
 class LoteController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:visualizar estoque')->only(['index']);
+        $this->middleware('permission:criar estoque')->only(['create']);
+        $this->middleware('permission:editar estoque')->only(['edit']);
+    }
+
     public function index()
     {
         $lote = lote::all();

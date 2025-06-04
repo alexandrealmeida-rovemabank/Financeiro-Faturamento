@@ -13,18 +13,27 @@ use DataTables;
 use Illuminate\Support\Facades\Http;
 use App\Jobs\AcompanharPedidoJob;
 use App\Services\LogisticaService;
+use Carbon\Carbon;
 
 class LogisticaController extends Controller
 {
+
     protected $logisticaService;
 
-    public function __construct(LogisticaService $logisticaService){
+    public function __construct(LogisticaService $logisticaService)
+    {
         $this->logisticaService = $logisticaService;
+        $this->middleware('permission:visualizar logistica')->only(['index_correios','view','rastreio_index','rastrear_index','rastrear']);
+        $this->middleware('permission:criar logistica')->only(['solicitarPostagemReversa']);
+   
+        $this->middleware('permission:excluir logistica')->only('gerarPDF','gerarPDF2');
     }
-      public function acompanharPedido(){
-          AcompanharPedidoJob::dispatch(new LogisticaService());
-          return redirect()->route('logistica.correios.index')->with('success', 'Status de solicitações atualizados manualmente!');
-      }
+    
+    public function acompanharPedido()
+    {
+        AcompanharPedidoJob::dispatch(new LogisticaService());
+        return redirect()->route('logistica.correios.index')->with('success', 'Status de solicitações atualizados manualmente!');
+    }
 
     public function index_correios(Request $request)
     {
@@ -96,7 +105,8 @@ class LogisticaController extends Controller
         }
     }
 
-    public function solicitarPostagemReversa(Request $request){
+    public function solicitarPostagemReversa(Request $request)
+    {
         // Validação dos dados do request
 
         $request->validate([
@@ -166,7 +176,8 @@ class LogisticaController extends Controller
         return $this->solicitarPostagem($data, $logistica, config('variaveis.link'), $user, $password);
     }
 
-    private function solicitarPostagem($dados, $paramentros, $link, $username, $password){
+    private function solicitarPostagem($dados, $paramentros, $link, $username, $password)
+    {
         try {
             $credenciais = [
                 'login' => $username,
@@ -257,10 +268,10 @@ class LogisticaController extends Controller
 
                     return redirect()->route('logistica.correios.index')->with('success', 'Solicitação Realizada com sucesso!');
                 } else {
-                    return redirect()->back()->with('error', $result->solicitarPostagemReversa->resultado_solicitacao->codigo_erro .' - ' . $result->solicitarPostagemReversa->resultado_solicitacao->descricao_erro)->withInput();
+                    return redirect()->back()->with('error', $result->solicitarPostagemReversa->resultado_solicitacao->codigo_erro . ' - ' . $result->solicitarPostagemReversa->resultado_solicitacao->descricao_erro)->withInput();
                 }
             } else {
-                return redirect()->back()->with('error', $result->solicitarPostagemReversa->cod_erro .' - ' . $result->solicitarPostagemReversa->msg_erro)->withInput();
+                return redirect()->back()->with('error', $result->solicitarPostagemReversa->cod_erro . ' - ' . $result->solicitarPostagemReversa->msg_erro)->withInput();
             }
 
         } catch (\Exception $e) {
@@ -268,7 +279,8 @@ class LogisticaController extends Controller
         }
     }
 
-    public function consultarPedido(){
+    public function consultarPedido()
+    {
         try {
             // Credenciais de acesso ao serviço SOAP
             $credenciais = [
@@ -292,7 +304,8 @@ class LogisticaController extends Controller
         }
     }
 
-    public function cancelarPedido($id){
+    public function cancelarPedido($id)
+    {
         // Encontra o contrato de logística reversa pelo ID
         $contrato = Logistica_reversa::findOrFail($id);
 
@@ -349,333 +362,202 @@ class LogisticaController extends Controller
         }
     }
 
-        public function view($id){
-            // Encontra a solicitação de logística reversa pelo ID
-            $solicitacao = Logistica_reversa::findOrFail($id);
+    public function view($id)
+    {
+        // Encontra a solicitação de logística reversa pelo ID
+        $solicitacao = Logistica_reversa::findOrFail($id);
 
-            // Retorna a view com os dados da solicitação
-            return view('logistica.correios.visualizar', compact('solicitacao'));
-        }
+        // Retorna a view com os dados da solicitação
+        return view('logistica.correios.visualizar', compact('solicitacao'));
+    }
 
-//DEIXE CASO AS JOOBS NÃO FUNCIONAR, PODER ALTERAR PARA FUNCIONAR NO BOTÃO!!!
-        // public function acompanharPedido(){
-        //      // Caminho do arquivo de log
-        //      $logFile = storage_path('logs/atualizacao_logistica.log');
+    public function rastrear($etiqueta)
+    {
+        try {
+            // 1. Buscar a etiqueta na tabela de logística reversa
+            $registro = Logistica_reversa::where('num_etiqueta', $etiqueta)->first();
 
-        //       // Busca todas as solicitações pendentes com status específicos
-        //       $pedidosPendentes = Logistica_reversa::whereIn('status_objeto', ['0', '00', '01', '1', '03', '3', '04', '4', '05', '5', '06', '6', '55'])->get();
-
-        //       // Verifica se não há pedidos pendentes
-        //       if ($pedidosPendentes->isEmpty()) {
-        //           $this->log("Sem logística no banco", $logFile);
-        //       } else {
-        //           $pedidos = [];
-        //           foreach ($pedidosPendentes as $pedido) {
-        //               $pedidos[] = $pedido->num_coleta;
-        //           }
-        //           // Registra no log os pedidos a serem atualizados
-        //           $this->log("Pedidos a serem atualizados: " . implode(", ", $pedidos), $logFile);
-
-        //             // Itera sobre os pedidos pendentes
-        //             foreach ($pedidosPendentes as $pedido) {
-        //                 set_time_limit(600); // Define o limite de tempo de execução para 10 minutos
-        //                 try {
-        //                     // Chama o método acompanharPedido2 para cada pedido
-        //                     $result = $this->acompanharPedido2($pedido, $logFile);
-
-        //                     // Salva os dados na tabela status_logistica
-        //                     $this->salvarStatusLogistica($result, $logFile);
-
-        //                     // Atualiza os registros na tabela Logistica_reversa
-        //                     $this->atualizarStatusLogisticaReversa($pedido, $result, $logFile);
-        //                 } catch (\Exception $e) {
-        //                     // Registra no log se houver erro ao acompanhar o pedido
-        //                     $this->log("Erro ao acompanhar pedido {$pedido->num_coleta}: " . $e->getMessage(), $logFile);
-        //                 }
-        //             }
-
-        //             // Registra no log a conclusão da atualização
-        //             $this->log('Atualização concluída com sucesso!', $logFile);
-
-        //             // Redireciona para a rota de índice com mensagem de sucesso
-        //             return redirect()->route('logistica.correios.index')->with('success', 'Status de solicitações atualizados manualmente!');
-        //         }
-        // }
-
-         public function acompanharPedido2($pedido, $logFile)
-         {
-             try {
-                 // Determina as credenciais com base no contrato
-                 if ($pedido->contrato == '05884660000104') {
-                     $user = config('variaveis.username_solucoes');
-                     $password = config('variaveis.password_solucoes');
-                     $cod_adm = config('variaveis.cod_adm_solucoes');
-                 } else {
-                     $user = config('variaveis.username_ip');
-                   $password = config('variaveis.password_ip');
-                     $cod_adm = config('variaveis.cod_adm_ip');
-                 }
-
-                 // Credenciais de acesso ao serviço SOAP
-                 $credenciais = [
-                     'login' => $user,
-                     'password' => $password,
-                 ];
-
-                 // Instância do cliente SOAP com as credenciais e o link do serviço
-                 $client = new SoapClient(config('variaveis.link'), $credenciais);
-
-                 // Determina o tipo de coleta (C ou A)
-                 $tipo = $pedido->tipo_coleta == 'CA' ? 'C' : 'A';
-
-                 // Parâmetros para acompanhar o pedido
-                 $params = [
-                     'codAdministrativo' => $cod_adm,
-                     'tipoBusca' => 'H',
-                     'numeroPedido' => $pedido->num_coleta,
-                     'tipoSolicitacao' => $tipo,
-                 ];
-
-                 // Chama o método acompanharPedido
-                 $result = $client->acompanharPedido($params);
-
-                 // Registra no log o número de coleta
-                 $this->log($pedido->num_coleta, $logFile);
-
-                // Retorna o resultado obtido
-                return $result;
-            } catch (\Exception $e) {
-                // Registra no log se houver erro ao acompanhar o pedido
-                $this->log("Erro ao buscar dados do pedido {$pedido->num_coleta}: " . $e->getMessage(), $logFile);
-                return "Erro ao buscar dados do pedido {$pedido->num_coleta}: " . $e->getMessage();
-            }
-        }
-
-     public function salvarStatusLogistica($result, $logFile)
-        {
-            dd($result);
-            try {
-                // Verifica se há coletas para processar
-                if (isset($result->acompanharPedido->coleta)) {
-                    $coletas = $result->acompanharPedido->coleta;
-                    // Verifica se $coletas é um array ou um objeto
-                    if (is_array($coletas)) {
-                        // Se for um array, itera sobre cada elemento
-                        foreach ($coletas as $coleta) {
-
-
-                             $this->salvarStatusIndividual($coleta, $logFile);
-                         }
-                    } elseif (is_object($coletas)) {
-
-                        // Se for um objeto, chama a função salvarStatusIndividual diretamente
-                        $this->salvarStatusIndividual($coletas, $logFile);
-                    } else {
-                        $this->log("O valor de coleta não é nem um array nem um objeto.", $logFile);
-                    }
-                } else {
-                    $this->log("acompanharPedido ou coleta não está definido.", $logFile);
-                }
-            } catch (\Exception $e) {
-                // Registra no log se houver erro ao salvar o status da logística
-                $this->log("Erro ao buscar logística: {$e->getMessage()}", $logFile);
-            }
-        }
-
-        public function salvarStatusIndividual($coleta, $logFile)
-        {
-
-            try {
-                // Verifica se o status já existe na tabela status_logistica
-                $statusExistente = statusLogistica::where('numero_pedido', $coleta->numero_pedido)
-                    ->where('status', $coleta->historico->status)
-                    ->first();
-
-                // Se o status não existir na tabela status_logistica, salva-o
-                if (!$statusExistente) {
-                    $status = new statusLogistica();
-                    $status->numero_pedido = $coleta->numero_pedido;
-                    $status->status = $coleta->historico->status;
-                    $status->descricao_status = $coleta->historico->descricao_status;
-                    $status->data_atualizacao = $coleta->historico->data_atualizacao;
-                    $status->hora_atualizacao = $coleta->historico->hora_atualizacao;
-                    $status->observacao = $coleta->historico->observacao;
-                    $status->save();
-                    $this->log("Status salvo com sucesso.", $logFile);
-                }
-            } catch (\Exception $e) {
-                // Registra no log se houver erro ao salvar o status individual
-                $this->log("Erro ao salvar status: {$e->getMessage()}", $logFile);
-            }
-        }
-
-        public function atualizarStatusLogisticaReversa($pedido, $result, $logFile)
-        {
-            try {
-                // Determina o status do objeto com base no resultado obtido
-                if (is_array($result->acompanharPedido->coleta)) {
-                    $quantidadeItensColeta = count($result->acompanharPedido->coleta) - 1;
-                    $atl['status_objeto'] = $result->acompanharPedido->coleta[$quantidadeItensColeta]->objeto->ultimo_status;
-                    $atl['desc_status_objeto'] = $result->acompanharPedido->coleta[$quantidadeItensColeta]->objeto->descricao_status;
-                     $etiqueta = $result->acompanharPedido->coleta[$quantidadeItensColeta]->objeto->numero_etiqueta;
-                 } else {
-                     $atl['status_objeto'] = $result->acompanharPedido->coleta->objeto->ultimo_status;
-                     $atl['desc_status_objeto'] = $result->acompanharPedido->coleta->objeto->descricao_status;
-                     $etiqueta = $result->acompanharPedido->coleta->objeto->numero_etiqueta;
-                 }
-
-                 // Atualiza o número de etiqueta, se houver
-               if ($etiqueta) {
-                     $atl['num_etiqueta'] = $etiqueta;
-                 } else {
-                  $atl['num_etiqueta'] = $pedido->num_etiqueta;
-                }
-
-             // Atualiza o registro na tabela Logistica_reversa
-             $pedido->update($atl);
-
-                // Registra no log a conclusão da atualização do pedido
-                $this->log("Atualização do pedido {$pedido->num_coleta} concluída com sucesso.", $logFile);
-            } catch (\Exception $e) {
-                // Registra no log se houver erro ao atualizar o pedido
-                $this->log("Erro ao atualizar pedido {$pedido->num_coleta}: {$e->getMessage()}", $logFile);
-            }
-        }
-
-        public function log($message, $logFile)
-        {
-            // Registra a mensagem no arquivo de log com a data e hora atuais
-            file_put_contents($logFile, "[" . date("Y-m-d H:i:s") . "] " . $message . "\n", FILE_APPEND);
-        }
-
-        public function rastrear(Request $request)
-        {
-            // Valida os dados do formulário
-            $request->validate([
-                'cod_rastreio' => 'required',
-            ]);
-
-            try {
-                // Gera o token de acesso à API dos Correios
-                $result = $this->gerarToken(config('variaveis.username_solucoes'), config('variaveis.password_solucoes'));
-
-                // Token de acesso
-                $token = $result;
-
-                // Endpoint da API para rastreamento de objetos
-                $url = 'https://api.correios.com.br/srorastro/v1/objetos?codigosObjetos=' . $request->cod_rastreio . '&resultado=T';
-
-                // Faz a requisição GET com o token de autenticação no cabeçalho
-                $response = Http::withHeaders([
-                    'Authorization' => 'Bearer ' . $token,
-                ])->get($url);
-
-                // Verifica se a requisição foi bem-sucedida
-                if ($response->successful()) {
-                    // Retorna os dados da resposta da API para a view de rastreamento
-                    return view('logistica.correios.rastreio', ['result' => $response->json()]);
-                } else {
-                    // Se houver erro na requisição, retorna uma resposta com o status de erro
-                    return response()->json(['error' => 'Erro ao fazer a requisição'], $response->status());
-                }
-            } catch (\Exception $e) {
-                // Captura qualquer exceção que ocorra durante a requisição
-                return response()->json(['error' => $e->getMessage()], 500); // Retorna um erro interno do servidor (status 500)
-            }
-        }
-
-        public function rastrear_index($etiqueta)
-        {
-
-
-            try {
-                // Gera o token de acesso à API dos Correios
-                $result = $this->gerarToken(config('variaveis.username_solucoes'), config('variaveis.password_solucoes'));
-
-                // Token de acesso
-                $token = $result;
-
-                // Endpoint da API para rastreamento de objetos
-                $url = 'https://api.correios.com.br/srorastro/v1/objetos?codigosObjetos=' . $etiqueta. '&resultado=T';
-
-                // Faz a requisição GET com o token de autenticação no cabeçalho
-                $response = Http::withHeaders([
-                    'Authorization' => 'Bearer ' . $token,
-                ])->get($url);
-
-                // Verifica se a requisição foi bem-sucedida
-                if ($response->successful()) {
-                    // Retorna os dados da resposta da API para a view de rastreamento
-                    return (['result' => $response->json()]);
-                } else {
-                    // Se houver erro na requisição, retorna uma resposta com o status de erro
-                    return response()->json(['error' => 'Erro ao fazer a requisição'], $response->status());
-                }
-            } catch (\Exception $e) {
-                // Captura qualquer exceção que ocorra durante a requisição
-                return response()->json(['error' => $e->getMessage()], 500); // Retorna um erro interno do servidor (status 500)
-            }
-        }
-
-        public function gerarToken($username, $password)
-        {
-            try {
-                // Codifica os dados de autenticação no formato esperado para Authorization: Basic
-                $authString = base64_encode("$username:$password");
-
-                // Número do cartão de postagem
-                $cartao = "0077498895";
-
-                // Endpoint da API para obter o token de acesso
-                $url = 'https://api.correios.com.br/token/v1/autentica/cartaopostagem';
-
-                // Faz uma requisição POST para obter o token de acesso
-                $response = Http::withHeaders([
-                    'Accept' => 'application/json',
-                    'Content-Type' => 'application/json',
-                    'Authorization' => 'Basic ' . $authString,
-                ])->post($url, $cartao);
-
-                // Verifica se a requisição foi bem-sucedida
-                if ($response->successful()) {
-                    // Retorna o token de acesso
-                    return $response->json('token');
-                } else {
-                    // Se houver erro na requisição, retorna uma resposta com o status de erro
-                    return response()->json(['error' => 'Falha ao gerar token de acesso'], $response->status());
-                }
-            } catch (\Exception $e) {
-                // Captura qualquer exceção que ocorra durante a requisição
-                return response()->json(['error' => $e->getMessage()], 500); // Retorna um erro interno do servidor (status 500)
-            }
-        }
-
-         public function rastreio_index(){
-             // Busca todas as solicitações pendentes com status específicos
-             $pedidosPendentes = Logistica_reversa::whereIn('status_objeto', ['0', '00', '01', '1', '03', '3', '04', '4', '05', '5', '06', '6', '55'])->get();
-            // DD($pedidosPendentes[45]);
-             return view('logistica.correios.rastreio',compact('pedidosPendentes'));
-         }
-
-        public function index_juma(Request $request)
-        {
-            // Obtém todos os dados de logística Juma ordenados pela data mais recente
-            $data = LogisticaJuma::latest()->get();
-
-            // Verifica se a requisição é AJAX
-            if ($request->ajax()) {
-                // Retorna os dados formatados para DataTables
-                return DataTables::of($data)
-                    ->addIndexColumn()
-                    ->addColumn('action', function ($row) {
-                        // Adiciona o botão de ação para cada linha
-                        return button_logistica_juma($row);
-                    })
-                    ->rawColumns(['action'])
-                    ->make(true);
+            if (!$registro) {
+                return response()->json(['error' => 'Etiqueta não encontrada.'], 404);
             }
 
-            // Retorna a view do índice de logística Juma
-            return view('logistica.juma.index');
+            // 2. Verificar qual contrato está associado
+            $contrato = $registro->contrato; // Ajuste o nome do campo conforme o que existe no seu banco
+
+            // 3. Selecionar credenciais com base no contrato
+            if ($contrato === '05884660000104') {
+                $username = config('variaveis.CORREIOS_USERNAME_IP');
+                $password = config('variaveis.CORREIOS_PASSWORD_IP');
+            } elseif ($contrato === '32192325000100') {
+                $username = config('variaveis.CORREIOS_USERNAME_SOLUCOES');
+                $password = config('variaveis.CORREIOS_PASSWORD_SOLUCOES');
+            }
+
+            // 4. Gerar token com a credencial correta
+            $token = $this->gerarToken($username, $password);
+
+            // 5. Montar URL do rastreamento
+            $url = 'https://api.correios.com.br/srorastro/v1/objetos/' . $etiqueta . '?resultado=T';
+
+            // 6. Fazer requisição com o token
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+            ])->get($url);
+
+            // 7. Verificar resposta
+            if ($response->successful()) {
+                return ['result' => $response->json()];
+            } else {
+                return response()->json(['error' => 'Erro ao fazer a requisição'], $response->status());
+            }
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+
+    public function rastrearr(Request $request)
+    {
+        // Valida os dados do formulário
+        $request->validate([
+            'cod_rastreio' => 'required',
+        ]);
+
+        try {
+            // Gera o token de acesso à API dos Correios
+            $result = $this->gerarToken(config('variaveis.username_solucoes'), config('variaveis.password_solucoes'));
+
+            // Token de acesso
+            $token = $result;
+
+
+            // Endpoint da API para rastreamento de objetos
+            $url = 'https://api.correios.com.br/srorastro/v1/objetos?codigosObjetos=' . $request->cod_rastreio . '&resultado=T';
+
+            // Faz a requisição GET com o token de autenticação no cabeçalho
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+            ])->get($url);
+
+            // Verifica se a requisição foi bem-sucedida
+            if ($response->successful()) {
+                // Retorna os dados da resposta da API para a view de rastreamento
+                dd($response->json());
+                return view('logistica.correios.rastreio', ['result' => $response->json()]);
+            } else {
+                // Se houver erro na requisição, retorna uma resposta com o status de erro
+                return response()->json(['error' => 'Erro ao fazer a requisição'], $response->status());
+            }
+        } catch (\Exception $e) {
+            // Captura qualquer exceção que ocorra durante a requisição
+            return response()->json(['error' => $e->getMessage()], 500); // Retorna um erro interno do servidor (status 500)
+        }
+    }
+
+    public function rastrear_index($etiqueta)
+    {
+        try {
+            // 1. Buscar a etiqueta na tabela de logística reversa
+            $registro = Logistica_reversa::where('num_etiqueta', $etiqueta)->first();
+
+            if (!$registro) {
+                return response()->json(['error' => 'Etiqueta não encontrada.'], 404);
+            }
+
+            // 2. Verificar qual contrato está associado
+            $contrato = $registro->contrato; // Ajuste o nome do campo conforme o que existe no seu banco
+
+            // 3. Selecionar credenciais com base no contrato
+            if ($contrato === '05884660000104') {
+                $username = config('variaveis.username_solucoes');
+                $password = config('variaveis.password_solucoes');
+            } elseif ($contrato === '32192325000100') {
+                $username = config('variaveis.username_ip');
+                $password = config('variaveis.password_ip');
+            }
+            // $result = $this->gerarToken(config('variaveis.username_solucoes'), config('variaveis.password_solucoes'));
+
+            //dd($username, $password, $contrato);
+            // Gera o token de acesso à API dos Correios
+            $result = $this->gerarToken($username, $password);
+
+            // Token de acesso
+            $token = $result;
+            //dd($token);
+            // Endpoint da API para rastreamento de objetos
+            $url = 'https://api.correios.com.br/srorastro/v1/objetos/' . $etiqueta . '?resultado=T';
+
+            // Faz a requisição GET com o token de autenticação no cabeçalho
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+            ])->get($url);
+
+            // Verifica se a requisição foi bem-sucedida
+            if ($response->successful()) {
+                // Retorna os dados da resposta da API para a view de rastreamento
+                return (['result' => $response->json()]);
+            } else {
+                // Se houver erro na requisição, retorna uma resposta com o status de erro
+                return response()->json(['error' => 'Erro ao fazer a requisição'], $response->status());
+            }
+        } catch (\Exception $e) {
+            // Captura qualquer exceção que ocorra durante a requisição
+            return response()->json(['error' => $e->getMessage()], 500); // Retorna um erro interno do servidor (status 500)
+        }
+    }
+
+    public function gerarToken($username, $password)
+    // public function gerarToken()
+    {
+        try {
+            // Codifica os dados de autenticação no formato esperado para Authorization: Basic
+            $authString = base64_encode("$username:$password");
+
+            // // Número do cartão de postagem
+
+            if ($username === 'cardideal') {
+                $cartao = "0077498895";
+            } elseif ($username === '32192325000100') {
+                $cartao = "0077786939";
+            }
+            //dd($cartao);
+            // Endpoint da API para obter o token de acesso
+            $url = 'https://api.correios.com.br/token/v1/autentica/cartaopostagem';
+
+            // Faz uma requisição POST para obter o token de acesso
+            $response = Http::withHeaders([
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'Authorization' => 'Basic ' . $authString,
+            ])->post($url, [
+                        'numero' => $cartao
+                    ]);
+
+
+            // Verifica se a requisição foi bem-sucedida
+            if ($response->successful()) {
+                // Retorna o token de acesso
+
+                return $response->json('token');
+            } else {
+                // Se houver erro na requisição, retorna uma resposta com o status de erro
+                return response()->json(['error' => 'Falha ao gerar token de acesso'], $response->status());
+            }
+        } catch (\Exception $e) {
+            // Captura qualquer exceção que ocorra durante a requisição
+            return response()->json(['error' => $e->getMessage()], 500); // Retorna um erro interno do servidor (status 500)
+        }
+    }
+
+    public function rastreio_index()
+    {
+        // Busca todas as solicitações pendentes com status específicos
+        $quatroMesesAtras = Carbon::now()->subMonths(2);
+        $pedidosPendentes = Logistica_reversa::whereIn('status_objeto', ['0', '00', '01', '1', '03', '3', '04', '4', '05', '5', '06', '6', '55'])
+            ->where('created_at', '>=', $quatroMesesAtras)
+            ->get();
+       
+        return view('logistica.correios.rastreio', compact('pedidosPendentes'));
+    }
+
+}

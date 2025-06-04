@@ -17,8 +17,10 @@
     <br>
     <div class="card">
         <div class="card-header">
-            <button data-bs-toggle="modal" data-bs-target="#modalCreate" class="btn btn-primary btn-add">Adicionar </button>
-            <a href="{{route('estoque.import')}}" class="btn btn-primary">Importar</a>
+            @if(auth()->user()->can('editar estoque'))
+                <button data-bs-toggle="modal" data-bs-target="#modalCreate" class="btn btn-primary btn-add">Adicionar </button>
+                <a href="{{route('estoque.import')}}" class="btn btn-primary">Importar</a>
+            @endif
 
 
         </div>
