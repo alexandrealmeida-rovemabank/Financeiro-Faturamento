@@ -6,7 +6,7 @@ use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use App\Models\lote_impressao;
-use App\Models\impressao;
+use App\Models\Impressao;
 
 class YourImport implements ToCollection, WithHeadingRow
 {
@@ -20,7 +20,7 @@ class YourImport implements ToCollection, WithHeadingRow
     public function collection(Collection $rows)
     {
         foreach ($rows->slice(1) as $row) {
-            impressao::create([
+            Impressao::create([
                 'placa' => $row[0],
                 'modelo' => $row[1],
                 'combustivel' => $row[2],

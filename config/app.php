@@ -19,7 +19,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Tecnologia Uzzipay'),
+    'name' => env('APP_NAME', 'Financeiro Rovema Bank'),
 
     /*
     |--------------------------------------------------------------------------

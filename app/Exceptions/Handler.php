@@ -27,5 +27,15 @@ class Handler extends ExceptionHandler
             //
         });
     }
-    
+    public function handle(Login $event): void
+    {
+        \Log::info('Listener LogSuccessfulLogin foi chamado!'); // <-- Linha de teste
+
+        if ($event->user) {
+            activity()
+            ->causedBy($event->user)
+            ->withProperties(['ip_address' => $this->request->ip()])
+            ->log('Usuário logado com sucesso');
+        }
+    }
 }

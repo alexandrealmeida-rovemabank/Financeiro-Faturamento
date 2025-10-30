@@ -12,7 +12,16 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('app:atualizar-informacoes-logistica');
+       // $schedule->command('inspire')->hourly();
+
+        // Linha que agenda o seu comando:
+        $schedule->command(ProcessarTransacoesFaturamento::class) // Especifica o comando a ser executado
+                 ->dailyAt('02:00'); // Define a frequência (diariamente às 2:00 da manhã)
+                 // ->everyMinute(); // Use esta linha em vez de dailyAt() para testes rápidos
+        
+        $schedule->command(ReprocessamentoGeral::class);
+
+
     }
 
     /**

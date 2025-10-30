@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'title' => 'Tecnologia',
+    'title' => 'Financeiro',
     'title_prefix' => '',
     'title_postfix' => '',
 
@@ -289,150 +289,96 @@ return [
     |
     */
 
-    'menu' => [
+    'menu' =>[
         [
-            'text'        => 'Dashboard',
-            'url'         => 'home',
-            'icon'        => 'bi bi-speedometer2',
+            'text'          => 'Dashboard',
+            'url'           => 'home',
+            'icon'          => 'bi bi-speedometer2', // Ícone Mantido
         ],
         
+        [
+            'text' => 'Clientes',
+            'icon' => 'bi bi-people-fill', // Ícone Alterado
+            'can'  => 'view cliente',
+            'url' => 'clientes', // Ajustei a URL para ser mais específica
+        ],
+
         [
             'text' => 'Credenciados',
-            'icon' => 'bi bi-shop',
-            'can'  => 'visualizar credenciado',
-            'submenu' => [
-                [
-                    'text' => 'Listar',
-                    'url' => 'credenciado/index',
-                    'can'  => 'visualizar credenciado',
-                ],
-                [
-                    'text' => 'Cadastrar',
-                    'url' => 'credenciado/create',
-                    'can'  => 'criar credenciado',
-                ],
-            ],
+            'icon' => 'bi bi-shop', // Ícone Mantido (já era bom)
+            'can'  => 'view credenciado',
+            'url' => 'credenciados', // Ajustei a URL para ser mais específica
         ],
 
         [
-            'text' => 'Abastecimento',
-            'icon' => 'bi bi-credit-card',
-            'can'  => 'visualizar abastecimento',
-            'submenu' => [
-                [
-                    'text' => 'Lotes',
-                    'url' => 'abastecimento/impressao/index',
-                    'can'  => 'visualizar abastecimento',
-                ],
-                [
-                    'text' => 'Importar',
-                    'url' => 'abastecimento/impressao/create',
-                    'can'  => 'criar abastecimento',
-                ],
-            ],
+            'text' => 'Faturamento',
+            'icon' => 'bi bi-receipt', // Ícone Alterado
+            'url' => 'faturamento', // Ajustei a URL para ser mais específica
+            'can'  => 'view faturamento',
         ],
 
         [
-            'text' => 'Estoque',
-            'icon' => 'bi bi-ui-checks-grid',
-             'can'  => 'visualizar estoque',
-            'submenu' => [
-                [
-                    'text' => 'Terminais',
-                    'url' => 'estoque/index',
-                    'can'  => 'visualizar estoque',
-                ],
-                [
-                    'text' => 'Importar Terminais',
-                    'url' => 'estoque/import',
-                    'can'  => 'importar estoque',
-                ],
-                [
-                    'text' => 'Lote',
-                    'url' => 'estoque/lote/index',
-                    'can'  => 'visualizar estoque',
-                ],
-
-
-            ],
-        ],
-        
-        [
-            'text' => 'Logistica',
-            'icon' => 'fa-solid fa-truck-fast',
-            'can'  => 'visualizar logistica',
-            'submenu' => [
-                [
-                    'text' => 'Solicitações Correios',
-                    'url' => 'logistica/correios/index',
-                    'can'  => 'visualizar logistica',
-                ],
-                [
-                    'text' => 'Nova Solicitação',
-                    'url' => 'logistica/correios/create',
-                    'can'  => 'criar logistica',
-                    // 'icon'        => 'bi bi-boxes',
-                ],
-                [
-                    'text' => 'Rastrear Solicitação',
-                    'url' => 'logistica/correios/rastreio',
-                    'can'  => 'visualizar logistica',
-                    // 'icon'        => 'bi bi-boxes',
-                ],
-                [
-                    'text' => 'Solicitações Juma',
-                    'url' => 'juma/index',
-                    'can'  => 'visualizar logistica',
-                    // 'icon'        => 'bi bi-boxes',
-                ],
-
-            ],
+            'text' => 'Cobrança',
+            'icon' => 'bi bi-collection-fill', // Ícone Alterado
+            'url' => 'cobranca/index', // Ajustei a URL para ser mais específica
+            'can'  => 'view cobranca',
         ],
         
         [
             'text' => 'Relatórios',
-            'icon' => 'bi bi-clipboard-data-fill',
-            'can'  => 'visualizar relatorio',
+            'icon' => 'bi bi-clipboard-data-fill', // Ícone Mantido
+            'can'  => 'view relatorio',
             'submenu' => [
                 [
-                    'text' => 'Estoque',
+                    'text' => 'Faturas',
                     'url' => 'inventario/estoque/index',
-                    'can'  => 'visualizar relatorio',
+                    'can'  => 'view relatorio',
                 ],
                 [
-                    'text' => 'Cartões',
+                    'text' => 'Cobranças',
                     'url' => 'inventario/cartao/index',
-                    'can'  => 'visualizar relatorio',
-                    // 'icon'        => 'bi bi-boxes',
+                    'can'  => 'view relatorio',
                 ],
-
             ],
         ],
-            [
-                'text' => 'Sistema',
-                'icon' => 'bi bi-gear-fill',
-                'can'  => 'visualizar sistema',
-                'submenu' => [
-                    [
-                        'text' => 'Log Correios',
-                        'url' => 'processos',
-                        'can'  => 'visualizar sistema',
-                    ],
-                    [
-                        'text' => 'Usuarios',
-                        'url' => 'users',
-                        'can'  => 'visualizar sistema',
-                    ],
-                    [
-                        'text' => 'Gerenciar Roles',
-                        'url' => 'roles',
-                        'can'  => 'visualizar sistema',
-                    ],
-                ],
-        ],
-    
-    ],
 
+        [
+            'text' => 'Sistema',
+            'icon' => 'bi bi-gear-fill', // Ícone Mantido
+            'submenu' => [
+                [
+                    'text' => 'Usuarios',
+                    'url' => 'admin/users',
+                    'can'  => 'view users', 
+                ],
+                [
+                    'text' => 'Perfil de Acesso',
+                    'url' => 'admin/roles',
+                    'can'  => 'view roles', 
+                ],
+                [
+                    'text' => 'Permissões',
+                    'url' => 'admin/permissions',
+                    'can'  => 'view permissions', 
+                ],
+                [
+                    'text' => 'Paramentros Globais',
+                    'url' => 'admin/parametros-globais', // URL ajustada
+                    'can'  => 'view parametros globais', // Permissão ajustada
+                ],
+                [
+                    'text' => 'Reprocessamento',
+                    'url' => 'admin/reprocessamentos', // URL ajustada
+                    'can'  => 'view reprocessamento', // Permissão ajustada
+                ],
+                [
+                    'text' => 'logs',
+                    'url' => 'admin/logs', // URL ajustada
+                    'can'  => 'view logs', // Permissão ajustada
+                ],
+            ],
+        ],
+    ],
     /*
     |--------------------------------------------------------------------------
     | Menu Filters

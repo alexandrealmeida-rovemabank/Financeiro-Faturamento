@@ -3,21 +3,15 @@ version: '3.8'
 services:
   app:
     build: .
-    container_name: Tecnologia_Uzzipay
+    container_name: financeiro_rovema_bank
     restart: unless-stopped
     working_dir: /var/www/html
     volumes:
       - .:/var/www/html
     environment:
-      - APP_ENV=local
-      - APP_DEBUG=true
-      - APP_KEY=base64:DUKG3pDypEulVDrhgo6N4DvIqBXfbg04D982bTNm8O8=
-      - DB_CONNECTION=pgsql
-      - DB_HOST=77.37.41.48
-      - DB_PORT=5432
-      - DB_DATABASE=gestao_estoque_system
-      - DB_USERNAME=service_estoque
-      - DB_PASSWORD=DisallowOrphan!Executions1693554410387
+      APP_ENV: production 
+      APP_DEBUG: true
+      APP_URL: http://172.18.37.58:8000
     ports:
       - "8000:80"
 

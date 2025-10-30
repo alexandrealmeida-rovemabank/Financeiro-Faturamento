@@ -13,8 +13,7 @@ return [
          * `Spatie\Permission\Contracts\Permission` contract.
          */
 
-        'permission' => Spatie\Permission\Models\Permission::class,
-
+        'permission' => App\Models\Permission::class, // Usa o seu model
         /*
          * When using the "HasRoles" trait from this package, we need to know which
          * Eloquent model should be used to retrieve your roles. Of course, it
@@ -24,7 +23,7 @@ return [
          * `Spatie\Permission\Contracts\Role` contract.
          */
 
-        'role' => Spatie\Permission\Models\Role::class,
+        'role' => App\Models\Role::class,             // Usa o seu model
 
     ],
 
@@ -199,4 +198,5 @@ return [
 
         'store' => 'default',
     ],
+
 ];

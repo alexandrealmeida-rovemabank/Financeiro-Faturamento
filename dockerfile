@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     libpng-dev \
     zlib1g-dev \
+    docker-php-ext-install gd \
     && apt-get clean
 
 # # Instala as extensões necessárias

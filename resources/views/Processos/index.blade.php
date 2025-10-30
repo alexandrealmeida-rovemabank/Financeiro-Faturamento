@@ -24,7 +24,7 @@
         $(document).ready(function() {
             function fetchProgresso() {
                 $.ajax({
-                    url: '{{ route("acompanhamento.progresso") }}',
+                    url: '{{ route("progresso") }}',
                     method: 'GET',
                     success: function(data) {
                         var progressoList = $('#progresso-list');
@@ -37,7 +37,7 @@
             }
 
             // Chama fetchProgresso a cada 5 segundos
-            setInterval(fetchProgresso, 5000);
+            setInterval(fetchProgresso, 60000);
             fetchProgresso(); // Chama uma vez imediatamente ao carregar a página
         });
 

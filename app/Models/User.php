@@ -2,18 +2,17 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use App\Models\User;
 use Spatie\Permission\Traits\HasRoles;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class User extends Authenticatable
 {
-
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -50,16 +49,35 @@ class User extends Authenticatable
     public function adminlte_image()
     {
         $user_auth = auth()->user();
-        if($user_auth->imagem_perfil == ""){
-            return asset('vendor/adminlte/dist/img/user.png');
-        }
-
-        return asset('storage/'.$user_auth->imagem_perfil);
-
+        return $user_auth->imagem_perfil
+            ? asset('storage/' . $user_auth->imagem_perfil)
+            : asset('vendor/adminlte/dist/img/user.png');
     }
 
     public function adminlte_profile_url()
     {
         return 'profile';
+    }
+
+    /**
+     * Configuração do Log de Atividade.
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['name', 'email', 'imagem_perfil'])
+            ->useLogName('Usuário')
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(function (string $eventName) {
+                $acao = match ($eventName) {
+                    'created' => 'criado',
+                    'updated' => 'atualizado',
+                    'deleted' => 'excluído',
+                    'edited' => 'editado',
+                    default => $eventName
+                };
+                return "Usuário {$this->name} foi {$acao}";
+            });
     }
 }

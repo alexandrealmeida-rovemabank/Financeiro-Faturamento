@@ -7,6 +7,16 @@ use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
 
+// --- Imports Adicionados ---
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
+use Illuminate\Auth\Events\Failed;
+// --- Fim dos Imports Adicionados ---
+
+use App\Listeners\LogFailedLogin;
+use App\Listeners\LogSuccessfulLogin;
+use App\Listeners\LogSuccessfulLogout;
+
 class EventServiceProvider extends ServiceProvider
 {
     /**
@@ -17,6 +27,18 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         Registered::class => [
             SendEmailVerificationNotification::class,
+        ],
+        // Agora o Laravel sabe a qual classe 'Login' se refere
+        Login::class => [
+            LogSuccessfulLogin::class,
+        ],
+        // Agora o Laravel sabe a qual classe 'Logout' se refere
+        Logout::class => [
+            LogSuccessfulLogout::class,
+        ],
+         // Agora o Laravel sabe a qual classe 'Failed' se refere
+        Failed::class => [
+            LogFailedLogin::class,
         ],
     ];
 
@@ -36,3 +58,4 @@ class EventServiceProvider extends ServiceProvider
         return false;
     }
 }
+
