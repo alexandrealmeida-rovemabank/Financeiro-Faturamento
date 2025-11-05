@@ -7,11 +7,32 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity; // Esta é a "ferramenta" que faz o log.
 use Spatie\Activitylog\LogOptions;          // Esta ajuda a configurar o que será logado.
 
+use App\Models\Municipio;
+use App\Models\Organizacao;
+use App\Models\Contrato;
+use App\Models\Empenho;
+use App\Models\ParametroCliente;
+use App\Models\TransacaoFaturamento;
+use App\Models\Fatura;
 class Empresa extends Model
 {
     use HasFactory, LogsActivity;
 
     protected $table = 'public.empresa';
+    /**
+     * A chave primária associada à tabela.
+     *
+     * @var string
+     */
+    protected $primaryKey = 'id';
+
+    /**
+     * Indica se os IDs são auto-incremento.
+     *
+     * @var bool
+     */
+    public $incrementing = true;
+
 
     // ... (Seu método getActivitylogOptions existente)
     public function getActivitylogOptions(): LogOptions
@@ -122,8 +143,56 @@ class Empresa extends Model
 
 
     public function pos()
-{
-    return $this->hasMany(\App\Models\POS::class, 'credenciado_id');
-}
+    {
+        return $this->hasMany(\App\Models\POS::class, 'credenciado_id');
+    }
+
+
+    /**
+     * Relação para buscar as transações PENDENTES de faturamento.
+     * (Usada para calcular o VALOR na tabela index)
+     */
+    public function transacoesPendentes()
+    {
+        return $this->hasMany(TransacaoFaturamento::class, 'cliente_id', 'id')
+                    // CORREÇÃO 1: Usando a coluna 'status' (string)
+                    ->whereIn('status', ['confirmada', 'liquidada'])
+                    ->whereNull('fatura_id');
+    }
+
+    /**
+     * Relação para buscar faturas JÁ GERADAS.
+     * (Usada para definir o STATUS na tabela index)
+     */
+    public function faturas()
+    {
+        return $this->hasMany(Fatura::class, 'cliente_id', 'id');
+    }
+
+    // --- INÍCIO DAS NOVAS RELAÇÕES (Req 1) ---
+
+    /**
+     * Transações PENDENTES onde esta empresa é a MATRIZ
+     * (cliente_id = 1, unidade_id = NULL)
+     */
+    public function transacoesPendentesMatriz()
+    {
+        return $this->hasMany(TransacaoFaturamento::class, 'cliente_id', 'id');
+    }
+
+    /**
+     * Transações PENDENTES onde esta empresa é a UNIDADE
+     * (unidade_id = 2)
+     */
+    public function transacoesPendentesUnidade()
+    {
+        return $this->hasMany(TransacaoFaturamento::class, 'unidade_id', 'id')
+                    ->whereIn('status', ['confirmada', 'liquidada'])
+                    ->whereNull('fatura_id');
+    }
+
+
+
+
 
 }

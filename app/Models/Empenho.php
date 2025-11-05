@@ -15,7 +15,11 @@ class Empenho extends Model
      * @var string
      */
     protected $table = 'public.empenho';
-
+    
+    protected $casts = [
+        'valor' => 'float',
+        'data_emissao' => 'date',
+    ];
     /**
      * Relacionamento com o contrato ao qual o empenho pertence.
      */

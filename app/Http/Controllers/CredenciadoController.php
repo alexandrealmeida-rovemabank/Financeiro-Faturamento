@@ -87,6 +87,8 @@ class CredenciadoController extends Controller
             'organizacoes' => Organizacao::orderBy('nome')->get(),
             'tipos' => EmpresaTipo::whereIn('id', [3, 4])->orderBy('nome')->get(),
             'statusOptions' => ['Ativo', 'Inativo'],
+            'organizacoes' => Organizacao::orderBy('nome')->get(), // 👈 adicione esta linha
+
         ]);
     }
 

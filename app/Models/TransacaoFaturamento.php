@@ -147,5 +147,14 @@ class TransacaoFaturamento extends Model
     }
 
     // Adicione outros relacionamentos conforme necessário (ex: cartao, pos)
+
+    // ... dentro de App\Models\TransacaoFaturamento
+
+    // Relação: Uma transação pode pertencer a uma fatura
+    public function fatura()
+    {
+        return $this->belongsTo(Fatura::class);
+    }
+
 }
 
