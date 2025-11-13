@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity; // Esta é a "ferramenta" que faz o log.
 use Spatie\Activitylog\LogOptions;          // Esta ajuda a configurar o que será logado.
-
 use App\Models\Municipio;
 use App\Models\Organizacao;
 use App\Models\Contrato;
@@ -14,9 +13,13 @@ use App\Models\Empenho;
 use App\Models\ParametroCliente;
 use App\Models\TransacaoFaturamento;
 use App\Models\Fatura;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use App\Models\CodigoDealer;
+
 class Empresa extends Model
 {
     use HasFactory, LogsActivity;
+    
 
     protected $table = 'public.empresa';
     /**
@@ -33,6 +36,11 @@ class Empresa extends Model
      */
     public $incrementing = true;
 
+    public function codigoDealer()
+    {
+        // hasOne(Modelo, chave_estrangeira_na_tabela_codigos_dealer, chave_local_na_tabela_empresa)
+        return $this->hasOne(CodigoDealer::class, 'cnpj', 'cnpj');
+    }
 
     // ... (Seu método getActivitylogOptions existente)
     public function getActivitylogOptions(): LogOptions
@@ -189,6 +197,44 @@ class Empresa extends Model
         return $this->hasMany(TransacaoFaturamento::class, 'unidade_id', 'id')
                     ->whereIn('status', ['confirmada', 'liquidada'])
                     ->whereNull('fatura_id');
+    }
+
+    protected function enderecoCompleto(): Attribute
+    {
+        return Attribute::make(
+            get: function ($value) {
+                $address = [];
+
+                // 1. Logradouro e Número
+                if (!empty($this->logradouro)) {
+                    $address[] = $this->logradouro;
+                    if (!empty($this->numero)) {
+                        $address[] = 'Nº ' . $this->numero;
+                    }
+                    $address[] = ' ' .$this->bairro;
+                }
+
+                // 2. Cidade e UF
+                // O Controller JÁ carregou 'municipio.estado'
+                if ($this->relationLoaded('municipio') && $this->municipio) {
+                    $cidade_uf = $this->municipio->nome;
+                    
+                    if ($this->municipio->relationLoaded('estado') && $this->municipio->estado) {
+                        $cidade_uf .= ' - ' . $this->municipio->estado->sigla; // 'RO'
+                    }
+                    
+                    $address[] = $cidade_uf;
+                }
+
+                // Se o array estiver vazio, retorna null (para o '??' funcionar)
+                if (empty($address)) {
+                    return null;
+                }
+                
+                // Junta tudo: "Rua Teste, Nº 123, Porto Velho - RO"
+                return implode(', ', $address);
+            }
+        );
     }
 
 

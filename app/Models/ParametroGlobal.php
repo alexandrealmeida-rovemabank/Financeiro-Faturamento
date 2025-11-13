@@ -27,6 +27,13 @@ class ParametroGlobal extends Model
         'descontar_ir_fatura',
         'dias_vencimento_publico',
         'dias_vencimento_privado',
+        'banco',
+        'agencia',
+        'conta',
+        'chave_pix',
+        'cnpj',
+        'razao_social',
+
     ];
 
     /**
@@ -48,6 +55,12 @@ class ParametroGlobal extends Model
                 'descontar_ir_fatura',
                 'dias_vencimento_publico',
                 'dias_vencimento_privado',
+                'banco',
+                'agencia',
+                'conta',
+                'chave_pix',
+                'cnpj',
+                'razao_social',
             ])
             ->useLogName('Parâmetro Global')
             ->logOnlyDirty()

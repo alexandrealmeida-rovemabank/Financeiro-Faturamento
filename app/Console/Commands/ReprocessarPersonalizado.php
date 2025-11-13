@@ -75,10 +75,19 @@ class ReprocessarPersonalizado extends Command
         }
 
         $this->info("Iniciando reprocessamento personalizado para Cliente ID {$clienteId}...");
-        $inicioExecucao = Carbon::now();
-
+        
+        // --- ALTERAÇÃO AQUI: Passando a Razão Social do cliente para o log ---
         // Encontra ou cria o Log
-        $log = $this->getOrCreateLog($logId, $clienteId, $dataInicioStr, $dataFimStr, $escopo);
+        $log = $this->getOrCreateLog(
+            $logId, 
+            $clienteId, 
+            $cliente->razao_social, // Passando o nome do cliente
+            $dataInicioStr, 
+            $dataFimStr, 
+            $escopo
+        );
+        // ---------------------------------------------------------------------
+
         Log::info("[ReprocessarPersonalizado] Log ID {$log->id} está sendo processado.");
         
         $contador = 0;
@@ -131,9 +140,29 @@ class ReprocessarPersonalizado extends Command
                 }
             }
 
-            // Executa o Delete
+            // ===================================================================
+            // EXCLUSÃO EM ORDEM (CORREÇÃO DE CHAVE ESTRANGEIRA)
+            // ===================================================================
+
+            $this->info("... Limpando 'fatura_itens' dependentes...");
+
+            // 1. Criamos um clone da query de delete para usar como subquery
+            //    Esta subquery seleciona os IDs de 'transacao_faturamento' que serão apagados
+            $subQuery = $queryDelete->clone()->select('id');
+
+            // 2. Deletamos os FILHOS (fatura_itens) primeiro, usando a subquery
+            //    [!] ATENÇÃO: Confirme se a chave estrangeira em 'fatura_itens' é 'transacao_faturamento_id'
+            $deletedItensCount = DB::table('contas_receber.fatura_itens')
+                ->whereIn('transacao_faturamento_id', $subQuery)
+                ->delete();
+            $this->info("... {$deletedItensCount} registros de 'fatura_itens' removidos.");
+
+            // 3. Agora, deletamos os PAIS (transacao_faturamento)
+            //    Isso usa a $queryDelete original (sem o 'select')
+            $this->info("... Limpando 'transacao_faturamento' principais...");
             $deletedCount = $queryDelete->delete();
-            $this->info("{$deletedCount} transações antigas removidas.");
+            $this->info("✅ {$deletedCount} transações antigas removidas.");
+            // ===================================================================
             Log::info("[ReprocessarPersonalizado] Log ID {$log->id}: {$deletedCount} transações antigas removidas.");
 
             // 2. Buscar transações da origem
@@ -192,12 +221,15 @@ class ReprocessarPersonalizado extends Command
     /**
      * Busca ou cria o registro de log.
      */
-    private function getOrCreateLog($logId, $clienteId, $dataInicioStr, $dataFimStr, $escopo)
+    // --- ALTERAÇÃO AQUI: Adicionado o parâmetro $clienteNome ---
+    private function getOrCreateLog($logId, $clienteId, $clienteNome, $dataInicioStr, $dataFimStr, $escopo)
     {
+        // Salva o nome do cliente no JSON para facilitar a leitura na grid
         $parametrosJson = json_encode([
             'cliente_id' => $clienteId,
-            'data_inicio' => $dataInicioStr,
-            'data_fim' => $dataFimStr,
+            'cliente_nome' => $clienteNome, // <--- Salvo aqui
+            'data_inicio' => $dataInicioStr, // <--- Período Início
+            'data_fim' => $dataFimStr,       // <--- Período Fim
             'escopo' => $escopo
         ]);
 
@@ -210,7 +242,7 @@ class ReprocessarPersonalizado extends Command
                     'inicio_execucao' => now(), // Garante o início correto
                     'fim_execucao' => null, // Limpa execuções anteriores
                     'mensagem_erro' => null,
-                    'parametros' => $parametrosJson,
+                    'parametros' => $parametrosJson, // Atualiza com o nome do cliente
                 ]);
                 return $log;
             }
@@ -244,7 +276,7 @@ class ReprocessarPersonalizado extends Command
                 'status' => $status,
                 'ultimo_id_processado_depois' => $contador > 0 ? $ultimoId : $log->ultimo_id_processado_antes, // Mantém o ID anterior se nada foi copiado
                 'transacoes_copiadas' => $contador,
-                'mensagem_erro' => $errorMessage ? $e->getMessage() : null, // Salva só a msg principal
+                'mensagem_erro' => $errorMessage, // Salva a mensagem/stack trace completa vinda do catch
             ]);
             Log::info("[ReprocessarPersonalizado] Log ID {$log->id}: Log final atualizado para '{$status}'.");
         } else {
@@ -252,4 +284,3 @@ class ReprocessarPersonalizado extends Command
         }
     }
 }
-

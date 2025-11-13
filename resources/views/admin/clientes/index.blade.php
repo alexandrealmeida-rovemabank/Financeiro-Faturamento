@@ -226,7 +226,10 @@ $(function () {
             { data: 'action', orderable: false, searchable: false, className: "text-center" }
         ],
         order: [[1, 'asc']],
-        language: { url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Portuguese-Brasil.json' }
+       language: {
+                    // <<<--- CORREÇÃO AQUI (protocolo-relativo e versão 1.10.25)
+                   url: 'https://cdn.datatables.net/plug-ins/1.10.25/i18n/Portuguese-Brasil.json'
+                }
     });
 
     $('#filter').click(() => table.draw());

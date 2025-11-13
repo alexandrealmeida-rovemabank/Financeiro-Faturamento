@@ -6,17 +6,13 @@
             <form id="form-gerar-fatura">
                 <div class="modal-header">
                     <h5 class="modal-title">Gerar Nova Fatura</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-dismiss="modal" onclick="$('#modalGerarFatura').modal('hide');" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" name="cliente_id" value="{{ $cliente->id }}">
                     <input type="hidden" name="periodo" value="{{ $periodo }}">
-                    
-                    {{-- Flag para o JavaScript saber o tipo de cliente --}}
-                    <input type="hidden" id="is_publico_flag" value="{{ $is_publico ? 'true' : 'false' }}">
-
 
                     {{-- Alertas de Erro e Aviso --}}
                     <div id="modal-alert-container"></div>
@@ -41,16 +37,18 @@
                     
                     {{-- Filtros Fracionados --}}
                     <div id="filtros-fracionados" style="display:none; border: 1px solid #ddd; padding: 15px; border-radius: 5px; background: #f9f9f9;">
-                        
-                        <p class="text-muted small" id="info-modo-fracionado">
-                            Modo Fracionado: Selecione filtros para limitar as transações.
-                        </p>
 
+                    {{-- Lógica de Texto (Público/Privado) movida para o JS para consistência --}}
+                    <p class="text-muted small" id="filtro-helper-text">
+                        Modo Fracionado: Selecione <strong>pelo menos um</strong> filtro de escopo. Os filtros são cumulativos e em cascata.
+                    </p>
+                    
                         {{-- LINHA 1: FILTROS DE ESCOPO --}}
                         <div class="row">
                              <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Filtro: Grupo (Hierarquia 1)</label>
+                                    {{-- Este é um filtro em cascata --}}
                                     <select name="grupo_id" id="filtro_grupo_id" class="form-control select2-modal filtro-cascata" style="width:100%;">
                                         <option value="">-- Carregando... --</option>
                                     </select>
@@ -59,30 +57,25 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Filtro: Subgrupo (Hierarquia 2)</label>
+                                    {{-- Este é um filtro em cascata --}}
                                     <select name="subgrupo_id" id="filtro_subgrupo_id" class="form-control select2-modal filtro-cascata" style="width:100%;">
                                         <option value="">-- Carregando... --</option>
                                     </select>
                                 </div>
                             </div>
-                            
-                            {{-- CORREÇÃO: Campo Empenho só aparece se for público --}}
-                            @if($is_publico)
-                            <div class="col-md-6" id="empenho-field-wrapper">
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Filtro: Empenho (Hierarquia 3)</label>
+                                    {{-- Este é um filtro em cascata --}}
                                     <select name="empenho_id" id="filtro_empenho_id" class="form-control select2-modal filtro-cascata" style="width:100%;">
                                         <option value="">-- Carregando... --</option>
                                     </select>
                                 </div>
                             </div>
-                            @else
-                                {{-- Adiciona um input hidden para não quebrar o JS que procura o ID --}}
-                                <input type="hidden" id="filtro_empenho_id" value="">
-                            @endif
-
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Filtro: Contrato (Opcional)</label>
+                                    {{-- Este é um filtro em cascata --}}
                                     <select name="contrato_id" id="filtro_contrato_id" class="form-control select2-modal filtro-cascata" style="width:100%;">
                                         <option value="">-- Carregando... --</option>
                                     </select>
@@ -104,7 +97,7 @@
                                 <small class="text-muted">(Soma das transações que atendem a <strong>TODOS</strong> os filtros acima)</small>
                             </div>
                             
-                            <div class="col-6" id="limite-aplicavel-box">
+                            <div class="col-6">
                                 <strong>Limite Aplicável (Hierarquia):</strong>
                                 <span id="display-limite-aplicavel" class="d-block font-weight-bold text-danger" style="font-size: 1.1rem;">R$ 0,00</span>
                                 <small class="text-muted">(Saldo pendente do filtro <strong>mais granular</strong>: Empenho > Subgrupo > Grupo)</small>
@@ -116,10 +109,17 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
+                                {{-- CAMPO DE VALOR AGORA É EDITÁVEL --}}
                                 <label>Valor a Faturar</label>
-                                <input type="number" step="0.01" id="valor_a_faturar" name="valor_fatura_calculado" class="form-control form-control-lg" 
-                                       placeholder="0,00"
+                                
+                                {{-- ======================================================= --}}
+                                {{-- CORREÇÃO 1: Mudar para type="text" para aceitar máscara --}}
+                                {{-- ======================================================= --}}
+                                <input type="text" id="valor_a_faturar" name="valor_fatura_calculado" class="form-control form-control-lg" 
+                                       placeholder="R$ 0,00"
                                        style="font-size: 1.5rem; font-weight: bold;">
+                                {{-- FIM DA CORREÇÃO 1 --}}
+
                                 <small id="valor-calculado-info" class="text-info" style="display: none;">
                                     <i class="fas fa-info-circle"></i> O valor não pode exceder o "Total Pendente" nem o "Limite Aplicável".
                                 </small>
@@ -135,7 +135,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#modalGerarFatura').modal('hide');">Cancelar</button>
                     <button type="button" id="btn-confirmar-geracao" class="btn btn-success" disabled>
                         <i class="fa fa-check"></i> Confirmar e Gerar Fatura
                     </button>
@@ -162,10 +162,8 @@ $(document).ready(function() {
     var clienteId = container.data('cliente-id');
     var periodo = container.data('periodo');
     var vencimentoDefault = container.data('vencimento-auto');
+    var isPublico = container.data('is-publico') === 'true' || container.data('is-publico') === true; // Garante boolean
     
-    // --- CORREÇÃO: Lê a flag do tipo de cliente ---
-    var isPublico = $('#is_publico_flag').val() === 'true';
-
     // Cache de dados AJAX
     var cacheGrupos = null; // Armazena a resposta de getGrupos
     var xhrCalculo = null; // Para abortar requisições de cálculo em andamento
@@ -177,6 +175,69 @@ $(document).ready(function() {
     var limiteAplicavel = 0; // Limite do Escopo (Lógica Hierárquica)
     var maxValorPermitido = 0; // O menor entre os dois acima
     
+
+    // ============================================================
+    // CORREÇÃO 2: Funções Helper de Formatação de Moeda
+    // ============================================================
+
+    /**
+     * Pega um NÚMERO (ex: 1234.50) e formata para string BRL (ex: "R$ 1.234,50")
+     */
+    function formatNumberToBR(value) {
+        if (isNaN(value) || value === null || value === Infinity) value = 0;
+        return new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(value);
+    }
+
+    /**
+     * Pega uma STRING BRL (ex: "R$ 1.234,50") e formata para NÚMERO (ex: 1234.50)
+     */
+    function parseBRToNumber(value) {
+        if (typeof value !== 'string' || value.length === 0) return 0;
+        
+        let valorNumerico = value.replace('R$', '')     // Remove "R$"
+                                 .trim()               // Remove espaços
+                                 .replace(/\./g, '')   // Remove pontos (milhar)
+                                 .replace(',', '.');   // Troca vírgula por ponto (decimal)
+        
+        return parseFloat(valorNumerico) || 0;
+    }
+    
+    /**
+     * Script de MÁSCARA (enquanto o usuário digita)
+     * Baseia-se em centavos. Ex: 1, 2, 3, 4, 5 -> R$ 123,45
+     */
+    inputValorFatura.on('input', function (e) {
+        let valor = $(this).val();
+        let digitos = valor.replace(/\D/g, ''); // Apenas dígitos
+        
+        if (digitos.length === 0) {
+            $(this).val(''); // Permite apagar
+            validarValorDigitado(); // Revalida (vai desabilitar o botão)
+            return;
+        }
+
+        // Converte para número (em centavos)
+        let valorNum = parseInt(digitos, 10);
+        
+        // Formata como moeda (dividindo por 100)
+        let valorFormatado = new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+            minimumFractionDigits: 2
+        }).format(valorNum / 100);
+
+        $(this).val(valorFormatado);
+    });
+    // ============================================================
+    // FIM DA CORREÇÃO 2
+    // ============================================================
+
+
     // Inicializa os Select2 do modal
     $('.select2-modal').select2({
         dropdownParent: modal,
@@ -198,33 +259,36 @@ $(document).ready(function() {
 
         // Limpa e recarrega os Select2
         resetarSelect2('#filtro_contrato_id', 'Carregando...', true);
+        resetarSelect2('#filtro_empenho_id', 'Carregando...', true);
         resetarSelect2('#filtro_grupo_id', 'Carregando...', true);
         resetarSelect2('#filtro_subgrupo_id', 'Carregando...', true);
-
-        // --- CORREÇÃO: Só carrega empenho se for público ---
-        if(isPublico) {
-            resetarSelect2('#filtro_empenho_id', 'Carregando...', true);
-            carregarEmpenhos(true);
-            $('#limite-aplicavel-box').show();
-            $('#info-modo-fracionado').text('Modo Fracionado: Selecione pelo menos um filtro de escopo (Grupo, Subgrupo ou Empenho). Os filtros são cumulativos e em cascata.');
-        } else {
-            $('#limite-aplicavel-box').hide();
-            $('#info-modo-fracionado').text('Modo Fracionado: Selecione filtros (Grupo ou Subgrupo) para limitar as transações.');
-        }
         
         // Dispara as chamadas AJAX
         carregarContratos();
-        // A lógica de cascata agora recarrega os outros
-        // O `true` indica que é a carga inicial, para evitar recálculos múltiplos
         carregarGruposESubgrupos(true); 
+        carregarEmpenhos(true);
+
+        // Oculta/Exibe campos de acordo com o tipo de cliente
+        var contratoFormGroup = $('#filtro_contrato_id').closest('.form-group');
+        var empenhoFormGroup = $('#filtro_empenho_id').closest('.form-group');
+        var helperText = $('#filtro-helper-text');
+
+        if (isPublico) {
+            // Cliente PÚBLICO: Mostra Contrato e Empenho
+            contratoFormGroup.show();
+            empenhoFormGroup.show();
+            helperText.html('Modo Fracionado(Público): Selecione <strong>pelo menos um</strong> filtro de escopo (Grupo, Subgrupo ou Empenho). Os filtros são cumulativos e em cascata.');
+        } else {
+            // Cliente PRIVADO: Oculta Contrato e Empenho
+            contratoFormGroup.show(); // Contrato aparece para ambos
+            empenhoFormGroup.hide();
+            helperText.html('Modo Fracionado (Privado): Selecione <strong>pelo menos um</strong> filtro de escopo (Grupo, Subgrupo). Os filtros são cumulativos e em cascata.');
+        }
     });
 
     function resetarSelect2(selector, placeholder, disabled = false) {
-        var el = $(selector);
-        if(!el.length) return; // Não faz nada se o seletor não existir (caso do empenho)
-        
-        var valorAtual = el.val(); // Pega o valor antes de limpar
-        el
+        var valorAtual = $(selector).val(); // Pega o valor antes de limpar
+        $(selector)
             .empty()
             .append($('<option>', { value: '' }).text(placeholder))
             .val(valorAtual) // Tenta restaurar o valor (para evitar reset desnecessário)
@@ -232,10 +296,7 @@ $(document).ready(function() {
             .trigger('change.select2');
     }
     
-    function formatCurrency(value) {
-        if (isNaN(value) || value === null || value === Infinity) value = 0;
-        return 'R$ ' + value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
+    // ** Removida a função formatCurrency() - Substituída por formatNumberToBR() **
 
     function mostrarAlerta(tipo, mensagem) {
         var icone = (tipo == 'danger') ? 'fa-exclamation-triangle' : 'fa-info-circle';
@@ -261,6 +322,7 @@ $(document).ready(function() {
             filtrosDiv.slideDown();
             inputValorFatura.prop('readonly', false); // Permite digitar
             $('#valor-calculado-info').show();
+            inputValorFatura.val(''); // Limpa o valor ao mudar para fracionada
         } else {
             filtrosDiv.slideUp();
             limparAlertas(); // Limpa alertas fracionados
@@ -279,6 +341,7 @@ $(document).ready(function() {
             var valorSelecionado = select.val(); // Salva o valor
             select.empty().append($('<option>', { value: '' }).text('-- Opcional --'));
             $.each(data, function(i, item) {
+                console.log(item);
                 select.append($('<option>', { value: item.id }).text(item.numero));
             });
             select.val(valorSelecionado).prop('disabled', false).trigger('change.select2');
@@ -287,14 +350,6 @@ $(document).ready(function() {
 
     // ** ATUALIZADO: Carrega Empenhos baseado em outros filtros **
     function carregarEmpenhos(isInitialLoad = false) {
-        if (!isPublico) { // Não carrega empenhos para privados
-             // Se esta for a carga inicial, precisamos acionar o recálculo
-             if (isInitialLoad) {
-                recalcularValores();
-             }
-            return;
-        }
-
         if (xhrEmpenhos) xhrEmpenhos.abort(); // Cancela requisição anterior
         
         var select = $('#filtro_empenho_id');
@@ -304,14 +359,17 @@ $(document).ready(function() {
         xhrEmpenhos = $.get('{{ route('faturamento.getEmpenhos') }}', { 
             cliente_id: clienteId, 
             periodo: periodo, 
-            contrato_id: $('#filtro_contrato_id').val(),
             grupo_id: $('#filtro_grupo_id').val(),
             subgrupo_id: $('#filtro_subgrupo_id').val()
         }, function(data) {
             select.empty().append($('<option>', { value: '' }).text('-- Opcional --'));
             $.each(data, function(i, item) {
                 var saldoPendente = parseFloat(item.valor_pendente) || 0;
-                var texto = `Nº ${item.numero_empenho} (Pendente: ${formatCurrency(saldoPendente)})`;
+                // =======================================================
+                // CORREÇÃO 3: Usar formatNumberToBR
+                // =======================================================
+                var texto = `Nº ${item.numero_empenho} (Pendente: ${formatNumberToBR(saldoPendente)})`;
+                // =======================================================
                 select.append($('<option>', { 
                     value: item.id,
                     'data-balance': saldoPendente // Armazena o saldo
@@ -319,7 +377,6 @@ $(document).ready(function() {
             });
             select.val(valorSelecionado).prop('disabled', false).trigger('change.select2');
             
-            // Na carga inicial, não recalcula (espera o carregarGrupos)
             if (!isInitialLoad) recalcularValores(); 
         });
     }
@@ -339,8 +396,7 @@ $(document).ready(function() {
         xhrGrupos = $.get('{{ route('faturamento.getGrupos') }}', { 
             cliente_id: clienteId, 
             periodo: periodo, 
-            contrato_id: $('#filtro_contrato_id').val(),
-            empenho_id: isPublico ? $('#filtro_empenho_id').val() : '' // Só envia empenho se for público
+            empenho_id: $('#filtro_empenho_id').val()
         }, function(data) {
             cacheGrupos = data; // Salva no cache
             
@@ -348,7 +404,11 @@ $(document).ready(function() {
             selectGrupo.empty().append($('<option>', { value: '' }).text('-- Opcional --'));
             $.each(data.grupos_pais, function(i, item) {
                 var saldoPendente = parseFloat(item.valor_pendente) || 0;
-                var texto = `${item.text} (Pendente: ${formatCurrency(saldoPendente)})`;
+                // =======================================================
+                // CORREÇÃO 3: Usar formatNumberToBR
+                // =======================================================
+                var texto = `${item.text} (Pendente: ${formatNumberToBR(saldoPendente)})`;
+                // =======================================================
                 selectGrupo.append($('<option>', { 
                     value: item.id,
                     'data-balance': saldoPendente // Armazena o saldo
@@ -360,14 +420,7 @@ $(document).ready(function() {
             
             selectGrupo.val(valorGrupoSel).prop('disabled', false).trigger('change.select2');
 
-            // Na carga inicial, esta é a última função a rodar, então ela dispara o recálculo
-            if(isInitialLoad) {
-                // Se for público, espera carregarEmpenhos. Se for privado, recalcula agora.
-                if(!isPublico) recalcularValores();
-            } else {
-                 recalcularValores();
-            }
-           
+            recalcularValores();
         }).fail(function() {
              recalcularValores(); // Roda mesmo se falhar
         });
@@ -375,45 +428,48 @@ $(document).ready(function() {
     
     // ** Helper para filtrar subgrupos do cache (lógica de cascata) **
     function filtrarSubgruposDoCache(grupoId, valorSubgrupoSel) {
-       var selectSubgrupo = $('#filtro_subgrupo_id');
-       if (!cacheGrupos) { // Se o cache não estiver pronto
-           resetarSelect2(selectSubgrupo, 'Carregando...', true);
-           return;
-       }
+         var selectSubgrupo = $('#filtro_subgrupo_id');
+         if (!cacheGrupos) { // Se o cache não estiver pronto
+             resetarSelect2(selectSubgrupo, 'Carregando...', true);
+             return;
+         }
 
-       selectSubgrupo.empty().append($('<option>', { value: '' }).text('-- Opcional --'));
-       
-       // Filtra subgrupos baseado no grupoId
-       var subgruposFiltrados = (!grupoId) 
-           ? cacheGrupos.subgrupos // Mostra todos se "Opcional" for selecionado
-           : cacheGrupos.subgrupos.filter(function(item) { return String(item.grupo_pai_id) == String(grupoId); });
+        selectSubgrupo.empty().append($('<option>', { value: '' }).text('-- Opcional --'));
+        
+        // Filtra subgrupos baseado no grupoId
+        var subgruposFiltrados = (!grupoId) 
+            ? cacheGrupos.subgrupos // Mostra todos se "Opcional" for selecionado
+            : cacheGrupos.subgrupos.filter(function(item) { return String(item.grupo_pai_id) == String(grupoId); });
 
-       $.each(subgruposFiltrados, function(i, item) {
-           var saldoPendente = parseFloat(item.valor_pendente) || 0;
-           var texto = `${item.text} (Pendente: ${formatCurrency(saldoPendente)})`;
-           selectSubgrupo.append($('<option>', { 
-               value: item.id, 
-               'data-pai-id': item.grupo_pai_id,
-               'data-balance': saldoPendente
-           }).text(texto));
-       });
-       
-       selectSubgrupo.val(valorSubgrupoSel).prop('disabled', false).trigger('change.select2');
+        $.each(subgruposFiltrados, function(i, item) {
+            var saldoPendente = parseFloat(item.valor_pendente) || 0;
+            // =======================================================
+            // CORREÇÃO 3: Usar formatNumberToBR
+            // =======================================================
+            var texto = `${item.text} (Pendente: ${formatNumberToBR(saldoPendente)})`;
+            // =======================================================
+            selectSubgrupo.append($('<option>', { 
+                value: item.id, 
+                'data-pai-id': item.grupo_pai_id,
+                'data-balance': saldoPendente
+            }).text(texto));
+        });
+        
+        selectSubgrupo.val(valorSubgrupoSel).prop('disabled', false).trigger('change.select2');
     }
 
     // --- LÓGICA DE CASCATA (EVENT LISTENERS) ---
     
     // Ao mudar Contrato: recarrega Empenhos e Grupos/Subgrupos
-    $('#filtro_contrato_id').on('change', function() {
-        carregarGruposESubgrupos();
-        if(isPublico) carregarEmpenhos();
-        // recalcularValores() é chamado dentro do 'done' das funções de carregar
-    });
+    // $('#filtro_contrato_id').on('change', function() {
+    //     recalcularValores();
+    //     // carregarGruposESubgrupos();
+    //     // carregarEmpenhos();
+    // });
     
     // Ao mudar Empenho: recarrega Grupos/Subgrupos
     $('#filtro_empenho_id').on('change', function() {
         carregarGruposESubgrupos();
-        // recalcularValores() é chamado dentro do 'done' do carregarGrupos
     });
 
     // Ao mudar Grupo Pai: filtra Subgrupos (via JS) e recarrega Empenhos
@@ -421,23 +477,18 @@ $(document).ready(function() {
         var paiId = $(this).val();
         var subgrupoSel = $('#filtro_subgrupo_id').val();
         
-        // Se o subgrupo selecionado não pertence ao novo pai, reseta-o
         var subgrupoAtual = (cacheGrupos && cacheGrupos.subgrupos) ? cacheGrupos.subgrupos.find(s => s.id == subgrupoSel) : null;
         if (subgrupoAtual && subgrupoAtual.grupo_pai_id != paiId) {
             subgrupoSel = null;
         }
 
         filtrarSubgruposDoCache(paiId, subgrupoSel); 
-        if(isPublico) carregarEmpenhos();
-        else recalcularValores(); // Privado recalcula aqui
-        // recalcularValores() (público) é chamado dentro do 'done' do carregarEmpenhos
+        carregarEmpenhos();
     });
     
     // Ao mudar Subgrupo: recarrega Empenhos
     $('#filtro_subgrupo_id').on('change', function() {
-        if(isPublico) carregarEmpenhos();
-        else recalcularValores(); // Privado recalcula aqui
-        // recalcularValores() (público) é chamado dentro do 'done' do carregarEmpenhos
+        carregarEmpenhos();
     });
 
 
@@ -455,11 +506,17 @@ $(document).ready(function() {
         var tipoGeracao = $('#tipo_geracao').val();
         var grupoId = $('#filtro_grupo_id').val();
         var subgrupoId = $('#filtro_subgrupo_id').val();
-        var empenhoId = isPublico ? $('#filtro_empenho_id').val() : '';
+        var empenhoId = $('#filtro_empenho_id').val();
         
-        // --- CORREÇÃO: Validação de Filtro Fracionado (só para públicos) ---
-        if (isPublico && tipoGeracao == 'Fracionada' && !grupoId && !subgrupoId && !empenhoId) {
-            mostrarAlerta('danger', 'Modo Fracionado: Selecione ao menos um filtro (Grupo, Subgrupo ou Empenho).');
+        // 1. Regra: Validação de Filtro Fracionado
+        var filtroSelecionado = grupoId || subgrupoId || (isPublico && empenhoId);
+
+        if (tipoGeracao == 'Fracionada' && !filtroSelecionado) {
+            if (isPublico){
+                mostrarAlerta('danger', 'Modo Fracionado(Público): Selecione ao menos um filtro (Grupo, Subgrupo ou Empenho).');
+            } else {
+                mostrarAlerta('danger', 'Modo Fracionado(Privado): Selecione ao menos um filtro (Grupo, Subgrupo).');
+            }
             spinner.hide();
             // Reseta displays
             $('#display-valor-filtrado').text('R$ 0,00');
@@ -468,23 +525,12 @@ $(document).ready(function() {
             validarValorDigitado(); // Valida o valor (que será 0)
             return;
         }
-        
-        // --- CORREÇÃO: Validação para privados (só grupo/subgrupo) ---
-         if (!isPublico && tipoGeracao == 'Fracionada' && !grupoId && !subgrupoId) {
-             // Se for privado e fracionado, mas sem filtros, age como "Total" (mas permite edição)
-             // Não mostra erro, apenas calcula o total
-         }
 
-        // 2. Regra: Calcular Limite Aplicável (Hierarquia de Limites)
-        // (A chamada AJAX agora retorna ambos os valores)
-
-        // 3. Regra: Calcular Valor Filtrado (Pool Lógica "E")
         if (xhrCalculo) xhrCalculo.abort();
 
         xhrCalculo = $.get('{{ route('faturamento.getValorFiltrado') }}', {
             cliente_id: clienteId,
             periodo: periodo,
-            contrato_id: $('#filtro_contrato_id').val(),
             empenho_id: empenhoId,
             grupo_id: grupoId,
             subgrupo_id: subgrupoId,
@@ -494,18 +540,19 @@ $(document).ready(function() {
             valorFiltrado = parseFloat(data.valor_filtrado) || 0;
             limiteAplicavel = parseFloat(data.limite_aplicavel) || 0;
 
-            // O máximo que o usuário pode digitar é o MENOR entre o pool E o limite
-            // Para privados, o limite hierárquico (limiteAplicavel) pode não fazer sentido, então usamos o valorFiltrado
-            maxValorPermitido = isPublico ? Math.min(valorFiltrado, limiteAplicavel) : valorFiltrado;
+            maxValorPermitido = Math.min(valorFiltrado, limiteAplicavel);
             
-            // 4. Atualizar UI
-            $('#display-valor-filtrado').text(formatCurrency(valorFiltrado));
-            $('#display-limite-aplicavel').text(formatCurrency(limiteAplicavel));
+            // =======================================================
+            // CORREÇÃO 4: Usar formatNumberToBR para exibir
+            // =======================================================
+            $('#display-valor-filtrado').text(formatNumberToBR(valorFiltrado));
+            $('#display-limite-aplicavel').text(formatNumberToBR(limiteAplicavel));
             
             // 5. Se for modo Total, preenche o valor automaticamente
             if (tipoGeracao == 'Total') {
-                inputValorFatura.val(maxValorPermitido.toFixed(2));
+                inputValorFatura.val(formatNumberToBR(maxValorPermitido));
             }
+            // =======================================================
 
             // 6. Re-valida o valor digitado
             validarValorDigitado();
@@ -522,28 +569,27 @@ $(document).ready(function() {
     // Valida o valor que o usuário digita
     function validarValorDigitado() {
         limparAlertas();
-        var valorDigitado = parseFloat(inputValorFatura.val()) || 0;
+        // =======================================================
+        // CORREÇÃO 5: Usar parseBRToNumber para ler o valor
+        // =======================================================
+        var valorDigitado = parseBRToNumber(inputValorFatura.val());
+        // =======================================================
         var tipoGeracao = $('#tipo_geracao').val();
         
-        // --- CORREÇÃO: Validação de Escopo (Fracionada) só para públicos ---
-        if (isPublico && tipoGeracao == 'Fracionada' && 
-            !$('#filtro_grupo_id').val() && 
-            !$('#filtro_subgrupo_id').val() && 
-            !$('#filtro_empenho_id').val()
-        ) {
-            mostrarAlerta('danger', 'Modo Fracionado: Selecione ao menos um filtro (Grupo, Subgrupo ou Empenho).');
+        // 1. Validação de Escopo (Fracionada)
+        var grupoId = $('#filtro_grupo_id').val();
+        var subgrupoId = $('#filtro_subgrupo_id').val();
+        var empenhoId = $('#filtro_empenho_id').val();
+        var filtroSelecionado = grupoId || subgrupoId || (isPublico && empenhoId);
+
+        if (tipoGeracao == 'Fracionada' && !filtroSelecionado) {
+            if (isPublico){
+                mostrarAlerta('danger', 'Modo Fracionado(Público): Selecione ao menos um filtro (Grupo, Subgrupo ou Empenho).');
+            } else {
+                mostrarAlerta('danger', 'Modo Fracionado(Privado): Selecione ao menos um filtro (Grupo, Subgrupo).');
+            }
             btnConfirmar.prop('disabled', true);
             return;
-        }
-        
-        // --- CORREÇÃO: Validação para privados (pelo menos grupo ou subgrupo) ---
-         if (!isPublico && tipoGeracao == 'Fracionada' && 
-            !$('#filtro_grupo_id').val() && 
-            !$('#filtro_subgrupo_id').val()
-        ) {
-            // Para privados, se não houver filtro, o valor MÁXIMO é o total pendente
-             maxValorPermitido = valorFiltrado;
-             // Não mostramos erro, permitimos faturar o total (ou menos)
         }
         
         // 2. Validação de Valor > 0
@@ -558,13 +604,16 @@ $(document).ready(function() {
         }
         
         // 3. Validação de Limites
-        // Para privados, o maxValorPermitido já é o 'valorFiltrado'
         if (valorDigitado > (maxValorPermitido + 0.001)) { // Margem de float
-            if (isPublico && valorDigitado > (limiteAplicavel + 0.001)) {
-                 mostrarAlerta('danger', `Valor excede o Limite Aplicável do escopo (${formatCurrency(limiteAplicavel)}).`);
-            } else {
-                 mostrarAlerta('danger', `Valor excede o Total Pendente para estes filtros (${formatCurrency(valorFiltrado)}).`);
+            // =======================================================
+            // CORREÇÃO 5.1: Usar formatNumberToBR nas mensagens de erro
+            // =======================================================
+            if (valorDigitado > (valorFiltrado + 0.001)) {
+                 mostrarAlerta('danger', `Valor excede o Total Pendente para estes filtros (${formatNumberToBR(valorFiltrado)}).`);
+            } else if (valorDigitado > (limiteAplicavel + 0.001)) {
+                 mostrarAlerta('danger', `Valor excede o Limite Aplicável do escopo (${formatNumberToBR(limiteAplicavel)}).`);
             }
+            // =======================================================
             btnConfirmar.prop('disabled', true);
             return;
         }
@@ -588,7 +637,12 @@ $(document).ready(function() {
         limparAlertas();
 
         var formData = form.serializeArray();
-        var valorNumerico = parseFloat(inputValorFatura.val()) || 0;
+        
+        // =======================================================
+        // CORREÇÃO 6: Usar parseBRToNumber para enviar o valor numérico
+        // =======================================================
+        var valorNumerico = parseBRToNumber(inputValorFatura.val());
+        // =======================================================
         
         var valorInput = formData.find(item => item.name === 'valor_fatura_calculado');
         if (valorInput) {
@@ -616,9 +670,9 @@ $(document).ready(function() {
                 }
             },
             complete: function() {
-                 btn.prop('disabled', false).html('Confirmar e Gerar Fatura');
+                 btn.prop('disabled', false).html('<i class="fa fa-check"></i> Confirmar e Gerar Fatura');
                  // Recarrega os selects para atualizar saldos pendentes
-                 if(isPublico) carregarEmpenhos();
+                 carregarEmpenhos();
                  carregarGruposESubgrupos();
             }
         });

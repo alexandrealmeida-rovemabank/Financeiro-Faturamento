@@ -26,7 +26,7 @@ class ProcessamentoLog extends Model
         'ultimo_id_processado_depois',
         'transacoes_copiadas',
         'mensagem_erro',
-        'paramentros'
+        'parametros'
     ];
 
     /**

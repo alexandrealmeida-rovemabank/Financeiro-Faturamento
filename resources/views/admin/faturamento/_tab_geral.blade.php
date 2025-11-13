@@ -1,14 +1,14 @@
+{{-- resources/views/admin/faturamento/_tab_geral.blade.php --}}
 @php
-// Variáveis para o JavaScript (para não poluir o HTML)
-$ajaxUrl = route('faturamento.getSubgrupos');
-$clienteId = $cliente->id;
-$periodo = $periodo;
+    $ajaxUrl = route('faturamento.getSubgrupos');
+    $clienteId = $cliente->id;
+    $periodo = $periodo;
 @endphp
 
 <div class="row">
     {{-- COLUNA ESQUERDA --}}
     <div class="col-md-4">
-        {{-- PARÂMETROS ATIVOS --}}
+        
         <div class="card card-outline card-info mb-3">
             <div class="card-header">
                 <h3 class="card-title">
@@ -17,17 +17,15 @@ $periodo = $periodo;
                 </h3>
             </div>
             <div class="card-body">
-                {{-- Exibe o valor correto que veio do controller --}}
                 <p class="mb-1"><strong>Dias p/ Vencimento:</strong> {{ $parametrosAtivos['dias_vencimento'] }} dias</p>
                 <p class="mb-1"><strong>Isento de IR:</strong> {{ $parametrosAtivos['isento_ir'] ? 'Sim' : 'Não' }}</p>
                 <p class="mb-0"><strong>Descontar IR na Fatura:</strong> {{ $parametrosAtivos['descontar_ir_fatura'] ? 'Sim' : 'Não' }}</p>
                 <small class="text-muted d-block mt-2">
-                    (O desconto de IR é calculado por transação, com base nas alíquotas por Organização x Categoria de Produto.)
+                    (O desconto de IR é calculado por transação.)
                 </small>
             </div>
         </div>
 
-        {{-- OBSERVAÇÕES GERAIS --}}
         <div class="card card-outline card-warning">
             <div class="card-header">
                 <h3 class="card-title">Observações Gerais</h3>
@@ -54,9 +52,7 @@ $periodo = $periodo;
             </div>
 
             <div class="card-body">
-                {{-- TOTAIS (PENDENTES E FATURADOS) --}}
                 <div class="row text-center mb-4">
-                    {{-- Valor Já Faturado --}}
                     <div class="col-md-6">
                         <div class="info-box bg-secondary" id="total-faturado-box">
                             <span class="info-box-icon"><i class="fas fa-check"></i></span>
@@ -95,25 +91,8 @@ $periodo = $periodo;
                     </div>
                 </div>
 
-                {{-- Título alterado para refletir que são os totais do período --}}
                 <h4 class="mb-3">Agrupamentos Totais do Período</h4>
                 <div class="row">
-                    {{-- Por Unidade (Mostra totais do período) --}}
-                    <div class="col-md-6">
-                        <h5>Por Unidade</h5>
-                        <table class="table table-sm table-striped">
-                            @forelse($totaisPorUnidade as $item)
-                                <tr>
-                                    <td>{{ $item->nome }}</td>
-                                    <td class="text-right">R$ {{ number_format($item->valor_bruto, 2, ',', '.') }}</td>
-                                </tr>
-                            @empty
-                                <tr><td colspan="2" class="text-center text-muted">Nenhum dado.</td></tr>
-                            @endforelse
-                        </table>
-                    </div>
-
-                    {{-- Por Empenho (Mostra totais do período) --}}
                     <div class="col-md-6">
                         <h5>Por Empenho</h5>
                         <table class="table table-sm table-striped">
@@ -128,8 +107,7 @@ $periodo = $periodo;
                         </table>
                     </div>
 
-                    {{-- Por Grupo (Pai) - DATATABLES (Mostra totais do período) --}}
-                    <div class="col-md-12 mt-3">
+                    <div class="col-md-6">
                         <h5>Por Grupo (Pai)</h5>
                         <table id="grupos-pai-table" class="table table-sm table-hover" style="width:100%;">
                             <thead class="thead-light">
@@ -170,8 +148,8 @@ $periodo = $periodo;
 </style>
 <script>
 $(document).ready(function() {
-    // Este script é re-anexado pela view 'show.blade.php'
-    // Mas para o carregamento inicial, ele é necessário aqui.
+    
+    // Só inicializa se a tabela existir e não for um DataTable ainda
     if ($('#grupos-pai-table').length && !$.fn.DataTable.isDataTable('#grupos-pai-table')) {
         
         $('#btn-salvar-obs').on('click', function() {
@@ -186,8 +164,13 @@ $(document).ready(function() {
         });
 
         var tableGrupos = $('#grupos-pai-table').DataTable({
-            "paging": false, "lengthChange": false, "searching": false, "ordering": false,
-            "info": false, "autoWidth": false, "responsive": true,
+            "paging": false,
+            "lengthChange": false,
+            "searching": false,
+            "ordering": false,
+            "info": false,
+            "autoWidth": false,
+            "responsive": true,
             "language": { "emptyTable": "Nenhum dado." }
         });
 
@@ -211,7 +194,7 @@ $(document).ready(function() {
                 tr.next().addClass('details-row');
 
                 $.ajax({
-                    url: '{{ $ajaxUrl }}', // Rota definida no topo do blade
+                    url: '{{ $ajaxUrl }}',
                     type: 'GET',
                     data: {
                         cliente_id: '{{ $clienteId }}',
@@ -221,11 +204,30 @@ $(document).ready(function() {
                     success: function(response) {
                         if (row.child.isShown()) { row.child(format(response)).show(); tr.next().addClass('details-row'); }
                     },
-                    error: function() { if (row.child.isShown()) { row.child('<div class="p-3 text-center text-danger">Erro ao carregar dados.</div>').show(); tr.next().addClass('details-row'); } }
+                    error: function() { 
+                        if (row.child.isShown()) { row.child('<div class="p-3 text-center text-danger">Erro ao carregar dados.</div>').show(); tr.next().addClass('details-row'); } 
+                    }
                 });
             }
         });
     }
+    
+    // Esta função é chamada pela view 'show.blade.php'
+    function atualizarResumoGeral() {
+        var url = '{{ route('faturamento.getResumoAbaGeral') }}';
+        var data = {
+            cliente_id: '{{ $clienteId }}',
+            periodo: '{{ $periodo }}'
+        };
+        
+        $.get(url, data, function(data) {
+            $('#total-faturado-box .info-box-number').text(data.faturado);
+            $('#total-bruto-box .info-box-number').text(data.bruto);
+            $('#total-ir-box .info-box-number').text(data.ir);
+            $('#total-liquido-box .info-box-number').text(data.liquido);
+        });
+    }
+
 });
 </script>
 @endpush

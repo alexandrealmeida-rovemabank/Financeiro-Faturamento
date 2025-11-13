@@ -190,5 +190,15 @@ Para rodar o projeto localmente, são necessários dois processos de terminal:
 
 Para que o processamento diário (`faturamento:processar-transacoes`) funcione em produção, o Scheduler do Laravel precisa ser configurado. Adicione a seguinte entrada ao Crontab do seu servidor:
 
+## Otimização Banco de dados
+
+Para que essa query voe, certifique-se de que você tem índices criados no seu banco de dados (PostgreSQL) para as colunas mais usadas nas buscas. Execute isso no seu banco se ainda não tiver:
+
+-- Índices essenciais para performance do Faturamento
+CREATE INDEX idx_transacao_fat_data_status ON contas_receber.transacao_faturamento (data_transacao, status);
+CREATE INDEX idx_transacao_fat_cliente_status ON contas_receber.transacao_faturamento (cliente_id, status_faturamento);
+CREATE INDEX idx_transacao_fat_unidade_status ON contas_receber.transacao_faturamento (unidade_id, status_faturamento);
+CREATE INDEX idx_fatura_periodo_cliente ON contas_receber.faturas (periodo_fatura, cliente_id);
+
 ```cron
 * * * * * cd /caminho/para/seu/projeto && php artisan schedule:run >> /dev/null 2>&1

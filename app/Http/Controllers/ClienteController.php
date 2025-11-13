@@ -10,6 +10,8 @@ use App\Models\EmpresaTipo;
 use Yajra\DataTables\Facades\DataTables;
 use App\Models\Estado;
 use App\Models\ParametroCliente;
+use App\Models\CodigoDealer;
+use Illuminate\Validation\Rule;
 
 class ClienteController extends Controller
 {
@@ -20,7 +22,7 @@ class ClienteController extends Controller
     {
         $this->middleware('permission:view cliente', ['only' => ['index', 'getUnidades']]);
         $this->middleware('permission:show cliente', ['only' => ['show']]);
-        $this->middleware('permission:edit cliente', ['only' => ['updateParametros']]); 
+        $this->middleware('permission:edit cliente', ['only' => ['updateParametros', 'updateInfoGerais']]); 
     }
 
     /**
@@ -102,6 +104,7 @@ class ClienteController extends Controller
     /**
      * Exibe os detalhes de um cliente específico e suas unidades.
      */
+    
     public function show(Empresa $cliente)
     {
         $empenhoStatuses = ['aguardando_aprovacao', 'aprovado', 'fechado', 'reprovado'];
@@ -111,8 +114,9 @@ class ClienteController extends Controller
             'organizacao',
             'empresaTipo',
             'ParametroCliente',
+            'codigoDealer', // <-- Carrega o código
             'contratos' => function ($q_contrato) use ($empenhoStatuses) {
-                $q_contrato->where('contrato_situacao_id', 1)
+                 $q_contrato->where('contrato_situacao_id', 1)
                     ->with([
                         'situacao',
                         'modalidade',
@@ -127,8 +131,10 @@ class ClienteController extends Controller
                 $q_unidade->with([
                     'municipio.estado',
                     'organizacao',
+                    'ParametroCliente', // <-- Carrega parâmetros da unidade
+                    'codigoDealer',     // <-- Carrega código da unidade
                     'contratos' => function ($q_contrato) use ($empenhoStatuses) {
-                        $q_contrato->where('contrato_situacao_id', 1)
+                         $q_contrato->where('contrato_situacao_id', 1)
                             ->with([
                                 'situacao',
                                 'modalidade',
@@ -143,9 +149,9 @@ class ClienteController extends Controller
             }
         ]);
 
-        // 🔹 Se não houver parâmetros cadastrados, define padrões
+        // ... (O resto da sua função show() permanece igual) ...
         if (!$cliente->ParametroCliente) {
-            $isPublico = $cliente->empresa_tipo_id == 2; // 2 = pública
+            $isPublico = $cliente->empresa_tipo_id == 2;
             $cliente->ParametroCliente = new \App\Models\ParametroCliente([
                 'ativar_parametros_globais' => true,
                 'descontar_ir_fatura' => false,
@@ -153,24 +159,15 @@ class ClienteController extends Controller
                 'isento_ir' => false,
             ]);
         }
-       // dd($cliente);
-        // 🔹 Define flag para travar o formulário no front
         $bloquearCamposEspecificos = $cliente->ParametroCliente->ativar_parametros_globais;
 
         return view('admin.clientes.show', compact('cliente', 'bloquearCamposEspecificos'));
     }
 
+    // ... (Seu método getUnidades() permanece igual) ...
+
     /**
-     * Retorna a view parcial com as unidades de um cliente para a sub-tabela.
-     */
-    public function getUnidades(Empresa $cliente)
-    {
-        $unidades = $cliente->unidades()->with('municipio.estado')->get();
-        return view('admin.clientes._unidades_table', compact('unidades'));
-    }
-    
-    /**
-     * Atualiza ou cria os parâmetros para um cliente (matriz ou unidade).
+     * Atualiza os PARÂMETROS (Função original, agora separada)
      */
     public function updateParametros(Request $request, Empresa $cliente)
     {
@@ -178,14 +175,12 @@ class ClienteController extends Controller
             'ativar_parametros_globais' => 'nullable|string',
             'descontar_ir_fatura' => 'nullable|string',
             'dias_vencimento' => 'nullable|integer|min:0',
-            'isencao_ir' => 'nullable|string',
+            'isento_ir' => 'nullable|string',
         ]);
 
         
         $ativarGlobais = $request->has('ativar_parametros_globais');
         
-
-       //dd( $request->has('isento_ir') );
         ParametroCliente::updateOrCreate(
             ['empresa_id' => $cliente->id],
             [
@@ -196,8 +191,6 @@ class ClienteController extends Controller
             ]
         );
         
-
-        // 🔹 Se estiver usando parâmetros globais, atualiza com base neles
         if ($ativarGlobais) {
             $global = \App\Models\ParametroGlobal::first();
             if ($global) {
@@ -211,7 +204,36 @@ class ClienteController extends Controller
         return back()->with('success', 'Parâmetros salvos com sucesso!');
     }
 
+
+    /**
+     * --- INÍCIO DA NOVA FUNÇÃO ---
+     * Atualiza SOMENTE o Código Dealer
+     */
+    public function updateCodigoDealer(Request $request, Empresa $cliente)
+    {
+        $request->validate([
+            'cod_dealer' => [
+                'nullable',
+                'string',
+                'max:255',
+                // Garante que o cod_dealer é único, exceto para o CNPJ deste cliente
+                Rule::unique('codigos_dealer')->ignore($cliente->cnpj, 'cnpj')
+            ]
+        ]);
+
+        // Lógica para salvar o Código Dealer
+        if ($cliente->cnpj) { // Só salva se a empresa tiver um CNPJ
+            CodigoDealer::updateOrCreate(
+                ['cnpj' => $cliente->cnpj],
+                ['cod_dealer' => $request->input('cod_dealer')]
+            );
+        } else {
+            // Se a empresa não tem CNPJ, não podemos salvar.
+            return back()->with('error', 'Não é possível salvar um Código Dealer para um cliente sem CNPJ.');
+        }
+
+        return back()->with('success', 'Código Dealer salvo com sucesso!');
+    }
+    // --- FIM DA NOVA FUNÇÃO ---
+
 }
-
-
-

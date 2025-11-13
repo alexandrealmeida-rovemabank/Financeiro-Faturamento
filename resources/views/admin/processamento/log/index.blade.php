@@ -59,6 +59,7 @@
                 <thead>
                     <tr>
                         <th>ID</th>
+                        <th>Comando</th>
                         <th>Início</th>
                         <th>Fim</th>
                         <th>Duração</th>
@@ -249,6 +250,7 @@
             },
             columns: [
                 { data: 'id', name: 'id' },
+                { data: 'comando', name: 'comando' },
                 { data: 'inicio_execucao', name: 'inicio_execucao' },
                 { data: 'fim_execucao', name: 'fim_execucao' },
                 { data: 'duracao', name: 'duracao', orderable: false, searchable: false },

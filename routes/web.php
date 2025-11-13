@@ -13,7 +13,11 @@ use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\ProcessamentoLogController;
 use App\Http\Controllers\CredenciadoController;
 use App\Http\Controllers\FaturamentoController;
+use App\http\Controllers\FaturamentoExportController;
+use App\Http\Controllers\FaturaGestaoController; // <<<--- ADICIONADO
 
+use App\Models\Fatura; 
+use App\Models\ParametroGlobal;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -46,6 +50,8 @@ Route::middleware(['auth'])->prefix('clientes')->name('clientes.')->group(functi
 
     // ROTA PARA SALVAR OS DADOS DO FORMULÁRIO DE PARÂMETROS
     Route::post('/{cliente}/parametros', [ClienteController::class, 'updateParametros'])->name('parametros.update');
+    // Adicione esta linha no seu grupo de rotas do admin
+    Route::put('/{cliente}/update-codigo-dealer', [ClienteController::class, 'updateCodigoDealer'])->name('updateCodigoDealer');;
 });
 
 Route::middleware(['auth'])->prefix('credenciados')->name('credenciados.')->group(function () {
@@ -83,6 +89,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // ROTAS PARA TAXAS/ALÍQUOTAS
     Route::post('/parametros-taxas', [ParametroGlobalController::class, 'storeTaxa'])->name('parametros.taxas.store');
     Route::delete('/parametros-taxas/{taxa}', [ParametroGlobalController::class, 'destroyTaxa'])->name('parametros.taxas.destroy');
+
+    Route::post('/parametros-globais/update-banco', [App\Http\Controllers\ParametroGlobalController::class, 'updateBanco'])->name('parametros.globais.updateBanco');
 
     // Rota para o Log de Atividades
     Route::get('/logs', [ActivityLogController::class, 'index'])->name('logs.index');
@@ -147,13 +155,107 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
         Route::get('/get-valor-filtrado', [FaturamentoController::class, 'getValorFiltrado'])->name('getValorFiltrado');
         
         Route::post('/gerar-fatura', [FaturamentoController::class, 'gerarFatura'])->name('gerarFatura');
-        
-    });
 
+        // Rotas para o Modal de Observação
+        Route::get('/faturas/{fatura}/observacao', [FaturamentoController::class, 'getObservacao'])->name('faturas.getObservacao');
+        Route::put('/faturas/{fatura}/observacao', [FaturamentoController::class, 'updateObservacao'])->name('faturas.updateObservacao');
+
+        // Rotas para Ações em Massa
+        Route::post('/faturas/bulk-receber', [FaturamentoController::class, 'bulkMarcarRecebida'])->name('faturas.bulkReceber');
+        Route::post('/faturas/bulk-excluir', [FaturamentoController::class, 'bulkDestroy'])->name('faturas.bulkDestroy');
+
+        Route::get('/export/pdf', [FaturamentoExportController::class, 'exportPDF'])->name('exportPDF');
+    
+        Route::get('/export/xls', [FaturamentoExportController::class, 'exportXLS'])->name('exportXLS');
+        
+        
+            
+            // Rota para buscar dados da fatura para os modais
+        Route::get('/fatura/{fatura}/detalhes', [FaturaGestaoController::class, 'getFaturaDetalhes'])->name('getDetalhes');
+
+            // 1. Editar Fatura (NF, Vencimento)
+        Route::put('/fatura/{fatura}', [FaturaGestaoController::class, 'update'])->name('update');
+
+            // 2. Refaturamento (Reabrir fatura paga)
+        Route::post('/fatura/{fatura}/reabrir', [FaturaGestaoController::class, 'reabrirFatura'])->name('reabrir');
+
+            // 3. & 4. Adicionar Pagamento (Parcial/Total com comprovante)
+            // Usamos POST pois 'multipart/form-data' não funciona bem com PUT/PATCH
+        Route::post('/fatura/{fatura}/pagamento', [FaturaGestaoController::class, 'addPagamento'])->name('addPagamento');
+
+        Route::get('/get-faturas-summary', [FaturamentoController::class, 'getFaturasSummary'])->name('getFaturasSummary');
+
+        // ... (rotas existentes: getDetalhes, update, reabrir, addPagamento) ...
+        
+       // 1. (NOVA) Busca a lista de descontos para o modal
+        Route::get('/fatura/{fatura}/descontos', [FaturaGestaoController::class, 'getDescontosLista'])
+            ->name('getDescontosLista');
+            
+        // 2. (NOVA) Adiciona um novo desconto (fixo ou percentual)
+        Route::post('/fatura/{fatura}/desconto', [FaturaGestaoController::class, 'addDesconto'])
+            ->name('addDesconto')
+            ->middleware('permission:manage faturamento');
+            
+        // 3. (NOVA) Remove um desconto específico
+        Route::delete('/fatura/desconto/{desconto}', [FaturaGestaoController::class, 'removerDesconto'])
+            ->name('removerDesconto')
+            ->middleware('permission:manage faturamento');
+
+            // 1. (NOVA) Busca a lista de pagamentos para o modal
+        Route::get('/fatura/{fatura}/pagamentos', [FaturaGestaoController::class, 'getPagamentosLista'])
+            ->name('getPagamentosLista');
+            
+        // 2. (NOVA) Remove um pagamento específico
+        Route::delete('/fatura/pagamento/{pagamento}', [FaturaGestaoController::class, 'removerPagamento'])
+            ->name('removerPagamento')
+            ->middleware('permission:manage faturamento');
+
+        // <<<--- ADICIONE ESTA NOVA ROTA PARA O PDF DA FATURA ---
+        Route::get('/fatura/{fatura}/pdf', [FaturamentoExportController::class, 'exportFaturaPDF'])
+            ->name('exportFaturaPDF')
+            ->middleware('permission:view faturamento'); // Protege o download
+
+        Route::get('/stats', [FaturamentoController::class, 'getIndexStats'])->name('stats');
+    });
 
 
 });
 
+// Adicione esta rota no final do arquivo
+Route::get('/teste-footer/{fatura}', function (Fatura $fatura) {
+
+    // Vamos replicar os dados mínimos que a view do footer precisa
+    $fatura->load('cliente'); 
+    $paramGlobal = ParametroGlobal::first();
+
+    $data = [
+        'fatura' => $fatura,
+        'paramGlobal' => $paramGlobal,
+        // Adicione outras variáveis que o footer possa precisar
+    ];
+
+    // Isso vai tentar renderizar o blade no navegador
+    // Se um 'file_get_contents' falhar, você verá o erro aqui.
+    return view('admin.faturamento.exports.fatura_footer', $data);
+});
+
+// Adicione esta rota no final do arquivo
+Route::get('/teste-header/{fatura}', function (Fatura $fatura) {
+
+    // Vamos replicar os dados mínimos que a view do footer precisa
+    $fatura->load('cliente'); 
+    $paramGlobal = ParametroGlobal::first();
+
+    $data = [
+        'fatura' => $fatura,
+        'paramGlobal' => $paramGlobal,
+        // Adicione outras variáveis que o footer possa precisar
+    ];
+
+    // Isso vai tentar renderizar o blade no navegador
+    // Se um 'file_get_contents' falhar, você verá o erro aqui.
+    return view('admin.faturamento.exports.fatura_header', $data);
+});
 
 
 

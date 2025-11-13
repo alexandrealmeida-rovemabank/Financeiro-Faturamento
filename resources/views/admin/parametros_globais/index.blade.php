@@ -95,6 +95,79 @@
             </div>
         </div>
 
+        {{-- CARD: Informações Bancárias e Cadastrais --}}
+<div class="col-md-6 mb-4">
+    <div class="card card-filter mb-4 shadow-lg border-0">
+        <div class="card-header bg-info text-white d-flex align-items-center justify-content-between">
+            <h5 class="mb-0"><i class="fas fa-university me-2"></i>Informações Bancárias e Cadastrais</h5>
+        </div>
+
+        <form action="{{ route('admin.parametros.globais.updateBanco') }}" method="POST">
+            @csrf
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="banco" class="form-label">Banco</label>
+                        <input type="text" name="banco" id="banco" 
+                               class="form-control @error('banco') is-invalid @enderror"
+                               value="{{ old('banco', $parametros->banco) }}">
+                        @error('banco') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label for="agencia" class="form-label">Agência</label>
+                        <input type="text" name="agencia" id="agencia" 
+                               class="form-control @error('agencia') is-invalid @enderror"
+                               value="{{ old('agencia', $parametros->agencia) }}">
+                        @error('agencia') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label for="conta" class="form-label">Conta</label>
+                        <input type="text" name="conta" id="conta" 
+                               class="form-control @error('conta') is-invalid @enderror"
+                               value="{{ old('conta', $parametros->conta) }}">
+                        @error('conta') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="chave_pix" class="form-label">Chave PIX</label>
+                    <input type="text" name="chave_pix" id="chave_pix" 
+                           class="form-control @error('chave_pix') is-invalid @enderror"
+                           value="{{ old('chave_pix', $parametros->chave_pix) }}">
+                    @error('chave_pix') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label for="cnpj" class="form-label">CNPJ</label>
+                    <input type="text" name="cnpj" id="cnpj" 
+                           class="form-control @error('cnpj') is-invalid @enderror"
+                           value="{{ old('cnpj', $parametros->cnpj) }}">
+                    @error('cnpj') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label for="razao_social" class="form-label">Razão Social</label>
+                    <input type="text" name="razao_social" id="razao_social" 
+                           class="form-control @error('razao_social') is-invalid @enderror"
+                           value="{{ old('razao_social', $parametros->razao_social) }}">
+                    @error('razao_social') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+            </div>
+
+            <div class="card-footer bg-light border-top d-flex justify-content-between align-items-center">
+                @can('edit parametros globais')
+                    <button type="submit" class="btn btn-info text-white">
+                        <i class="fas fa-save me-1"></i>Salvar Informações
+                    </button>
+                @endcan
+            </div>
+        </form>
+    </div>
+</div>
+
+
         {{-- CARD: Taxas/Alíquotas por Categoria --}}
         <div class="col-md-6 mb-4">
             <div class="card card-filter mb-4 shadow-lg border-0">
@@ -169,6 +242,8 @@
                         @endcan
                     </div>
                 </form>
+
+            
 
                 {{-- Tabela de Taxas --}}
                 <div class="table-responsive mt-3">

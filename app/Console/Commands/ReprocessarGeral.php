@@ -78,14 +78,26 @@ class ReprocessarGeral extends Command
         $errorMessage = null;
         $statusFinal = 'sucesso';
 
-        try {
-            // 1. Apagar TODAS as transações (Usando TRUNCATE fora da transação, é muito mais rápido)
-            $this->info('Limpando tabela contas_receber.transacao_faturamento...');
-            Log::info("[ReprocessarGeral] Log ID {$log->id}: Limpando tabela de destino com TRUNCATE...");
-            // Usamos RESTART IDENTITY para zerar o ID e CASCADE para o caso de FKs futuras
-            DB::statement('TRUNCATE TABLE contas_receber.transacao_faturamento RESTART IDENTITY'); 
-            $this->info('Tabela limpa.');
-            Log::info("[ReprocessarGeral] Log ID {$log->id}: Tabela de destino limpa.");
+         try {
+            // ============================================================
+            // 1️⃣  LIMPAR TABELAS DE DESTINO (em cascata)
+            // ============================================================
+            $this->info('🧹 Limpando tabelas de destino (fatura_itens e transacao_faturamento)...');
+            Log::info("[ReprocessarGeral] Log ID {$log->id}: Limpando tabelas com TRUNCATE CASCADE...");
+
+            // Aqui truncamos as tabelas relacionadas de forma segura
+            DB::statement('
+                TRUNCATE TABLE 
+                    contas_receber.fatura_itens,
+                    contas_receber.faturas,
+                    contas_receber.transacao_faturamento
+                RESTART IDENTITY CASCADE
+            ');
+            
+
+            $this->info('✅ Tabelas limpas com sucesso.');
+            Log::info("[ReprocessarGeral] Log ID {$log->id}: Tabelas truncadas com sucesso.");
+
             
             // 2. Inicia a transação APENAS para as inserções
             DB::beginTransaction();

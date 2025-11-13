@@ -79,6 +79,31 @@ class ParametroGlobalController extends Controller
         return redirect()->route('admin.parametros.globais.index')
                          ->with('success', 'Parâmetros globais atualizados com sucesso!');
     }
+
+    public function updateBanco(Request $request)
+    {
+        $validated = $request->validate([
+            'banco' => 'nullable|string|max:255',
+            'agencia' => 'nullable|string|max:255',
+            'conta' => 'nullable|string|max:255',
+            'chave_pix' => 'nullable|string|max:255',
+            'cnpj' => 'nullable|string|max:20',
+            'razao_social' => 'nullable|string|max:255',
+        ]);
+
+        $parametros = \App\Models\ParametroGlobal::first();
+
+        if (!$parametros) {
+            return redirect()->route('admin.parametros.globais.index')
+                         ->with('success', 'Registro de parâmetros globais não encontrado.');
+        }
+
+        $parametros->update($validated);
+
+        return redirect()->route('admin.parametros.globais.index')
+                         ->with('success', 'Dados bancários atualizados com sucesso!');
+    }
+
     /**
      * Reseta os parâmetros globais para os valores padrão.
      */

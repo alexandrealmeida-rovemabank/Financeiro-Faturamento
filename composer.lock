@@ -174,40 +174,40 @@
         },
         {
             "name": "barryvdh/laravel-snappy",
-            "version": "v1.0.2",
+            "version": "v1.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/barryvdh/laravel-snappy.git",
-                "reference": "940eec2d99b89cbc9bea2f493cf068382962a485"
+                "reference": "5b8668e4a54be630973fd309b4cb1abe75a8afbb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/barryvdh/laravel-snappy/zipball/940eec2d99b89cbc9bea2f493cf068382962a485",
-                "reference": "940eec2d99b89cbc9bea2f493cf068382962a485",
+                "url": "https://api.github.com/repos/barryvdh/laravel-snappy/zipball/5b8668e4a54be630973fd309b4cb1abe75a8afbb",
+                "reference": "5b8668e4a54be630973fd309b4cb1abe75a8afbb",
                 "shasum": ""
             },
             "require": {
-                "illuminate/filesystem": "^9|^10",
-                "illuminate/support": "^9|^10",
-                "knplabs/knp-snappy": "^1.4",
-                "php": ">=7.2"
+                "illuminate/filesystem": "^9|^10|^11|^12",
+                "illuminate/support": "^9|^10|^11|^12",
+                "knplabs/knp-snappy": "^1.4.4",
+                "php": "^8.1"
             },
             "require-dev": {
-                "orchestra/testbench": "^7|^8"
+                "orchestra/testbench": "^7|^8|^9|^10"
             },
             "type": "library",
             "extra": {
-                "branch-alias": {
-                    "dev-master": "1.0-dev"
-                },
                 "laravel": {
-                    "providers": [
-                        "Barryvdh\\Snappy\\ServiceProvider"
-                    ],
                     "aliases": {
                         "PDF": "Barryvdh\\Snappy\\Facades\\SnappyPdf",
                         "SnappyImage": "Barryvdh\\Snappy\\Facades\\SnappyImage"
-                    }
+                    },
+                    "providers": [
+                        "Barryvdh\\Snappy\\ServiceProvider"
+                    ]
+                },
+                "branch-alias": {
+                    "dev-master": "1.0-dev"
                 }
             },
             "autoload": {
@@ -236,7 +236,7 @@
             ],
             "support": {
                 "issues": "https://github.com/barryvdh/laravel-snappy/issues",
-                "source": "https://github.com/barryvdh/laravel-snappy/tree/v1.0.2"
+                "source": "https://github.com/barryvdh/laravel-snappy/tree/v1.0.4"
             },
             "funding": [
                 {
@@ -248,7 +248,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2023-04-07T10:38:54+00:00"
+            "time": "2025-02-24T15:20:06+00:00"
         },
         {
             "name": "brick/math",
