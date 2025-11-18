@@ -248,7 +248,7 @@ class FaturamentoController extends Controller
                 $q->whereIn('cliente_id', $empresaIds)
                   ->orWhereIn('unidade_id', $empresaIds);
             })
-            ->sum('valor_total');
+            ->sum(DB::raw('valor_total - valor_faturado'));
 
         // B. Métricas de Faturas (Geradas)
         // Baseado nos IDs das empresas filtradas e no período
@@ -351,12 +351,15 @@ class FaturamentoController extends Controller
             'descontar_ir_fatura' => $paramGlobal->descontar_ir_fatura,
         ];
     }
+    
     public function visualizar(Request $request)
     {
         $request->validate([
             'cliente_id' => 'required|integer|exists:empresa,id',
             'periodo' => 'required|date_format:Y-m',
         ]);
+
+        
 
         $billable_empresa_id = $request->input('cliente_id');
         $periodo = $request->input('periodo');
@@ -372,6 +375,16 @@ class FaturamentoController extends Controller
         );
 
         $parametrosAtivos = $this->getParametrosAtivos($billable_empresa_id);
+
+        $contrato = null;
+            if ($request->filled('contrato_id')) {
+                $contrato = Contrato::find($request->contrato_id);
+            }
+            if (!$contrato) {
+                $contrato = Contrato::where('empresa_id', $cliente->id) 
+                                    ->where('contrato_situacao_id', 1)
+                                    ->first();
+            }
         
         // Query Base (Todas as transações do período)
         $queryBase = TransacaoFaturamento::whereBetween('data_transacao', [$dataInicio, $dataFim]) 
@@ -383,10 +396,8 @@ class FaturamentoController extends Controller
             $queryBase->where('unidade_id', $cliente->id);
         }
 
-        // --- CORREÇÃO: Usa 'status_faturamento' como fonte da verdade ---
         $queryBasePendentes = $queryBase->clone()->where('status_faturamento', 'pendente');
         $queryBaseFaturadas = $queryBase->clone()->where('status_faturamento', '!=', 'pendente');
-        // --- FIM DA CORREÇÃO ---
 
         $totalBrutoPendente = $queryBasePendentes->sum('valor_total');
         $totalValorFaturado = $queryBaseFaturadas->sum('valor_total');
@@ -396,7 +407,6 @@ class FaturamentoController extends Controller
 
         $totalIRPendente = 0;
         if (!$parametrosAtivos['isento_ir'] && $organizacao_id_para_taxa) { 
-            // O IR Pendente SÓ deve ser calculado sobre transações pendentes
             $subQuery = $queryBasePendentes->clone()
                 ->join('public.produto as p', 'transacao_faturamento.produto_id', '=', 'p.id')
                 ->leftJoin('contas_receber.parametro_taxa_aliquota as pta', function ($join) use ($organizacao_id_para_taxa) {
@@ -413,17 +423,14 @@ class FaturamentoController extends Controller
             $totalLiquidoPendente = $totalBrutoPendente - $totalIRPendente;
         }
 
+        // <<<--- A VARIÁVEL É CRIADA AQUI ---
         $totaisPendentes = [
             'bruto' => $totalBrutoPendente,
             'ir' => $totalIRPendente,
             'liquido' => $totalLiquidoPendente,
-            'faturado' => $totalValorFaturado, // Valor já faturado
+            'faturado' => $totalValorFaturado, 
         ];
         
-        // --- INÍCIO DA CORREÇÃO: Mudar JOIN para LEFT JOIN ---
-        // Isso garante que transações sem grupo (comuns em empresas privadas)
-        // ainda sejam contabilizadas.
-
         $totaisPorUnidade = $this->getTotaisAgrupados($queryBase->clone(), 'unidade_id', 'public.empresa', 'razao_social');
         $totaisPorEmpenho = $this->getTotaisAgrupados($queryBase->clone(), 'empenho_id', 'public.empenho', 'numero_empenho');
         
@@ -431,33 +438,35 @@ class FaturamentoController extends Controller
             ->leftJoin('public.veiculo as v', 'transacao_faturamento.veiculo_id', '=', 'v.id')
             ->leftJoin('public.grupo as subgrupo', 'v.grupo_id', '=', 'subgrupo.id')
             ->leftJoin('public.grupo as grupo_pai', 'subgrupo.grupo_id', '=', 'grupo_pai.id')
+            
+            // <<<--- ESTA É A PARTE IMPORTANTE ---
             ->select(
                 'grupo_pai.id as grupo_pai_id',
                 DB::raw("COALESCE(grupo_pai.nome, 'Sem Grupo Pai') as nome"),
-                DB::raw('SUM(transacao_faturamento.valor_total) as valor_bruto'),
+                DB::raw('SUM(transacao_faturamento.valor_total) as valor_bruto'), // <-- Define "valor_bruto"
                 DB::raw('COUNT(DISTINCT subgrupo.id) as subgrupos_count')
             )
-            // ->whereNotNull('v.grupo_id') // <-- REMOVIDO: Isso quebrava a query para privados
+            // --- FIM DA PARTE IMPORTANTE ---
+            
             ->groupBy('grupo_pai.id', 'grupo_pai.nome')
-            ->orderBy('valor_bruto', 'desc')
+            ->orderBy('valor_bruto', 'desc') // <-- Agora isso funciona
             ->get();
         
-        // --- FIM DA CORREÇÃO ---
-        
-        // --- ADIÇÃO DA FLAG 'is_publico' ---
-        $publico_ids = [1, 2, 3, 5]; // 1=Federal, 2=Estadual, 3=Municipal, 5=Economia Mista
+        $publico_ids = [1, 2, 3, 5];
         $is_publico = in_array($cliente->organizacao_id, $publico_ids);
         
+        // <<<--- E ELA É PASSADA PARA A VIEW AQUI ---
         return view('admin.faturamento.show', compact(
             'cliente', 
             'periodo',
             'faturamentoPeriodo',
             'parametrosAtivos',
-            'totaisPendentes',
+            'totaisPendentes', // <<< AQUI
             'totaisPorUnidade',
             'totaisPorEmpenho',
             'totaisPorGrupo',
-            'is_publico' // <-- NOVA FLAG PARA A VIEW
+            'is_publico' ,
+            'contrato'
         ));
     }
 
@@ -493,7 +502,9 @@ class FaturamentoController extends Controller
         $queryBaseFaturadas = $queryBase->clone()->where('status_faturamento', '!=', 'pendente');
         // --- FIM DA CORREÇÃO ---
 
-        $totalBrutoPendente = $queryBasePendentes->sum('valor_total');
+        // --- CORREÇÃO APLICADA ---
+        $totalBrutoPendente = $queryBasePendentes->sum(DB::raw('valor_total - valor_faturado'));
+        // O total faturado continua sendo o valor_total das transações marcadas como 'faturada'
         $totalValorFaturado = $queryBaseFaturadas->sum('valor_total');
         
         $matriz = ($cliente->empresa_tipo_id == 2) ? $cliente->matriz : $cliente;
@@ -508,7 +519,7 @@ class FaturamentoController extends Controller
                     $join->on('p.produto_categoria_id', '=', 'pta.produto_categoria_id')
                          ->where('pta.organizacao_id', '=', $organizacao_id_para_taxa);
                 })
-                ->select(DB::raw('SUM(transacao_faturamento.valor_total * COALESCE(pta.taxa_aliquota, 0)) as total_ir_calculado'));
+                ->select(DB::raw('SUM((transacao_faturamento.valor_total - transacao_faturamento.valor_faturado) * COALESCE(pta.taxa_aliquota, 0)) as total_ir_calculado'));
             $totalIRPendente = $subQuery->first()->total_ir_calculado ?? 0;
         }
             
@@ -644,56 +655,35 @@ class FaturamentoController extends Controller
                           </button>
                           <div class="dropdown-menu dropdown-menu-right">';
                           
-                // <<<--- ADICIONADO: Botão de Imprimir PDF ---
                 $btn .= '<a href="'. route('faturamento.exportFaturaPDF', $row) .'" target="_blank" class="dropdown-item">
                             <i class="fa fa-print text-primary mr-2"></i> Imprimir Fatura
                          </a>';
-                // $btn .= '<button type="button" class="dropdown-item btn-gerar-pdf" 
-                //             data-url="'. route('faturamento.exportFaturaPDF', $row) .'">
-                //             <i class="fa fa-print text-primary mr-2"></i> Imprimir Fatura
-                //          </button>';
-                // --- FIM DA ADIÇÃO ---
 
-                // <<<--- INÍCIO DA CORREÇÃO (Lógica do Botão) ---
                 if ($row->status == 'recebida') {
-                    // 1. (NOVO) Botão Ver Comprovantes
                     $btn .= '<button type="button" class="dropdown-item btn-ver-comprovantes" data-id="'.$row->id.'">
                                 <i class="fa fa-receipt text-success mr-2"></i> Ver Comprovantes
                              </button>';
-                    
-                    // 2. Botão Editar / Refaturar (ainda aparece para reabrir)
                     $btn .= '<button type="button" class="dropdown-item btn-editar-fatura" data-id="'.$row->id.'">
                                 <i class="fa fa-pencil-alt text-warning mr-2"></i> Editar / Refaturar
                              </button>';
                 } else {
-                    // Fatura NÃO está recebida
-                    
-                    // 1. Editar Fatura
                     $btn .= '<button type="button" class="dropdown-item btn-editar-fatura" data-id="'.$row->id.'">
                                 <i class="fa fa-pencil-alt text-warning mr-2"></i> Editar Fatura
                              </button>';
-
-                    // 2. Registrar Pagamento
                     $btn .= '<button type="button" class="dropdown-item btn-registrar-pagamento" data-id="'.$row->id.'">
                                 <i class="fa fa-dollar-sign text-success mr-2"></i> Registrar Pagamento
                              </button>';
-
-                    // 3. Aplicar Desconto
                     $btn .= '<button type="button" class="dropdown-item btn-aplicar-desconto" data-id="'.$row->id.'">
                                 <i class="fa fa-tag text-info mr-2"></i> Aplicar Desconto
                              </button>';
                 }
-                // --- FIM DA CORREÇÃO ---
 
                 $btn .= '<div class="dropdown-divider"></div>';
 
-                // 4. Editar Observação (Aparece sempre)
                 $btn .= '<button type="button" class="dropdown-item btn-editar-observacao" data-id="'.$row->id.'">
                             <i class="fa fa-edit text-primary mr-2"></i> Editar Observação
                          </button>';
                 
-
-                // 5. Excluir (Só se NÃO estiver recebida)
                 if ($row->status != 'recebida') {
                     $btn .= '<button type="button" class="dropdown-item btn-excluir" data-id="'.$row->id.'">
                                 <i class="fa fa-trash text-danger mr-2"></i> Excluir
@@ -711,6 +701,20 @@ class FaturamentoController extends Controller
             ->addColumn('desconto_manual', function($row) {
                 return 'R$ ' . number_format($row->valor_descontos_manuais, 2, ',', '.');
             })
+            ->addColumn('taxa_adm', fn($row) => number_format($row->taxa_adm_percent, 2, ',', '.') . '%')
+            
+            ->addColumn('tipo_taxa', function($row) {
+                if ($row->taxa_adm_percent < 0) {
+                    return '<span class="badge badge-danger">Negativa</span>';
+                } else {
+                    return '<span class="badge badge-success">Positiva</span>';
+                }
+            })
+
+            ->addColumn('valor_taxa', function($row) {
+                return 'R$ ' . number_format($row->taxa_adm_valor, 2, ',', '.');
+            })
+            
             ->editColumn('valor_liquido', fn($row) => 'R$ ' . number_format($row->valor_liquido, 2, ',', '.'))
             ->addColumn('valor_recebido', function ($row) {
                 return 'R$ ' . number_format($row->pagamentos->sum('valor_pago'), 2, ',', '.');
@@ -728,7 +732,11 @@ class FaturamentoController extends Controller
                     default => ucfirst($row->status),
                 };
             })
-            ->rawColumns(['checkbox', 'action', 'status'])
+            
+            // <<<--- CORREÇÃO AQUI ---
+            ->rawColumns(['checkbox', 'action', 'status', 'tipo_taxa'])
+            // --- FIM DA CORREÇÃO ---
+            
             ->make(true);
     }
 
@@ -812,7 +820,8 @@ class FaturamentoController extends Controller
             ->rawColumns(['faturada'])
             ->make(true);
     }
-   public function gerarFatura(Request $request)
+   
+public function gerarFatura(Request $request)
     {
         $request->validate([
             'cliente_id' => 'required|integer|exists:empresa,id',
@@ -820,45 +829,37 @@ class FaturamentoController extends Controller
             'data_vencimento' => 'required|date',
             'tipo_geracao' => 'required|string|in:Total,Fracionada',
             'nota_fiscal' => 'nullable|string|max:100',
-            // Validações de filtros
-            'contrato_id' => 'nullable|integer|exists:contrato,id',
-            'empenho_id' => 'nullable|string', // Pode ser 'null'
-            'grupo_id' => 'nullable|string', // Pode ser 'null'
-            'subgrupo_id' => 'nullable|string', // Pode ser 'null'
+            'contrato_id' => 'nullable|array',
+            'empenho_id' => 'nullable|array',
+            'grupo_id' => 'nullable|array',
+            'subgrupo_id' => 'nullable|array',
             'valor_fatura_calculado' => 'required|numeric|min:0.01', 
         ]);
 
-        // --- INÍCIO DA CORREÇÃO ---
         $empresa = Empresa::find($request->cliente_id);
-        $publico_ids = [1, 2, 3, 5]; // 1=Federal, 2=Estadual, 3=Municipal, 5=Economia Mista
+        $publico_ids = [1, 2, 3, 5];
         $is_publico = in_array($empresa->organizacao_id, $publico_ids);
 
-        // A validação de "filtro obrigatório" só se aplica a clientes públicos
         if ($is_publico && $request->tipo_geracao == 'Fracionada' && 
             !$request->filled('grupo_id') && 
             !$request->filled('subgrupo_id') && 
             !$request->filled('empenho_id')
         ) {
-            return response()->json(['success' => false, 'message' => 'Cliente Público: Selecione ao menos um filtro (Grupo, Subgrupo ou Empenho) para faturamento fracionado.'], 422);
+            return response()->json(['success' => false, 'message' => 'Cliente Público: Selecione ao menos um filtro.'], 422);
         }
         
         $paramGlobal = ParametroGlobal::first();
         if (!$paramGlobal) {
-            return response()->json(['success' => false, 'message' => 'Erro: Parâmetros Globais não configurados (dados bancários ausentes).'], 500);
+            return response()->json(['success' => false, 'message' => 'Erro: Parâmetros Globais ausentes.'], 500);
         }
-
 
         DB::beginTransaction();
         try {
             $billable_empresa_id = $request->cliente_id;
             $periodo = $request->periodo;
             
-            // Carrega o cliente E o seu código dealer associado
             $empresa = Empresa::with('codigoDealer')->find($billable_empresa_id);
-            
             $parametrosAtivos = $this->getParametrosAtivos($billable_empresa_id);
-            // $empresa = Empresa::with('organizacao', 'matriz.organizacao')->find($billable_empresa_id); // Já buscamos acima
-            
             $matriz = ($empresa->empresa_tipo_id == 2) ? $empresa->matriz : $empresa;
             $organizacao_id_para_taxa = $matriz ? $matriz->organizacao_id : null;
             $taxas = collect();
@@ -868,124 +869,89 @@ class FaturamentoController extends Controller
                                         ->keyBy('produto_categoria_id');
             }
             
-            // 1. CONSTRUIR A QUERY DE TRANSAÇÕES A FATURAR
-            $queryTransacoes = $this->buildPendentesQuery($request)
-                                    ->with('produto', 'veiculo.grupo') 
-                                    ->orderBy('data_transacao', 'asc');
+            // 1. CALCULAR TOTAIS PENDENTES REAIS
+            $queryBase = $this->buildPendentesQuery($request);
             
             if ($request->tipo_geracao == 'Fracionada') {             
-                // Só aplica filtro de empenho se for público
-                if ($is_publico && $request->filled('empenho_id') && $request->empenho_id != 'null') {
-                    $queryTransacoes->when($request->filled('empenho_id'), fn($q) => $q->where('empenho_id', $request->empenho_id));
+                if ($is_publico && $request->filled('empenho_id')) {
+                    $queryBase->whereIn('empenho_id', $request->empenho_id);
                 }
-                
-                // --- CORREÇÃO: Filtros de Grupo/Subgrupo com IDs 'null' ---
+
+                // Tratamento de "null" (Sem Grupo)
                 if ($request->filled('grupo_id')) {
-                    if ($request->grupo_id == 'null') {
-                        $queryTransacoes->where(function($q) {
-                            $q->whereDoesntHave('veiculo.grupo.grupoPai')
-                              ->orWhereNull('veiculo_id');
+                    $grupoIds = $request->grupo_id;
+                    $idsNumericos = array_filter($grupoIds, fn($v) => is_numeric($v));
+                    $incluirSemGrupo = in_array('null', $grupoIds) || in_array(null, $grupoIds);
+
+                    $queryBase->whereHas('veiculo.grupo', function($q) use ($idsNumericos, $incluirSemGrupo) {
+                        $q->where(function($sub) use ($idsNumericos, $incluirSemGrupo) {
+                            if (!empty($idsNumericos)) $sub->whereIn('grupo_id', $idsNumericos);
+                            if ($incluirSemGrupo) $sub->orWhereNull('grupo_id');
                         });
-                    } else {
-                        $queryTransacoes->whereHas('veiculo.grupo', fn($q2) => $q2->where('grupo_id', $request->grupo_id));
-                    }
+                    });
                 }
+
+                // Tratamento de "null" (Sem Subgrupo)
                 if ($request->filled('subgrupo_id')) {
-                    if ($request->subgrupo_id == 'null') {
-                        $queryTransacoes->where(function($q) {
-                            $q->whereDoesntHave('veiculo.grupo')
-                              ->orWhereNull('veiculo_id');
+                    $subIds = $request->subgrupo_id;
+                    $idsNumericos = array_filter($subIds, fn($v) => is_numeric($v));
+                    $incluirSemSub = in_array('null', $subIds) || in_array(null, $subIds);
+
+                    $queryBase->whereHas('veiculo', function($q) use ($idsNumericos, $incluirSemSub) {
+                        $q->where(function($sub) use ($idsNumericos, $incluirSemSub) {
+                             if (!empty($idsNumericos)) $sub->whereIn('grupo_id', $idsNumericos);
+                             if ($incluirSemSub) $sub->orWhereNull('grupo_id');
                         });
-                    } else {
-                        $queryTransacoes->whereHas('veiculo', fn($q2) => $q2->where('grupo_id', $request->subgrupo_id));
-                    }
+                    });
                 }
             }
 
-            $transacoesParaFaturar = $queryTransacoes->get();
+            $totalBrutoPendenteReal = $queryBase->clone()->sum(DB::raw('valor_total - valor_faturado'));
             
-            // --- INÍCIO DA CORREÇÃO (LÓGICA PRORATA) ---
-            // 1. Pré-calcula o total bruto e total de IR do *pool de transações filtradas*
-            $totalBrutoFiltrado = 0;
-            $totalIRFiltrado = 0; 
+            $transacoesParaFaturar = $queryBase->clone()
+                                    ->with('produto', 'veiculo.grupo') 
+                                    ->orderBy('data_transacao', 'asc')
+                                    ->orderBy('id', 'asc')
+                                    ->get();
 
+            $totalIRPendenteReal = 0; 
             foreach ($transacoesParaFaturar as $transacao) {
-                $subtotal = $transacao->valor_total;
-                $totalBrutoFiltrado += $subtotal;
-
-                // Calcula o IR desta transação
-                if (!$parametrosAtivos['isento_ir']) {
+                $valorPendenteDaTransacao = $transacao->valor_pendente; 
+                if (!$parametrosAtivos['isento_ir'] && $valorPendenteDaTransacao > 0) {
                     $categoriaId = optional($transacao->produto)->produto_categoria_id ?? 0;
                     $taxa = $taxas->get($categoriaId);
                     $aliquota = $taxa ? $taxa->taxa_aliquota : 0;
-                    $totalIRFiltrado += ($subtotal * $aliquota); 
+                    $totalIRPendenteReal += ($valorPendenteDaTransacao * $aliquota); 
                 }
             }
-            // --- FIM DO PRÉ-CÁLCULO ---
 
-            
-            if ($transacoesParaFaturar->isEmpty() || $totalBrutoFiltrado <= 0) {
+            // 2. VALIDAR VALOR
+            if ($transacoesParaFaturar->isEmpty() || $totalBrutoPendenteReal < 0.01) {
                 return response()->json(['success' => false, 'message' => 'Nenhuma transação pendente encontrada para esses filtros.'], 400);
             }
-
-            // 2. VALIDAÇÃO DE LIMITE (REGRA FUNCIONAL)
-            $valorFaturaDigitado = (float) $request->valor_fatura_calculado;
             
+            $valorDesejadoFaturar = (float) $request->valor_fatura_calculado;
+
             if ($request->tipo_geracao == 'Fracionada') {
-                
-                // 2a. O valor digitado não pode ser maior que o total disponível NESSES FILTROS
-                if ($valorFaturaDigitado > ($totalBrutoFiltrado + 0.001)) { 
+                if ($valorDesejadoFaturar > ($totalBrutoPendenteReal + 0.001)) { 
                     return response()->json([
                         'success' => false, 
                         'message' => sprintf(
                             'Valor a faturar (R$ %s) não pode ser maior que o total pendente para estes filtros (R$ %s).',
-                            number_format($valorFaturaDigitado, 2, ',', '.'),
-                            number_format($totalBrutoFiltrado, 2, ',', '.')
+                            number_format($valorDesejadoFaturar, 2, ',', '.'),
+                            number_format($totalBrutoPendenteReal, 2, ',', '.')
                         )
                     ], 400);
                 }
-
-                // 2b. (Só para públicos) O valor digitado não pode ser maior que o limite do ESCOPO HIERÁRQUICO
-                if ($is_publico) {
-                    $limiteAplicavel = INF;
-                    
-                    if ($request->filled('empenho_id') && $request->empenho_id != 'null') {
-                        $limiteAplicavel = $this->getLimiteScope('empenho', $request->empenho_id, $empresa, $periodo);
-                    } elseif ($request->filled('subgrupo_id')) {
-                        $limiteAplicavel = $this->getLimiteScope('subgrupo', $request->subgrupo_id, $empresa, $periodo);
-                    } elseif ($request->filled('grupo_id')) {
-                        $limiteAplicavel = $this->getLimiteScope('grupo', $request->grupo_id, $empresa, $periodo);
-                    }
-                    
-                    if ($valorFaturaDigitado > ($limiteAplicavel + 0.001)) { 
-                         return response()->json([
-                            'success' => false, 
-                            'message' => sprintf(
-                                'Valor a faturar (R$ %s) excede o limite de saldo pendente para o escopo selecionado (R$ %s).',
-                                number_format($valorFaturaDigitado, 2, ',', '.'),
-                                number_format($limiteAplicavel, 2, ',', '.')
-                            )
-                        ], 400);
-                    }
-                }
-                
-                $valorFinalDaFatura = $valorFaturaDigitado;
-                
             } else {
-                 if (abs($totalBrutoFiltrado - $valorFaturaDigitado) > 0.01) {
-                      return response()->json([
-                         'success' => false, 
-                         'message' => 'Inconsistência de valores no modo Total. Recarregue e tente novamente.'
-                     ], 400);
+                 if (abs($totalBrutoPendenteReal - $valorDesejadoFaturar) > 0.01) {
+                      return response()->json(['success' => false, 'message' => 'Inconsistência de valores no modo Total. Recarregue e tente novamente.'], 400);
                  }
-                 $valorFinalDaFatura = $totalBrutoFiltrado;
             }
 
+            // 3. CRIAR A FATURA
             $horaMinuto = Carbon::now()->format('Hi'); 
             $numeroFatura = 'FAT-' . $billable_empresa_id . '' . $horaMinuto . '' . rand(0, 1000);
-
-            // 3. SE PASSOU NA VALIDAÇÃO, GERAR A FATURA
-            
             $fatura = Fatura::create([
                 'cliente_id' => $billable_empresa_id,
                 'data_emissao' => Carbon::now(),
@@ -997,140 +963,150 @@ class FaturamentoController extends Controller
                 'valor_total' => 0, 'valor_impostos' => 0, 'valor_descontos' => 0, 'valor_liquido' => 0, 
             ]);
 
-            // Esta lógica de loop é o que permite faturar R$ 10 de um pool de R$ 100
-            $totalBrutoRealLinkado = 0;
-            // $totalDescontoIRRealLinkado = 0; // Não precisamos mais disso para o total da fatura
-            $totalImpostosItens = 0; // Mantido como 0
+            // 4. VINCULAÇÃO
+            $totalRealFaturadoNestaNota = 0;
+            $totalImpostosItens = 0; 
+            $valorRestanteParaFaturar = $valorDesejadoFaturar; 
 
             foreach ($transacoesParaFaturar as $transacao) {
-                $subtotal = $transacao->valor_total;
-                $categoriaId = optional($transacao->produto)->produto_categoria_id ?? 0;
-                
-                // Regra: Se o total bruto + subtotal ultrapassar o limite da fatura (valor digitado), pula.
-                if ( ($totalBrutoRealLinkado + $subtotal) > ($valorFinalDaFatura + 0.001) ) {
-                    continue; 
+                if ($valorRestanteParaFaturar <= 0.001) {
+                    break; 
                 }
+                $valorPendenteDaTransacao = $transacao->valor_pendente; 
+                if ($valorPendenteDaTransacao <= 0.001) continue; 
+
+                $valorAFaturarDestaTransacao = min($valorRestanteParaFaturar, $valorPendenteDaTransacao);
+
+                $transacao->valor_faturado += $valorAFaturarDestaTransacao;
                 
-                $totalBrutoRealLinkado += $subtotal;
-                
-                // --- O cálculo de IR individual foi removido daqui pois o total já foi pré-calculado ---
+                if (abs($transacao->valor_total - $transacao->valor_faturado) < 0.01) {
+                    $transacao->status_faturamento = 'faturada';
+                    $transacao->fatura_id = $fatura->id; 
+                }
+                $transacao->save();
                 
                 FaturaItem::create([
                     'fatura_id' => $fatura->id,
                     'transacao_faturamento_id' => $transacao->id,
                     'descricao_produto' => optional($transacao->produto)->nome ?? 'N/A',
                     'produto_id' => $transacao->produto_id,
-                    'produto_categoria_id' => $categoriaId,
-                    'quantidade' => $transacao->quantidade ?? 1,
-                    'valor_unitario' => $transacao->valor_unitario ?? $subtotal,
-                    'valor_subtotal' => $subtotal,
+                    'produto_categoria_id' => optional($transacao->produto)->produto_categoria_id ?? 0,
+                    'quantidade' => 1, 
+                    'valor_unitario' => $valorAFaturarDestaTransacao, 
+                    'valor_subtotal' => $valorAFaturarDestaTransacao,
                     'aliquota_aplicada' => 0, 
                     'valor_imposto' => 0,
-                    'valor_total_item' => $subtotal,
+                    'valor_total_item' => $valorAFaturarDestaTransacao,
                 ]);
-                
-                // --- CORREÇÃO: Atualiza o status_faturamento ---
-                $transacao->fatura_id = $fatura->id;
-                $transacao->status_faturamento = 'faturada'; // <-- CORREÇÃO
-                $transacao->save();
-                // --- FIM DA CORREÇÃO ---
-            }
 
-            // 4. ATUALIZAR TOTAIS DA FATURA (COM LÓGICA PRORATA)
+                $totalRealFaturadoNestaNota += $valorAFaturarDestaTransacao;
+                $valorRestanteParaFaturar -= $valorAFaturarDestaTransacao;
+            }
             
-            $faturaBruta = $valorFinalDaFatura; // O valor que o usuário digitou (ex: 5000.00)
+            // 5. ATUALIZAR TOTAIS
+            $faturaBruta = $totalRealFaturadoNestaNota;
             $faturaDescontoIR = 0;
 
-            // Calcula o IR Proporcional apenas se o desconto estiver ativo
-            if ($parametrosAtivos['descontar_ir_fatura'] && $totalBrutoFiltrado > 0) {
-                // (Valor_Digitado / Total_Bruto_Filtrado) * Total_IR_Filtrado
-                $faturaDescontoIR = ($faturaBruta / $totalBrutoFiltrado) * $totalIRFiltrado;
+            if ($parametrosAtivos['descontar_ir_fatura'] && $totalBrutoPendenteReal > 0.01) {
+                $taxaDeIRMedia = $totalIRPendenteReal / $totalBrutoPendenteReal;
+                $faturaDescontoIR = round($faturaBruta * $taxaDeIRMedia, 2);
             }
-            
-            $fatura->valor_total = $faturaBruta;
-            $fatura->valor_impostos = $totalImpostosItens; // 0
-            $fatura->valor_descontos = $faturaDescontoIR; // <-- CORREÇÃO
-            
-           $fatura->valor_liquido = $faturaBruta;
-            if ($parametrosAtivos['descontar_ir_fatura']) {
-                $fatura->valor_liquido = $faturaBruta - $faturaDescontoIR; // <-- CORREÇÃO
-            }
-            
-            // --- INÍCIO DA MUDANÇA: Geração da Observação (v3 - Contrato Automático) ---
-            $textoContrato = "";
-            $textoTaxa = "";
+
             $contrato = null;
-
-            // 1. Verifica se um contrato foi FORÇADO pelo modal
             if ($request->filled('contrato_id')) {
-                $contrato = Contrato::find($request->contrato_id);
+                $contrato = Contrato::find($request->contrato_id[0]); 
             }
-
-            // 2. Se NENHUM foi forçado, busca o primeiro contrato ATIVO do cliente
             if (!$contrato) {
-                // $matriz foi definido no início da função gerarFatura()
+                $matriz = ($empresa->empresa_tipo_id == 2) ? $empresa->matriz : $empresa;
                 $contrato = Contrato::where('empresa_id', $matriz->id) 
-                                    ->where('contrato_situacao_id', 1) // 1 = Ativo
+                                    ->where('contrato_situacao_id', 1)
                                     ->first();
             }
+
+            $taxaAdmPercent = $contrato ? (float)($contrato->taxa_administrativa ?? 0) : 0;
+            $valorTaxaAdm = round(($faturaBruta * $taxaAdmPercent) / 100, 2);
             
-            // 3. Se encontrou um contrato (seja forçado ou automático), formata o texto
-            if ($contrato) {
+            $fatura->valor_total = $faturaBruta; 
+            $fatura->valor_impostos = $totalImpostosItens; 
+            $fatura->valor_descontos = $faturaDescontoIR; 
+            $fatura->taxa_adm_percent = $taxaAdmPercent;
+            $fatura->taxa_adm_valor = $valorTaxaAdm;
+            $fatura->valor_liquido = $faturaBruta - $faturaDescontoIR + $valorTaxaAdm;
+            
+            // 6. GERAÇÃO DA OBSERVAÇÃO (CORRIGIDO O ERRO "integer: null")
+            $textoContrato = "";
+            $textoTaxa = "";
+            if ($contrato) { 
                 $textoContrato = "(CONTRATO nº {$contrato->numero})";
-                // USANDO O CAMPO 'taxa_administrativa' CONFORME SEU MODELO
                 $taxaAdm = (float)($contrato->taxa_administrativa ?? 0); 
                 $labelTaxa = $taxaAdm < 0 ? 'Taxa Negativa' : 'Taxa Positiva';
-                // Formato correto: R$ -88,60 ou R$ 88,60
                 $valorTaxaFormatado = number_format($taxaAdm, 2, ',', '.'). '%';
                 $textoTaxa = "| $labelTaxa: $valorTaxaFormatado";
             }
-
-            $textoEmpenho = ""; // Inicia vazio
-            if ($is_publico) {
-                $empenhoStr = ""; // Valor padrão em branco
-                if ($request->filled('empenho_id') && $request->empenho_id != 'null') {
-                    $empenho = Empenho::find($request->empenho_id);
-                    if ($empenho) {
-                        $empenhoStr = $empenho->numero_empenho;
-                    }
+            $textoEmpenho = "";
+            if ($is_publico && $request->filled('empenho_id')) {
+                $empenhos = Empenho::whereIn('id', $request->empenho_id)->pluck('numero_empenho');
+                if ($empenhos->isNotEmpty()) {
+                    $textoEmpenho = "| Empenho(s): " . $empenhos->implode(', ');
                 }
-                $textoEmpenho = "| Empenho: {$empenhoStr}";
             }
-
-            // 2. Lógica do Código Dealer (Agora vindo do Cliente)
-            $textoDealer = ""; // Inicia vazio
-            // A relação 'codigoDealer' foi carregada no início da função
+            $textoDealer = "";
             if ($empresa->codigoDealer && !empty($empresa->codigoDealer->cod_dealer)) {
                 $textoDealer = "| DEALER: " . $empresa->codigoDealer->cod_dealer;
             }
-
-
             $periodoCarbon = Carbon::createFromFormat('Y-m', $periodo);
             $textoPeriodo = $periodoCarbon->locale('pt_BR')->translatedFormat('F/Y');
             $textoVencimento = Carbon::parse($request->data_vencimento)->format('d/m/Y');
-
-            // Lógica para filtros fracionados
             $textoFiltros = "";
+
             if ($request->tipo_geracao == 'Fracionada') {
                 $filtrosUsados = [];
-                
-                if ($request->filled('grupo_id') && $request->grupo_id != 'null') {
-                    $grupo = Grupo::find($request->grupo_id);
-                    $filtrosUsados[] = "Grupo: " . ($grupo ? $grupo->nome : $request->grupo_id);
-                }
-                if ($request->filled('subgrupo_id') && $request->subgrupo_id != 'null') {
-                    $subgrupo = Grupo::find($request->subgrupo_id);
-                    $filtrosUsados[] = "Subgrupo: " . ($subgrupo ? $subgrupo->nome : $request->subgrupo_id);
-                }
-                // Adiciona o contrato aos filtros se ele foi selecionado manualmente
-                if ($request->filled('contrato_id') && $contrato) { 
-                    $filtrosUsados[] = "Contrato: " . $contrato->numero;
+
+                // --- CORREÇÃO DA OBSERVAÇÃO PARA GRUPO ---
+                if ($request->filled('grupo_id')) {
+                    $grupoIds = $request->grupo_id;
+                    $idsNumericos = array_filter($grupoIds, fn($v) => is_numeric($v));
+                    $nomes = [];
+                    
+                    if (!empty($idsNumericos)) {
+                        $nomes = Grupo::whereIn('id', $idsNumericos)->pluck('nome')->toArray();
+                    }
+                    if (in_array('null', $grupoIds) || in_array(null, $grupoIds)) {
+                        $nomes[] = "Sem Grupo";
+                    }
+                    
+                    if (!empty($nomes)) {
+                        $filtrosUsados[] = "Grupo(s): " . implode(', ', $nomes);
+                    }
                 }
 
+                // --- CORREÇÃO DA OBSERVAÇÃO PARA SUBGRUPO ---
+                if ($request->filled('subgrupo_id')) {
+                    $subIds = $request->subgrupo_id;
+                    $idsNumericos = array_filter($subIds, fn($v) => is_numeric($v));
+                    $nomes = [];
+
+                    if (!empty($idsNumericos)) {
+                        $nomes = Grupo::whereIn('id', $idsNumericos)->pluck('nome')->toArray();
+                    }
+                    if (in_array('null', $subIds) || in_array(null, $subIds)) {
+                        $nomes[] = "Sem Subgrupo";
+                    }
+
+                    if (!empty($nomes)) {
+                        $filtrosUsados[] = "Subgrupo(s): " . implode(', ', $nomes);
+                    }
+                }
+
+                if ($request->filled('contrato_id')) {
+                    $contratos = Contrato::whereIn('id', $request->contrato_id)->pluck('numero');
+                     if ($contratos->isNotEmpty()) $filtrosUsados[] = "Contrato(s): " . $contratos->implode(', ');
+                }
                 if (!empty($filtrosUsados)) {
-                    $textoFiltros = "| Filtros: (" . implode(', ', $filtrosUsados) . ")";
+                    $textoFiltros = "| Filtros: (" . implode('; ', $filtrosUsados) . ")";
                 }
             }
+            // --- FIM DAS CORREÇÕES ---
 
             $obs = [];
             if ($textoContrato) $obs[] = $textoContrato;
@@ -1143,26 +1119,22 @@ class FaturamentoController extends Controller
             if ($textoDealer)  $obs[] = $textoDealer; 
             if ($textoFiltros) $obs[] = $textoFiltros;
             $obs[] = "| Vencimento: " . $textoVencimento;
-            
             $dadosBancarios = "DADOS BANCÁRIOS: BANCO: {$paramGlobal->banco} | AGÊNCIA: {$paramGlobal->agencia} | C/C: {$paramGlobal->conta} | CNPJ: {$paramGlobal->cnpj} – {$paramGlobal->razao_social} PIX: {$paramGlobal->chave_pix}";
-
             $fatura->observacoes = trim(implode(' ', $obs)) . ' ' . $dadosBancarios;
-            // --- FIM DA MUDANÇA ---
 
-            $fatura->save(); // Salva os totais E a observação
+            $fatura->save();
             
             DB::commit();
             return response()->json(['success' => true, 'message' => "Fatura #{$fatura->id} (Valor: R$ ".number_format($fatura->valor_liquido, 2, ',', '.').") gerada com sucesso!"]);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['success' => false, 'message' => 'Erro ao gerar fatura: ' . $e->getMessage(), 'trace' => $e->getTrace()], 500);
+            return response()->json(['success' => false, 'message' => 'Erro ao gerar fatura: ' . $e->getMessage(), 'trace' => $e->getTraceAsString()], 500);
         }
     }
-
-    public function destroyFatura(Fatura $fatura)
+    
+   public function destroyFatura(Fatura $fatura)
     {
-        // <<< MUDANÇA: Permite excluir 'aguardando_pagamento' e 'recebida_parcial'
         if ($fatura->status == 'recebida') {
             return response()->json([
                 'success' => false,
@@ -1172,17 +1144,30 @@ class FaturamentoController extends Controller
 
         DB::beginTransaction();
         try {
-            // <<< MUDANÇA: Apaga pagamentos parciais, se houver
-            FaturaPagamento::where('fatura_id', $fatura->id)->delete();
-
-            TransacaoFaturamento::where('fatura_id', $fatura->id)
-                ->update([
-                    'fatura_id' => null,
-                    'status_faturamento' => 'pendente' // Sempre volta pra pendente
-                ]);
+            $itens = FaturaItem::where('fatura_id', $fatura->id)->get();
             
+            foreach ($itens as $item) {
+                $transacao = TransacaoFaturamento::find($item->transacao_faturamento_id);
+                if ($transacao) {
+                    // Devolve o valor do item para a transação
+                    $transacao->valor_faturado -= $item->valor_total_item;
+                    
+                    if ($transacao->valor_faturado < 0.01) {
+                        $transacao->valor_faturado = 0;
+                    }
+                    
+                    // Marca como pendente (pois agora tem valor a faturar)
+                    $transacao->status_faturamento = 'pendente';
+                    $transacao->fatura_id = null; // <-- CORREÇÃO: Limpa o fatura_id
+                    $transacao->save();
+                }
+            }
+            
+            FaturaPagamento::where('fatura_id', $fatura->id)->delete();
+            FaturaDesconto::where('fatura_id', $fatura->id)->delete();
             $fatura->itens()->delete();
             $fatura->delete();
+            
             DB::commit();
             return response()->json(['success' => true, 'message' => 'Fatura excluída e transações reabertas.']);
         } catch (\Exception $e) {
@@ -1227,24 +1212,60 @@ class FaturamentoController extends Controller
         return response()->json($contratos);
     }
 
+    /**
+     * getEmpenhosPendentes (Corrigido - Fix erro SQL 'integer: null')
+     */
     public function getEmpenhosPendentes(Request $request)
     {
         $request->validate([
             'cliente_id' => 'required|integer|exists:empresa,id',
             'periodo' => 'required|date_format:Y-m',
-            'grupo_id' => 'nullable|string',
-            'subgrupo_id' => 'nullable|string',
+            'grupo_id' => 'nullable|array', 
+            'subgrupo_id' => 'nullable|array',
         ]);
         
         $queryBasePendentes = $this->buildPendentesQuery($request);
         
-             
-        // Filtros de Grupo/Subgrupo (hierarquia)
+        // --- CORREÇÃO APLICADA AQUI ---
         if ($request->filled('grupo_id')) {
-            // ... (lógica de grupo_id)
+            $grupoIds = $request->grupo_id;
+            $idsNumericos = array_filter($grupoIds, fn($v) => is_numeric($v));
+            $incluirSemGrupoPai = in_array('null', $grupoIds) || in_array(null, $grupoIds);
+
+            $queryBasePendentes->whereHas('veiculo.grupo', function($q) use ($idsNumericos, $incluirSemGrupoPai) {
+                $q->where(function($sub) use ($idsNumericos, $incluirSemGrupoPai) {
+                    if (!empty($idsNumericos)) {
+                        $sub->whereIn('grupo_id', $idsNumericos);
+                    }
+                    if ($incluirSemGrupoPai) {
+                        $sub->orWhereNull('grupo_id');
+                    }
+                });
+            });
         }
+        // --- FIM DA CORREÇÃO ---
+
         if ($request->filled('subgrupo_id')) {
-            // ... (lógica de subgrupo_id)
+             $parent_ids = Grupo::whereIn('id', array_filter($request->subgrupo_id, 'is_numeric'))
+                            ->pluck('grupo_id')
+                            ->unique()
+                            ->filter(); 
+            $includes_null_subgroup = collect($request->subgrupo_id)->contains(function($value) {
+                if ($value == 'null' || $value == null) return true;
+                $grupo = Grupo::find($value); 
+                return $grupo && $grupo->grupo_id === null;
+            });
+            $queryBasePendentes->where(function($q) use ($parent_ids, $includes_null_subgroup) {
+                if ($parent_ids->isNotEmpty()) {
+                    $q->whereHas('veiculo.grupo', fn($q2) => $q2->whereIn('grupo_id', $parent_ids));
+                }
+                if ($includes_null_subgroup) {
+                    $q->orWhere(function($q_null) {
+                        $q_null->whereDoesntHave('veiculo.grupo') 
+                               ->orWhereHas('veiculo.grupo', fn($q3) => $q3->whereNull('grupo_id'));
+                    });
+                }
+            });
         }
 
         $empenhos = $queryBasePendentes
@@ -1253,7 +1274,7 @@ class FaturamentoController extends Controller
                 'empenho.id',
                 'empenho.numero_empenho',
                 'empenho.valor', 
-                DB::raw('SUM(transacao_faturamento.valor_total) as valor_pendente')
+                DB::raw('SUM(transacao_faturamento.valor_total - transacao_faturamento.valor_faturado) as total_pendente')
             )
             ->whereNotNull('transacao_faturamento.empenho_id')
             ->groupBy('empenho.id', 'empenho.numero_empenho', 'empenho.valor')
@@ -1261,22 +1282,73 @@ class FaturamentoController extends Controller
             
         return response()->json($empenhos);
     }
-    
-   public function getGruposPendentes(Request $request)
+    /**
+     * getGruposPendentes (Corrigido - Fix erro SQL 'integer: null')
+     */
+    public function getGruposPendentes(Request $request)
     {
         $request->validate([
             'cliente_id' => 'required|integer|exists:empresa,id',
             'periodo' => 'required|date_format:Y-m',
-            'empenho_id' => 'nullable|integer',
+            'empenho_id' => 'nullable|array',
+            'subgrupo_id' => 'nullable|array',
+            'grupo_id' => 'nullable|array',
         ]);
 
         $queryBasePendentes = $this->buildPendentesQuery($request);
 
-        // --- INÍCIO DA MUDANÇA (LÓGICA DE CASCATA) ---
-        $queryBasePendentes->when($request->filled('empenho_id'), fn($q) => $q->where('empenho_id', $request->empenho_id));
-        // --- FIM DA MUDANÇA ---
+        // --- Filtros em cascata ---
+        $queryBasePendentes->when($request->filled('empenho_id'), 
+            fn($q) => $q->whereIn('empenho_id', $request->empenho_id));
+        
+        // --- CORREÇÃO APLICADA AQUI ---
+        if ($request->filled('grupo_id')) {
+            $grupoIds = $request->grupo_id;
+            // 1. Pega apenas os IDs numéricos reais (ex: [36, 37])
+            $idsNumericos = array_filter($grupoIds, fn($v) => is_numeric($v));
+            // 2. Verifica se a string "null" ou valor nulo foi enviado
+            $incluirSemGrupoPai = in_array('null', $grupoIds) || in_array(null, $grupoIds);
 
-        // --- CORREÇÃO: Mudar JOIN para LEFT JOIN ---
+            $queryBasePendentes->whereHas('veiculo.grupo', function($q) use ($idsNumericos, $incluirSemGrupoPai) {
+                $q->where(function($sub) use ($idsNumericos, $incluirSemGrupoPai) {
+                    if (!empty($idsNumericos)) {
+                        $sub->whereIn('grupo_id', $idsNumericos);
+                    }
+                    if ($incluirSemGrupoPai) {
+                        $sub->orWhereNull('grupo_id');
+                    }
+                });
+            });
+        }
+        // --- FIM DA CORREÇÃO ---
+        
+        // Lógica de "subgrupos irmãos"
+        if ($request->filled('subgrupo_id')) {
+            $parent_ids = Grupo::whereIn('id', array_filter($request->subgrupo_id, 'is_numeric')) 
+                            ->pluck('grupo_id')
+                            ->unique()
+                            ->filter(); 
+
+            $includes_null_subgroup = collect($request->subgrupo_id)->contains(function($value) {
+                if ($value == 'null' || $value == null) return true;
+                $grupo = Grupo::find($value); 
+                return $grupo && $grupo->grupo_id === null;
+            });
+                                          
+            $queryBasePendentes->where(function($q) use ($parent_ids, $includes_null_subgroup) {
+                if ($parent_ids->isNotEmpty()) {
+                    $q->whereHas('veiculo.grupo', fn($q2) => $q2->whereIn('grupo_id', $parent_ids));
+                }
+                
+                if ($includes_null_subgroup) {
+                    $q->orWhere(function($q_null) {
+                        $q_null->whereDoesntHave('veiculo.grupo') 
+                               ->orWhereHas('veiculo.grupo', fn($q3) => $q3->whereNull('grupo_id'));
+                    });
+                }
+            });
+        }
+
         $grupos = $queryBasePendentes
             ->leftJoin('public.veiculo as v', 'transacao_faturamento.veiculo_id', '=', 'v.id')
             ->leftJoin('public.grupo as subgrupo', 'v.grupo_id', '=', 'subgrupo.id')
@@ -1286,26 +1358,25 @@ class FaturamentoController extends Controller
                 DB::raw("COALESCE(grupo_pai.nome, 'Sem Grupo Pai') as grupo_pai_nome"),
                 'subgrupo.id as subgrupo_id',
                 DB::raw("COALESCE(subgrupo.nome, 'Sem Subgrupo') as subgrupo_nome"),
-                DB::raw('SUM(transacao_faturamento.valor_total) as valor_pendente')
+                DB::raw('SUM(transacao_faturamento.valor_total - transacao_faturamento.valor_faturado) as total_pendente')
             )
-            // ->whereNotNull('v.grupo_id') // <-- REMOVIDO: Quebrava para privados
             ->groupBy('grupo_pai.id', 'grupo_pai.nome', 'subgrupo.id', 'subgrupo.nome')
             ->get();
             
-        // --- CORREÇÃO: Mapeamento para enviar 'null' como string ---
+        // Mapeamento
         $grupos_pais = $grupos->groupBy('grupo_pai_nome')->map(function($g) {
             return [
-                'id' => $g->first()->grupo_pai_id ?? 'null', // <-- Manda 'null'
+                'id' => $g->first()->grupo_pai_id ?? 'null',
                 'text' => $g->first()->grupo_pai_nome,
-                'valor_pendente' => $g->sum('valor_pendente'),
+                'valor_pendente' => $g->sum('total_pendente'), 
             ];
         });
         $subgrupos = $grupos->map(function($g) {
             return [
-                'id' => $g->subgrupo_id ?? 'null', // <-- Manda 'null'
+                'id' => $g->subgrupo_id ?? 'null',
                 'text' => $g->subgrupo_nome,
-                'grupo_pai_id' => $g->grupo_pai_id ?? 'null', // <-- Manda 'null'
-                'valor_pendente' => $g->valor_pendente,
+                'grupo_pai_id' => $g->grupo_pai_id ?? 'null',
+                'valor_pendente' => $g->total_pendente, 
             ];
         });
             
@@ -1321,108 +1392,87 @@ class FaturamentoController extends Controller
             'cliente_id' => 'required|integer|exists:empresa,id',
             'periodo' => 'required|date_format:Y-m',
             'tipo_geracao' => 'required|string',
-            'empenho_id' => 'nullable|string', // Pode ser 'null' (string)
-            'grupo_id' => 'nullable|string',   // Pode ser 'null' (string)
-            'subgrupo_id' => 'nullable|string', // Pode ser 'null' (string)
+            'empenho_id' => 'nullable|array',
+            'grupo_id' => 'nullable|array',
+            'subgrupo_id' => 'nullable|array',
         ]);
         
-        // --- INÍCIO DA CORREÇÃO ---
         $empresa = Empresa::find($request->cliente_id);
-        $publico_ids = [1, 2, 3, 5]; // 1=Federal, 2=Estadual, 3=Municipal, 5=Economia Mista
+        $publico_ids = [1, 2, 3, 5];
         $is_publico = in_array($empresa->organizacao_id, $publico_ids);
-        // --- FIM DA CORREÇÃO ---
 
-        $queryTransacoes = $this->buildPendentesQuery($request);
+        $campoValorPendente = DB::raw('valor_total - valor_faturado');
 
-        // Aplica os filtros exatos (lógica E)
         if ($request->tipo_geracao == 'Fracionada') {
             
-            // --- CORREÇÃO: A validação de "filtro obrigatório" só se aplica a públicos ---
-            if ( $is_publico &&
-                !$request->filled('empenho_id') &&
-                !$request->filled('grupo_id') &&
-                !$request->filled('subgrupo_id')
-            ) {
-                 // Cliente público sem filtros de hierarquia. Retorna 0.
+            $filtroSelecionado = $request->filled('grupo_id') || 
+                                 $request->filled('subgrupo_id') || 
+                                 ($is_publico && $request->filled('empenho_id'));
+
+            if (!$filtroSelecionado) {
                  return response()->json(['valor_filtrado' => 0, 'limite_aplicavel' => 0]);
             }
-
-            // --- CORREÇÃO: Para clientes privados, filtros são opcionais ---
-            if ( !$is_publico &&
-                !$request->filled('empenho_id') &&
-                !$request->filled('grupo_id') &&
-                !$request->filled('subgrupo_id')
-                // !$request->filled('contrato_id')
-            ) {
-                 // Cliente privado sem NENHUM filtro. 
-                 // Não faz nada, apenas continua e soma tudo.
+            
+            // --- POOL FILTRADO ---
+            $poolQuery = $this->buildPendentesQuery($request);
+            if ($is_publico && $request->filled('empenho_id')) {
+                $poolQuery->whereIn('empenho_id', $request->empenho_id);
             }
 
-            
-            // Filtros opcionais (Lógica E)
-            // $queryTransacoes->when($request->filled('contrato_id'), fn($q) => $q->where('contrato_id', $request->contrato_id));
-            
-            // Só filtra por empenho se for público
-            if ($is_publico && $request->filled('empenho_id') && $request->empenho_id != 'null') {
-                $queryTransacoes->when($request->filled('empenho_id'), fn($q) => $q->where('empenho_id', $request->empenho_id));
-            }
-
-            // --- CORREÇÃO: Filtros de Grupo/Subgrupo com IDs 'null' ---
-            if ($request->filled('grupo_id')) { // 'null' (string) é considered 'filled'
-                if ($request->grupo_id == 'null') {
-                    // User selected "Sem Grupo Pai"
-                    $queryTransacoes->where(function($q) {
-                        $q->whereDoesntHave('veiculo.grupo.grupoPai')
-                          ->orWhereNull('veiculo_id');
+            // --- CORREÇÃO (Tratamento de "null" no Pool) ---
+            if ($request->filled('grupo_id')) {
+                $grupoIds = $request->grupo_id;
+                $idsNumericos = array_filter($grupoIds, fn($v) => is_numeric($v));
+                $incluirSemGrupo = in_array('null', $grupoIds) || in_array(null, $grupoIds);
+                
+                $poolQuery->whereHas('veiculo.grupo', function($q) use ($idsNumericos, $incluirSemGrupo) {
+                    $q->where(function($sub) use ($idsNumericos, $incluirSemGrupo) {
+                        if (!empty($idsNumericos)) $sub->whereIn('grupo_id', $idsNumericos);
+                        if ($incluirSemGrupo) $sub->orWhereNull('grupo_id');
                     });
-                } else {
-                    // User selected a specific group
-                    $queryTransacoes->whereHas('veiculo.grupo', fn($q2) => $q2->where('grupo_id', $request->grupo_id));
-                }
+                });
             }
-            if ($request->filled('subgrupo_id')) { // 'null' (string) é considered 'filled'
-                if ($request->subgrupo_id == 'null') {
-                    // User selected "Sem Subgrupo"
-                    $queryTransacoes->where(function($q) {
-                        $q->whereDoesntHave('veiculo.grupo')
-                          ->orWhereNull('veiculo_id');
-                    });
-                } else {
-                    // User selected a specific subgrupo
-                    $queryTransacoes->whereHas('veiculo', fn($q2) => $q2->where('grupo_id', $request->subgrupo_id));
-                }
+            // --- FIM CORREÇÃO ---
+
+            if ($request->filled('subgrupo_id')) {
+                $poolQuery->whereHas('veiculo', fn($q) => $q->whereIn('grupo_id', $request->subgrupo_id));
             }
+            $totalFiltrado = $poolQuery->sum($campoValorPendente); 
             
-        }
-        
-        $totalFiltrado = $queryTransacoes->sum('valor_total');
-        
-        // CALCULAR O LIMITE HIERÁRQUICO
-        $limiteAplicavel = INF;
-        // $empresa = Empresa::find($request->cliente_id); // Já buscamos
-        $periodo = $request->periodo;
-        
-        // Limite hierárquico só se aplica a públicos
-        if ($is_publico && $request->tipo_geracao == 'Fracionada') {
-            if ($request->filled('empenho_id') && $request->empenho_id != 'null') {
-                $limiteAplicavel = $this->getLimiteScope('empenho', $request->empenho_id, $empresa, $periodo);
-            } elseif ($request->filled('subgrupo_id')) {
-                $limiteAplicavel = $this->getLimiteScope('subgrupo', $request->subgrupo_id, $empresa, $periodo);
-            } elseif ($request->filled('grupo_id')) {
-                $limiteAplicavel = $this->getLimiteScope('grupo', $request->grupo_id, $empresa, $periodo);
+            // --- LIMITE APLICÁVEL ---
+            $limiteQuery = $this->buildPendentesQuery($request);
+            
+            if ($is_publico && $request->filled('empenho_id')) {
+                $limiteQuery->whereIn('empenho_id', $request->empenho_id);
+            
+            } else if ($request->filled('subgrupo_id')) {
+                $limiteQuery->whereHas('veiculo', fn($q) => $q->whereIn('grupo_id', $request->subgrupo_id));
+                
+            } else if ($request->filled('grupo_id')) {
+                // --- CORREÇÃO (Tratamento de "null" no Limite) ---
+                $grupoIds = $request->grupo_id;
+                $idsNumericos = array_filter($grupoIds, fn($v) => is_numeric($v));
+                $incluirSemGrupo = in_array('null', $grupoIds) || in_array(null, $grupoIds);
+
+                $limiteQuery->whereHas('veiculo.grupo', function($q) use ($idsNumericos, $incluirSemGrupo) {
+                    $q->where(function($sub) use ($idsNumericos, $incluirSemGrupo) {
+                        if (!empty($idsNumericos)) $sub->whereIn('grupo_id', $idsNumericos);
+                        if ($incluirSemGrupo) $sub->orWhereNull('grupo_id');
+                    });
+                });
+                // --- FIM CORREÇÃO ---
             }
+            $limiteAplicavel = $limiteQuery->sum($campoValorPendente); 
+
         } else {
-            // Se for privado ou modo Total, o limite é o próprio total filtrado
-            $limiteAplicavel = $totalFiltrado;
-        }
-
-        if ($limiteAplicavel === INF) {
+            $queryTransacoes = $this->buildPendentesQuery($request);
+            $totalFiltrado = $queryTransacoes->sum($campoValorPendente); 
             $limiteAplicavel = $totalFiltrado;
         }
         
         return response()->json([
-            'valor_filtrado' => $totalFiltrado, // Total do pool (lógica E)
-            'limite_aplicavel' => $limiteAplicavel // Limite do escopo (lógica hierárquica)
+            'valor_filtrado' => $totalFiltrado,
+            'limite_aplicavel' => $limiteAplicavel
         ]);
     }
 
@@ -1575,11 +1625,15 @@ class FaturamentoController extends Controller
         }
     }
 
+   /**
+     * bulkDestroy (Atualizado)
+     *
+     * Aplica a mesma lógica de 'destroyFatura' para exclusão em massa.
+     */
     public function bulkDestroy(Request $request)
     {
         $request->validate(['ids' => 'required|array', 'ids.*' => 'integer']);
 
-        // CORREÇÃO: Permite excluir qualquer fatura que NÃO esteja 'recebida'
         $faturas = Fatura::whereIn('id', $request->ids)
                         ->where('status', '!=', 'recebida')
                         ->get();
@@ -1589,19 +1643,23 @@ class FaturamentoController extends Controller
             $count = 0;
 
             foreach ($faturas as $fatura) {
-                // 1. Desvincula transações (volta para 'pendente')
-                TransacaoFaturamento::where('fatura_id', $fatura->id)
-                    ->update([
-                        'fatura_id' => null,
-                        'status_faturamento' => 'pendente'
-                    ]);
+                $itens = FaturaItem::where('fatura_id', $fatura->id)->get();
+                foreach ($itens as $item) {
+                    $transacao = TransacaoFaturamento::find($item->transacao_faturamento_id);
+                    if ($transacao) {
+                        $transacao->valor_faturado -= $item->valor_total_item;
+                        if ($transacao->valor_faturado < 0.01) {
+                            $transacao->valor_faturado = 0;
+                        }
+                        $transacao->status_faturamento = 'pendente';
+                        $transacao->fatura_id = null; // <-- CORREÇÃO: Limpa o fatura_id
+                        $transacao->save();
+                    }
+                }
 
-                // 2. CORREÇÃO: Exclui todas as dependências primeiro
                 $fatura->itens()->delete();
                 $fatura->pagamentos()->delete();
                 $fatura->descontos()->delete();
-
-                // 3. Exclui a fatura principal
                 $fatura->delete();
 
                 $count++;

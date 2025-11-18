@@ -85,7 +85,7 @@
 
 @stop
 
-@section('js')
+@section(section: 'js')
 
 <script>
 
@@ -101,7 +101,6 @@ $(document).ready(function() {
     var modalEditar = $('#modalEditarFatura');
     var modalPagar = $('#modalRegistrarPagamento');
     var modalVerComprovantes = $('#modalVerComprovantes');
-    var trad = "https://cdn.datatables.net/plug-ins/1.10.25/i18n/Portuguese-Brasil.json";
 
     var container = $('#faturamento-container');
     var globalData = {
@@ -222,6 +221,11 @@ $(document).ready(function() {
                     { data: 'valor_impostos' },
                     { data: 'valor_descontos' },
                     { data: 'desconto_manual', name: 'desconto_manual', orderable: false, searchable: false }, 
+                    { data: 'taxa_adm', name: 'taxa_adm', orderable: false, searchable: false },
+                    { data: 'tipo_taxa', name: 'tipo_taxa', orderable: false, searchable: false },
+                    { data: 'valor_taxa', name: 'valor_taxa', orderable: false, searchable: false },
+                    // --- FIM DA CORREÇÃO ---
+
                     { data: 'valor_liquido' },
                     { data: 'valor_recebido', name: 'valor_recebido', orderable: false, searchable: false },
                     { data: 'saldo_pendente', name: 'saldo_pendente', orderable: false, searchable: false },

@@ -222,6 +222,14 @@
                 <td class="text-muted">Descontos (IR Retido):</td>
                 <td class="text-right text-muted">R$ {{ number_format($fatura->valor_descontos, 2, ',', '.') }}</td>
             </tr>
+           
+            @if($fatura->taxa_adm_valor != 0)
+            <tr>
+                <td class="text-muted">Taxa Adm. ({{ number_format($fatura->taxa_adm_percent, 2, ',', '.') }}%):</td>
+                <td class="text-right text-muted">R$ {{ number_format($fatura->taxa_adm_valor, 2, ',', '.') }}</td>
+            </tr>
+            @endif
+            
             @if($totalDescontosManuais > 0)
             <tr>
                 <td class="text-muted">Descontos Manuais:</td>

@@ -82,6 +82,9 @@
             <th>Impostos</th>
             <th>Desc. (IR)</th>
             <th>Desc. Manuais</th>
+            <th>Taxa Adm (%)</th>
+            <th>Tipo Taxa</th>
+            <th>Valor Taxa (R$)</th>
             <th>Valor Líquido</th>
             <th>Valor Recebido</th>
             <th>Saldo Pendente</th>

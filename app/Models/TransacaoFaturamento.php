@@ -34,6 +34,30 @@ class TransacaoFaturamento extends Model
     /**
      * Define os casts de atributos para tipos específicos.
      */
+
+    protected $fillable = [
+        'data_transacao',
+        'data_atualizacao_original',
+        'data_sincronizacao_mapa',
+        'informacao', // JSON
+        'quantidade',
+        'valor_unitario',
+        'valor_total',
+        'imposto_renda',
+        'taxa_administrativa',
+        'taxa_administrativa_credenciado',
+        'desconto',
+        'valor_liquido_cliente',
+        'valor_taxa_cliente',
+        'km_atual',
+        'distancia_percorrida',
+        'consumo_medio',
+        'latitude',
+        'longitude',
+        'valor_faturado',
+    ];
+
+
     protected $casts = [
         'data_transacao' => 'datetime',
         'data_atualizacao_original' => 'datetime',
@@ -53,6 +77,7 @@ class TransacaoFaturamento extends Model
         'consumo_medio' => 'float',
         'latitude' => 'float',
         'longitude' => 'float',
+        'valor_faturado' => 'float',
     ];
 
     /**
@@ -63,6 +88,11 @@ class TransacaoFaturamento extends Model
     //     // Ajuste o nome do Model Fatura se for diferente
     //     return $this->belongsTo(Fatura::class, 'fatura_id');
     // }
+    public function getValorPendenteAttribute()
+    {
+        // Garante que o valor pendente nunca seja negativo
+        return max(0, $this->attributes['valor_total'] - $this->attributes['valor_faturado']);
+    }
 
     /**
      * Relacionamento com o Cliente (Empresa).
@@ -108,11 +138,11 @@ class TransacaoFaturamento extends Model
     /**
      * Relacionamento com o Motorista.
      */
-    public function motorista()
-    {
-        // Certifique-se que o Model Motorista existe
-        return $this->belongsTo(Motorista::class, 'motorista_id');
-    }
+    // public function motorista()
+    // {
+    //     // Certifique-se que o Model Motorista existe
+    //     return $this->belongsTo(Motorista::class, 'motorista_id');
+    // }
 
     /**
      * Relacionamento com o Empenho.

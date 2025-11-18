@@ -20,6 +20,8 @@
                 <p class="mb-1"><strong>Dias p/ Vencimento:</strong> {{ $parametrosAtivos['dias_vencimento'] }} dias</p>
                 <p class="mb-1"><strong>Isento de IR:</strong> {{ $parametrosAtivos['isento_ir'] ? 'Sim' : 'Não' }}</p>
                 <p class="mb-0"><strong>Descontar IR na Fatura:</strong> {{ $parametrosAtivos['descontar_ir_fatura'] ? 'Sim' : 'Não' }}</p>
+                {{-- <<<--- LINHA ADICIONADA --- --}}
+                <p class="mb-0 text-primary"><strong>Taxa Adm. (Contrato):</strong> {{ number_format($contrato['taxa_administrativa'], 2, ',', '.') }}%</p>
                 <small class="text-muted d-block mt-2">
                     (O desconto de IR é calculado por transação.)
                 </small>

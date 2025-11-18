@@ -26,13 +26,17 @@ class Fatura extends Model
         'data_vencimento',
         'status',
         'observacoes',
-        'periodo_fatura'
+        'periodo_fatura',
+        'taxa_adm_percent',
+        'taxa_adm_valor',
     ];
 
     protected $casts = [
         'data_emissao' => 'date',
         'data_vencimento' => 'date',
         'periodo_fatura' => 'date',
+        'taxa_adm_percent' => 'decimal:2',
+        'taxa_adm_valor' => 'decimal:2',
     ];
 
     // Log do Spatie
