@@ -4,14 +4,12 @@ services:
   app:
     build: .
     container_name: financeiro_rovema_bank
-    restart: unless-stopped
+    restart: always
     working_dir: /var/www/html
     volumes:
       - .:/var/www/html
-    environment:
-      APP_ENV: production 
-      APP_DEBUG: true
-      APP_URL: http://172.18.37.58:8000
     ports:
       - "8000:80"
-
+    # Dica: Se o banco estiver numa VPN ou rede interna, garanta que o Docker
+    # tenha acesso a essa rede. Geralmente o modo 'bridge' padrão funciona
+    # para saídas externas (internet/intranet).
