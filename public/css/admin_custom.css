@@ -372,6 +372,19 @@ canvas {
         transform: rotate(180deg);
     }
 
-    .img-circle {
+    /* .img-circle {
      border-radius: 0% !important;
-    }
+    } */
+
+    .login-card-body, .register-card-body {
+    background-color: #ffffff00;
+    border-top: 0;
+    color: #666;
+    padding: 20px;
+}
+
+/* Ocultar a logo padrão do AdminLTE na página de login */
+.login-page .login-logo,
+.register-page .register-logo {
+    display: none !important;
+}

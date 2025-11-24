@@ -302,7 +302,8 @@ $(document).ready(function() {
         }).then((result) => {
             if (result.value) {
                 $.ajax({
-                    url: '{{ url('admin/faturamento/faturas') }}/' + fatura_id,
+                    // Usamos uma rota coringa (:id) e substituímos pelo ID real via JS
+                    url: '{{ route('faturamento.faturas.destroy', ['fatura' => ':id']) }}'.replace(':id', fatura_id),
                     type: 'DELETE',
                     success: function(resp) {
                         Swal.fire('Excluída!', resp.message, 'success');

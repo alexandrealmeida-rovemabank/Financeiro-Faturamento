@@ -2,7 +2,6 @@
 @php
     $ajaxUrl = route('faturamento.getSubgrupos');
     $clienteId = $cliente->id;
-    $periodo = $periodo;
 @endphp
 
 <div class="row">
@@ -38,9 +37,11 @@
                     <textarea name="observacoes" class="form-control" rows="6" placeholder="Digite observações sobre o faturamento...">{{ $faturamentoPeriodo->observacoes }}</textarea>
                 </div>
                 <div class="card-footer text-right">
-                    <button type="button" id="btn-salvar-obs" class="btn btn-success btn-sm">
-                        <i class="fas fa-save"></i> Salvar Observações
-                    </button>
+                    @can('edit faturamento')
+                        <button type="button" id="btn-salvar-obs" class="btn btn-success btn-sm">
+                            <i class="fas fa-save"></i> Salvar Observações
+                        </button>
+                    @endcan
                 </div>
             </form>
         </div>

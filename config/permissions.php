@@ -60,6 +60,9 @@ return [
             'show faturamento',
             'edit faturamento',
             'delete faturamento',
+            'create faturamento',
+            'addPagamento faturamento',
+            'addDesconto faturamento',
         ],
     ],
     [

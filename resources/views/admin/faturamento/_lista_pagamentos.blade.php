@@ -39,11 +39,13 @@
             </td>
             <td>
                 @if($fatura->status != 'recebida')
-                <button type
-                    ="button" class="btn btn-xs btn-danger btn-remover-pagamento"
-                    data-url="{{ route('faturamento.removerPagamento', $pagamento) }}">
-                    <i class="fa fa-trash"></i>
-                </button>
+                    {{-- PROTEÇÃO DO BOTÃO REMOVER PAGAMENTO --}}
+                    @can('delete faturamento')
+                        <button type="button" class="btn btn-xs btn-danger btn-remover-pagamento"
+                            data-url="{{ route('faturamento.removerPagamento', $pagamento) }}">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    @endcan
                 @else
                 -
                 @endif

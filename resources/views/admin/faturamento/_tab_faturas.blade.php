@@ -51,23 +51,30 @@
     </div>
 </div>
 
-@can('manage faturamento')
+
 <div class="mb-3 d-flex flex-wrap align-items-center">
 
-    <button class="btn btn-success mr-3 mb-2" data-toggle="modal" data-target="#modalGerarFatura">
-        <i class="fa fa-plus"></i> Gerar Nova Fatura
-    </button>
+    @can('create faturamento')
+        <button class="btn btn-success mr-3 mb-2" data-toggle="modal" data-target="#modalGerarFatura">
+            <i class="fa fa-plus"></i> Gerar Nova Fatura
+        </button>
+    @endcan
 
     <div class="ml-auto mb-2">
-        <button class="btn btn-outline-primary btn-sm" id="btn-editar-observacao-massa" disabled>
-            <i class="fa fa-edit"></i> Editar Observação
-        </button>
-        <button class="btn btn-outline-danger btn-sm" id="btn-excluir-selecionadas-massa" disabled>
-            <i class="fa fa-trash"></i> Excluir
-        </button>
+        @can('edit faturamento')
+            <button class="btn btn-outline-primary btn-sm" id="btn-editar-observacao-massa" disabled>
+                <i class="fa fa-edit"></i> Editar Observação
+            </button>
+        @endcan
+        
+        @can('delete faturamento')
+            <button class="btn btn-outline-danger btn-sm" id="btn-excluir-selecionadas-massa" disabled>
+                <i class="fa fa-trash"></i> Excluir
+            </button>
+        @endcan
     </div>
 </div>
-@endcan
+
 
 <table id="faturas-geradas-table" class="table table-bordered table-hover" style="width:100%">
     <thead>

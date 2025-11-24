@@ -17,7 +17,7 @@
                 <div class="modal-body">
                     <div id="desconto-fatura-alert-container"></div>
 
-                    <div class="alert alert-info" style="top: 145px;>
+                    <div class="alert alert-info" style="top: 145px;">
                         <strong>Valor Líquido Atual:</strong> <span id=" desconto-valor-liquido">R$ 0,00</span><br>
                         <strong class="text-danger">Saldo Pendente Atual:</strong> <span id="desconto-saldo-pendente" class="font-weight-bold">R$ 0,00</span>
                     </div>
@@ -48,9 +48,11 @@
                         </div>
                     </div>
                     <div class="text-right mb-3">
-                        <button type="button" id="btn-salvar-desconto" class="btn btn-success">
-                            <i class="fa fa-plus"></i> Adicionar Desconto
-                        </button>
+                        @can('addDesconto faturamento')
+                            <button type="button" id="btn-salvar-desconto" class="btn btn-success">
+                                <i class="fa fa-plus"></i> Adicionar Desconto
+                            </button>
+                        @endcan
                     </div>
 
                     {{-- Container da Lista de Descontos --}}

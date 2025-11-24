@@ -34,9 +34,11 @@
                         </div>
                     </div>
                     <div class="text-right">
-                        <button type="button" id="btn-salvar-edicao-fatura" class="btn btn-success">
-                            <i class="fa fa-save"></i> Salvar Alterações
-                        </button>
+                        @can('edit faturamento')
+                            <button type="button" id="btn-salvar-edicao-fatura" class="btn btn-success">
+                                <i class="fa fa-save"></i> Salvar Alterações
+                            </button>
+                        @endcan
                     </div>
 
                     {{-- Seção de Refaturamento (só aparece se paga) --}}
@@ -58,9 +60,11 @@
                             </select>
                         </div>
                         
-                        <button type="button" id="btn-confirmar-reabertura" class="btn btn-danger">
-                            <i class="fa fa-undo"></i> Confirmar Reabertura da Fatura
-                        </button>
+                        @can('edit faturamento')
+                            <button type="button" id="btn-confirmar-reabertura" class="btn btn-danger">
+                                <i class="fa fa-undo"></i> Confirmar Reabertura da Fatura
+                            </button>
+                        @endcan
                     </div>
                 </div>
             </form>

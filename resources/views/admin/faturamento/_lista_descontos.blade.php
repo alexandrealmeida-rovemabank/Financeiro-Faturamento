@@ -31,10 +31,12 @@
             <td>{{ $desconto->justificativa ?? '...' }}</td>
             <td>
                 @if($fatura->status != 'recebida')
-                <button type="button" class="btn btn-xs btn-danger btn-remover-desconto"
-                    data-url="{{ route('faturamento.removerDesconto', $desconto) }}">
-                    <i class="fa fa-trash"></i>
-                </button>
+                @can('delete faturamento')
+                        <button type="button" class="btn btn-xs btn-danger btn-remover-desconto"
+                            data-url="{{ route('faturamento.removerDesconto', $desconto) }}">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    @endcan
                 @else
                 -
                 @endif

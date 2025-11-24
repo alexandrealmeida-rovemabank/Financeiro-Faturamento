@@ -54,6 +54,9 @@ class PermissionsAndRolesSeeder extends Seeder
             'show faturamento',
             'edit faturamento',
             'delete faturamento',
+            'create faturamento',
+            'addPagamento faturamento',
+            'addDesconto faturamento',
 
             'view cobranca',
             'show cobranca',

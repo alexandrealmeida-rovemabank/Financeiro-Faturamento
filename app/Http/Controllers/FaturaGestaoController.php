@@ -2,28 +2,93 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Fatura;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
-use App\Models\FaturaPagamento;
-use App\Models\FaturaDesconto; // Adicionado
+use Illuminate\Validation\Rule;
 use Carbon\Carbon;
-use Illuminate\Validation\Rule; // Adicionado
 
-/**
- * Controller Faturamento (Parte 02)
- * Focado na Gestão de Faturas Individuais (Editar, Pagar, Refaturar)
- */
+use App\Models\Fatura;
+use App\Models\FaturaPagamento;
+use App\Models\FaturaDesconto;
+
 class FaturaGestaoController extends Controller
 {
+    public function __construct()
+    {
+        // Leitura de dados para os Modais
+        $this->middleware('permission:show faturamento')->only([
+            'getFaturaDetalhes', 
+            'getDescontosLista', 
+            'getPagamentosLista'
+        ]);
+
+        // Ações de Edição (Alterar Vencimento, Reabrir, Adicionar Pagamento/Desconto)
+        $this->middleware('permission:edit faturamento')->only([
+            'update', 
+            'reabrirFatura'
+        ]);
+
+        $this->middleware('permission:addPagamento faturamento')->only([
+            'addDesconto'
+        ]);
+
+        $this->middleware('permission:addDesconto faturamento')->only([
+            'addDesconto'
+        ]);
+
+        // Ações de Exclusão (Remover itens de dentro da fatura)
+        // Nota: Se preferir, pode usar 'edit faturamento' aqui também, pois altera o saldo da fatura
+        $this->middleware('permission:delete faturamento')->only([
+            'removerDesconto', 
+            'removerPagamento'
+        ]);
+    }
+
+    // ===================================================================
+    // MÉTODOS PRIVADOS / HELPERS
+    // ===================================================================
+
     /**
-     * Busca os detalhes de uma fatura para os modais.
+     * Recalcula Valor Líquido e Status da Fatura.
+     * Chamado após alterações que afetam o saldo (Descontos, Reabertura, Remoção de Pagamentos).
      */
+    private function recalcularTotaisFatura(Fatura $fatura)
+    {
+        $fatura->load(['descontos', 'pagamentos']);
+
+        $totalDescontoManual = $fatura->valor_descontos_manuais; 
+
+        $fatura->valor_liquido = $fatura->valor_total 
+                               - $fatura->valor_descontos 
+                               - $totalDescontoManual;
+
+        $totalPago = $fatura->pagamentos->sum('valor_pago');
+        $novoSaldoReal = round($fatura->valor_liquido - $totalPago, 2);
+
+        if ($novoSaldoReal <= 0.001) {
+            $fatura->status = 'recebida';
+        } else {
+            if ($totalPago > 0) {
+                $fatura->status = 'recebida_parcial';
+            } else {
+                if ($fatura->status != 'aguardando_pagamento') {
+                     $fatura->status = 'pendente';
+                }
+            }
+        }
+        
+        $fatura->save();
+    }
+
+    // ===================================================================
+    // MÉTODOS PÚBLICOS (ACTIONS)
+    // ===================================================================
+
     public function getFaturaDetalhes(Fatura $fatura)
     {
-        $fatura->refresh(); // Força a releitura dos dados
+        $fatura->refresh();
         $fatura->load('pagamentos'); 
 
         return response()->json([
@@ -38,9 +103,6 @@ class FaturaGestaoController extends Controller
         ]);
     }
 
-    /**
-     * 1. Editar Fatura (NF e Vencimento)
-     */
     public function update(Request $request, Fatura $fatura)
     {
         $validator = Validator::make($request->all(), [
@@ -67,24 +129,21 @@ class FaturaGestaoController extends Controller
         ];
 
         activity()
-           ->performedOn($fatura)
-           ->causedBy(Auth::user())
-           ->UseLog('faturamento') 
-           ->event('updated') 
-           ->withProperties(['old' => $old_data, 'new' => $new_data]) 
-           ->log("Editou dados da fatura (NF: {$request->nota_fiscal}, Venc: {$request->data_vencimento})");
+            ->performedOn($fatura)
+            ->causedBy(Auth::user())
+            ->UseLog('faturamento') 
+            ->event('updated') 
+            ->withProperties(['old' => $old_data, 'new' => $new_data]) 
+            ->log("Editou dados da fatura (NF: {$request->nota_fiscal}, Venc: {$request->data_vencimento})");
 
         return response()->json(['success' => true, 'message' => 'Fatura atualizada com sucesso.']);
     }
 
-    /**
-     * 2. Reabrir Fatura (Refaturamento)
-     */
     public function reabrirFatura(Request $request, Fatura $fatura)
     {
         $validator = Validator::make($request->all(), [
             'motivo_reabertura' => 'required|string|min:10|max:500',
-            'novo_status' => 'required|string|in:aguardando_pagamento', // Força 'aguardando_pagamento'
+            'novo_status' => 'required|string|in:aguardando_pagamento',
         ]);
 
         if ($validator->fails()) {
@@ -98,35 +157,29 @@ class FaturaGestaoController extends Controller
         $motivo = $request->motivo_reabertura;
         $old_status = $fatura->status;
         
-        // Deleta todos os pagamentos e descontos associados
         $fatura->pagamentos()->delete();
         $fatura->descontos()->delete();
 
-        // Define novo status
         $fatura->status = 'aguardando_pagamento';
         
-        // Recalcula o valor líquido (removendo descontos)
-        $this->recalcularTotaisFatura($fatura); // Isso vai salvar a fatura
+        $this->recalcularTotaisFatura($fatura);
         
         activity()
-           ->performedOn($fatura)
-           ->causedBy(Auth::user())
-           ->UseLog('faturamento')
-           ->event('reopened')
-           ->withProperties([
+            ->performedOn($fatura)
+            ->causedBy(Auth::user())
+            ->UseLog('faturamento')
+            ->event('reopened')
+            ->withProperties([
                 'old_status' => $old_status,
                 'new_status' => $fatura->status,
                 'reason' => $motivo,
                 'action' => 'Pagamentos e Descontos zerados (reset)'
-           ])
-           ->log("Fatura reaberta (Reset). Novo status: {$fatura->status}. Motivo: {$motivo}");
+            ])
+            ->log("Fatura reaberta (Reset). Novo status: {$fatura->status}. Motivo: {$motivo}");
 
         return response()->json(['success' => true, 'message' => "Fatura reaberta com status '{$fatura->status}'. Pagamentos e descontos foram zerados."]);
     }
 
-    /**
-     * 3. & 4. Registrar Pagamento (Parcial ou Total)
-     */
     public function addPagamento(Request $request, Fatura $fatura)
     {
         $fatura->refresh(); 
@@ -146,11 +199,7 @@ class FaturaGestaoController extends Controller
 
         $path = null;
         if ($request->hasFile('comprovante')) {
-            // <<<--- ESTA É A CORREÇÃO DO CAMINHO ---
-            // Salva no disco 'public', na pasta 'faturamento/comprovantes'
-            // O caminho salvo no banco será: 'faturamento/comprovantes/HASH.ext'
             $path = $request->file('comprovante')->store('faturamento/comprovantes', 'public');
-            // --- FIM DA CORREÇÃO ---
         }
 
         $pagamento = new FaturaPagamento([
@@ -162,7 +211,6 @@ class FaturaGestaoController extends Controller
         ]);
         $pagamento->save();
 
-        // CORREÇÃO DO STATUS: Recalcula o status manualmente
         $fatura->refresh()->load('pagamentos'); 
         $totalLiquido = $fatura->valor_liquido ?? 0;
         $totalPago = $fatura->pagamentos->sum('valor_pago');
@@ -177,67 +225,29 @@ class FaturaGestaoController extends Controller
         $fatura->save();
         
         activity()
-           ->performedOn($fatura)
-           ->causedBy(Auth::user())
-           ->UseLog('faturamento')
-           ->event('payment_added')
-           ->withProperties([
+            ->performedOn($fatura)
+            ->causedBy(Auth::user())
+            ->UseLog('faturamento')
+            ->event('payment_added')
+            ->withProperties([
                 'payment_id' => $pagamento->id,
                 'payment_value' => $pagamento->valor_pago,
                 'payment_date' => $pagamento->data_pagamento->format('Y-m-d'),
                 'has_voucher' => !empty($path),
                 'old_status' => $old_status,
                 'new_status' => $fatura->status,
-           ])
-           ->log("Registrou pagamento de R$ " . number_format($request->valor_pago, 2, ',', '.') . ". Novo status: {$fatura->status}.");
+            ])
+            ->log("Registrou pagamento de R$ " . number_format($request->valor_pago, 2, ',', '.') . ". Novo status: {$fatura->status}.");
 
         return response()->json(['success' => true, 'message' => 'Pagamento registrado com sucesso.']);
     }
 
-    /**
-     * (HELPER) Recalcula Valor Líquido e Status da Fatura.
-     */
-    private function recalcularTotaisFatura(Fatura $fatura)
-    {
-        $fatura->load(['descontos', 'pagamentos']);
-
-        $totalDescontoManual = $fatura->valor_descontos_manuais; // Acessor (R$)
-
-        $fatura->valor_liquido = $fatura->valor_total 
-                               - $fatura->valor_descontos 
-                               - $totalDescontoManual;
-
-        $totalPago = $fatura->pagamentos->sum('valor_pago');
-        $novoSaldoReal = round($fatura->valor_liquido - $totalPago, 2);
-
-        // CORREÇÃO DE STATUS (para quando o desconto quita a fatura)
-        if ($novoSaldoReal <= 0.001) {
-            $fatura->status = 'recebida';
-        } else {
-            if ($totalPago > 0) {
-                $fatura->status = 'recebida_parcial';
-            } else {
-                if ($fatura->status != 'aguardando_pagamento') {
-                     $fatura->status = 'pendente';
-                }
-            }
-        }
-        
-        $fatura->save();
-    }
-
-    /**
-     * (ROTA) Busca a lista de descontos (HTML) para o modal.
-     */
     public function getDescontosLista(Fatura $fatura)
     {
         $descontos = $fatura->descontos()->with('usuario')->orderBy('created_at', 'desc')->get();
         return view('admin.faturamento._lista_descontos', compact('descontos', 'fatura'));
     }
 
-    /**
-     * (ROTA) Adiciona um novo desconto (fixo ou percentual).
-     */
     public function addDesconto(Request $request, Fatura $fatura)
     {
         $fatura->refresh()->load('pagamentos');
@@ -247,7 +257,7 @@ class FaturaGestaoController extends Controller
             'tipo' => ['required', Rule::in(['fixo', 'percentual'])],
             'valor' => 'required|numeric|min:0.01',
             'justificativa' => 'nullable|string|max:500',
-            'force_quit' => 'nullable|boolean', // Valida '1' ou '0'
+            'force_quit' => 'nullable|boolean', 
         ]);
 
         if ($validator->fails()) {
@@ -262,23 +272,19 @@ class FaturaGestaoController extends Controller
         $valorCalculado = 0;
         $justificativa = $request->justificativa;
 
-        // 1. Calcula o valor REAL (R$) do desconto
         if ($request->tipo == 'fixo') {
             $valorCalculado = $valorDescontoInput;
         } else {
-            // Percentual é sobre o Saldo Pendente
             $valorCalculado = ($saldoPendente * $valorDescontoInput) / 100;
             $justificativa = "{$request->valor}% de R$ " . number_format($saldoPendente, 2, ',', '.') . ". " . $justificativa;
         }
         
         $valorCalculado = round($valorCalculado, 2);
 
-        // 2. Validação de Saldo
         if ($valorCalculado > ($saldoPendente + 0.01)) {
             return response()->json(['success' => false, 'message' => 'O valor do desconto (R$ ' . number_format($valorCalculado, 2, ',', '.') . ') não pode ser maior que o saldo pendente (R$ ' . number_format($saldoPendente, 2, ',', '.') . ').'], 422);
         }
         
-        // 3. Verifica se vai quitar a fatura e pede confirmação
         $quaseZerado = abs($valorCalculado - $saldoPendente) < 0.01;
         
         if ($quaseZerado && !$request->input('force_quit', false)) {
@@ -289,7 +295,6 @@ class FaturaGestaoController extends Controller
             ], 422);
         }
 
-        // 4. Cria o desconto (SEMPRE como 'fixo')
         $desconto = $fatura->descontos()->create([
             'user_id' => Auth::id(),
             'tipo' => 'fixo',
@@ -297,23 +302,19 @@ class FaturaGestaoController extends Controller
             'justificativa' => trim($justificativa),
         ]);
 
-        // 5. Recalcula o valor_liquido e status da fatura
         $this->recalcularTotaisFatura($fatura);
         
         activity()
-           ->performedOn($fatura)
-           ->causedBy(Auth::user())
-           ->UseLog('faturamento')
-           ->event('discount_added')
-           ->withProperties($desconto->toArray())
-           ->log("Aplicou desconto ({$request->tipo}) de R$ {$valorCalculado}.");
+            ->performedOn($fatura)
+            ->causedBy(Auth::user())
+            ->UseLog('faturamento')
+            ->event('discount_added')
+            ->withProperties($desconto->toArray())
+            ->log("Aplicou desconto ({$request->tipo}) de R$ {$valorCalculado}.");
 
         return response()->json(['success' => true, 'message' => 'Desconto aplicado com sucesso.']);
     }
 
-    /**
-     * (ROTA) Remove um desconto manual.
-     */
     public function removerDesconto(FaturaDesconto $desconto)
     {
         $fatura = $desconto->fatura;
@@ -326,28 +327,22 @@ class FaturaGestaoController extends Controller
         $this->recalcularTotaisFatura($fatura);
 
         activity()
-           ->performedOn($fatura)
-           ->causedBy(Auth::user())
-           ->UseLog('faturamento')
-           ->event('discount_removed')
-           ->withProperties($desconto->toArray())
-           ->log("Removeu desconto ID {$desconto->id}.");
+            ->performedOn($fatura)
+            ->causedBy(Auth::user())
+            ->UseLog('faturamento')
+            ->event('discount_removed')
+            ->withProperties($desconto->toArray())
+            ->log("Removeu desconto ID {$desconto->id}.");
 
         return response()->json(['success' => true, 'message' => 'Desconto removido.']);
     }
 
-    /**
-     * (ROTA) Busca a lista de pagamentos (HTML) para o modal.
-     */
     public function getPagamentosLista(Fatura $fatura)
     {
         $pagamentos = $fatura->pagamentos()->with('usuario')->orderBy('data_pagamento', 'desc')->get();
         return view('admin.faturamento._lista_pagamentos', compact('pagamentos', 'fatura'));
     }
 
-    /**
-     * (ROTA) Remove um pagamento manual.
-     */
     public function removerPagamento(FaturaPagamento $pagamento)
     {
         $fatura = $pagamento->fatura;
@@ -364,12 +359,12 @@ class FaturaGestaoController extends Controller
         $this->recalcularTotaisFatura($fatura);
 
         activity()
-           ->performedOn($fatura)
-           ->causedBy(Auth::user())
-           ->UseLog('faturamento')
-           ->event('payment_removed')
-           ->withProperties($pagamento->toArray())
-           ->log("Removeu pagamento ID {$pagamento->id} no valor de R$ {$pagamento->valor_pago}.");
+            ->performedOn($fatura)
+            ->causedBy(Auth::user())
+            ->UseLog('faturamento')
+            ->event('payment_removed')
+            ->withProperties($pagamento->toArray())
+            ->log("Removeu pagamento ID {$pagamento->id} no valor de R$ {$pagamento->valor_pago}.");
 
         return response()->json(['success' => true, 'message' => 'Pagamento removido.']);
     }

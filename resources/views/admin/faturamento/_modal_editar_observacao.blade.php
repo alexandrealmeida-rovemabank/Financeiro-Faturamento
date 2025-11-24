@@ -44,9 +44,11 @@
                     </button>
 
                     <!-- botão Salvar permanece com comportamento AJAX (handler já existe no seu JS) -->
-                    <button type="button" id="btn-salvar-observacao" class="btn btn-success">
-                        <i class="fa fa-save"></i> Salvar Alterações
-                    </button>
+                    @can('edit faturamento')
+                        <button type="button" id="btn-salvar-observacao" class="btn btn-success">
+                            <i class="fa fa-save"></i> Salvar Alterações
+                        </button>
+                    @endcan
                 </div>
             </form>
         </div>

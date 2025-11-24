@@ -47,9 +47,11 @@
                     </div>
 
                     <div class="text-right mb-3">
-                        <button type="button" id="btn-salvar-pagamento" class="btn btn-success">
-                            <i class="fa fa-plus"></i> Adicionar Pagamento
-                        </button>
+                        @can('addPagamento faturamento')
+                            <button type="button" id="btn-salvar-pagamento" class="btn btn-success">
+                                <i class="fa fa-plus"></i> Adicionar Pagamento
+                            </button>
+                        @endcan
                     </div>
 
 

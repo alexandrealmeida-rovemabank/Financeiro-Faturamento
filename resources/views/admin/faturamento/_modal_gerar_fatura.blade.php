@@ -121,9 +121,13 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#modalGerarFatura').modal('hide');">Cancelar</button>
-                    <button type="button" id="btn-confirmar-geracao" class="btn btn-success" disabled>
-                        <i class="fa fa-check"></i> Confirmar e Gerar Fatura
-                    </button>
+                    
+                    {{-- PROTEÇÃO DO BOTÃO GERAR --}}
+                    @can('create faturamento')
+                        <button type="button" id="btn-confirmar-geracao" class="btn btn-success" disabled>
+                            <i class="fa fa-check"></i> Confirmar e Gerar Fatura
+                        </button>
+                    @endcan
                 </div>
             </form>
         </div>

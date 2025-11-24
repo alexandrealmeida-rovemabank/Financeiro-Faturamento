@@ -84,7 +84,7 @@ return [
     */
 
     'auth_logo' => [
-        'enabled' => False,
+        'enabled' => True,
         'img' => [
             'path' => 'vendor/adminlte/dist/img/Rovema Pay.png',
             'alt' => 'Auth Logo',
@@ -114,6 +114,7 @@ return [
             'effect' => 'animation__shake',
             'width' => 60,
             'height' => 60,
+            'class' => 'img-fluid', // Deixe vazio ou use 'img-fluid'
         ],
     ],
 
@@ -149,7 +150,7 @@ return [
     */
 
     'layout_topnav' => true,
-    'layout_boxed' => null,
+    'layout_boxed' => false,
     'layout_fixed_sidebar' => null,
     'layout_fixed_navbar' => null,
     'layout_fixed_footer' => null,
@@ -168,7 +169,7 @@ return [
     */
 
     'classes_auth_card' => '',
-    'classes_auth_header' => 'bg-primary',
+    'classes_auth_header' => 'd-none',
     'classes_auth_body' => '',
     'classes_auth_footer' => 'text-center',
     'classes_auth_icon' => 'fa-lg text-primary',
@@ -190,13 +191,13 @@ return [
     'classes_brand' => '',
     'classes_brand_text' => '',
     'classes_content_wrapper' => '',
-    'classes_content_header' => '',
-    'classes_content' => '',
+    'classes_content_header' => 'container-fluid',
+    'classes_content' => 'container-fluid',
     // 'classes_sidebar' => 'sidebar-light-white elevation-4',
     'classes_sidebar_nav' => '',
     // 'classes_topnav' => 'navbar-white navbar-light',
     'classes_topnav_nav' => 'navbar-expand-lg',
-    'classes_topnav_container' => 'container',
+    'classes_topnav_container' => 'container-fluid',
 
     /*
     |--------------------------------------------------------------------------
@@ -560,6 +561,16 @@ return [
                     'type' => 'js',
                     'asset' => false,
                     'location' => '//cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js',
+                ],
+            ],
+        ],
+        'CustomCSS' => [
+            'active' => true,
+            'files' => [
+                [
+                    'type' => 'css',
+                    'asset' => true,
+                    'location' => 'css/admin_custom.css', // O caminho dentro de public/
                 ],
             ],
         ],
