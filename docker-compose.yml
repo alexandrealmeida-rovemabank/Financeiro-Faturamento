@@ -1,15 +1,34 @@
-version: '3.8'
 
 services:
   app:
     build: .
-    container_name: financeiro_rovema_bank
+    container_name: financeiro_rovema_bank_app
     restart: always
     working_dir: /var/www/html
     volumes:
       - .:/var/www/html
     ports:
       - "8000:80"
-    # Dica: Se o banco estiver numa VPN ou rede interna, garanta que o Docker
-    # tenha acesso a essa rede. Geralmente o modo 'bridge' padrão funciona
-    # para saídas externas (internet/intranet).
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      APP_ENV: production
+      APP_DEBUG: true
+      # Adicione outras variáveis se necessário
+
+  # AQUI ESTÁ O SEGREDO: 'queue' deve ter 2 espaços de recuo, igual ao 'app' acima
+  queue:
+    build: .
+    container_name: financeiro_rovema_bank_queue
+    restart: always
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    # O comando que sobrescreve o Apache
+    command: php artisan queue:work --verbose --tries=3 --timeout=300
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      APP_ENV: production
+      # A fila precisa das mesmas variáveis de banco que a app
+
